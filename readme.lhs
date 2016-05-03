@@ -97,8 +97,8 @@ Adding an x axis
 >   let n = 10000
 >   sample <- rvcorrL n 0.5
 >   let dot = Dot circle 0.1 (C 0.5 0.1 0.9 0.02) sample
->   let x = unitX # scale 3
->   let dotx = beside (r2 (0,0)) x (renderDot dot)
+>   -- let x = unitX
+>   let dotx = beside (r2 (0,0)) mempty (renderDot dot)
 >   toFile "other/test_002.svg" (200,200) dotx
 >
 
