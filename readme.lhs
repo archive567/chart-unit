@@ -112,24 +112,7 @@ Adding an x axis
 
 ![](other/test_001.svg)
 
-100000 dots
+10000 dots
 ![](other/test_002.svg)
-
-Some examples of different shapes
-
->
-> example :: (RealFloat (N b), Typeable (N b), Transformable b, HasStyle b,TrailLike b, V b ~ V2) => b
-> example = circle 1 # fc blue
->                    # lw veryThick
->                    # lc purple
->                    # dashingG [0.2,0.05] 0
->
-> line' :: QDiagram SVG V2 Double Any
-> line' = fromOffsets [unitX]
->   # centerXY # pad 1.1
->
-> points :: QDiagram SVG V2 Double Any
-> points = atPoints (map p2 [(1,1), (0,3), (-2,1), (-1,-4), (2,0)] :: [Point V2 Double]) (repeat $ circle 0.2 # fc green) # centerXY
->
 
 </article>
