@@ -1,0 +1,53 @@
+name:                  chart-svg
+version:               0.1.0.0
+synopsis:              charts rendered to svg using diagrams
+description:           readme.lhs
+homepage:              https://github.com/tonyday567/hdchart
+license:               BSD3
+license-file:          LICENSE
+author:                Tony Day
+maintainer:            tonyday567@gmail.com
+copyright:             Tony Day
+category:              
+build-type:            Simple
+cabal-version:         >=1.10
+
+library
+  default-language:    Haskell2010
+  ghc-options:         -Wall
+  hs-source-dirs:      src
+  exposed-modules:     Chart
+                     , Random
+  build-depends:       base >= 4.7 && < 5
+                     , lens
+                     , diagrams
+                     , diagrams-lib
+                     , diagrams-svg
+                     , mwc-random
+                     , vector
+                     , colour
+
+executable readme
+  default-language:    Haskell2010
+  ghc-options:         -O2
+                       -funbox-strict-fields
+                       -fforce-recomp
+                       -threaded
+                       -rtsopts
+                       -with-rtsopts=-N
+  hs-source-dirs:      ./
+  main-is:             readme.lhs
+  build-depends:       base
+                     , protolude
+                     , chart-svg
+                     , text
+                     , diagrams
+                     , diagrams-lib
+                     , diagrams-svg
+                     , mwc-random
+                     , vector
+                     , colour
+
+source-repository head
+  type:     git
+  location: https://github.com/tonyday567/hdchart
