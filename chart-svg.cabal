@@ -16,16 +16,19 @@ library
   default-language:    Haskell2010
   ghc-options:         -Wall
   hs-source-dirs:      src
-  exposed-modules:     Chart
-                     , Random
+  exposed-modules:     Random
   build-depends:       base >= 4.7 && < 5
                      , lens
                      , diagrams
                      , diagrams-lib
                      , diagrams-svg
+                     , diagrams-core
                      , mwc-random
                      , vector
                      , colour
+                     , formatting
+                     , foldl
+                     , primitive
 
 executable readme
   default-language:    Haskell2010
@@ -44,9 +47,13 @@ executable readme
                      , diagrams
                      , diagrams-lib
                      , diagrams-svg
+                     , diagrams-core
                      , mwc-random
                      , vector
                      , colour
+                     , formatting
+                     , foldl
+                     , primitive
 
 source-repository head
   type:     git

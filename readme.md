@@ -1,4 +1,4 @@
-<link rel="stylesheet" href="other/lhs.css">
+<link rel="stylesheet" href="lhs.css">
 <article class="markdown-body">
 chart-svg
 =========
