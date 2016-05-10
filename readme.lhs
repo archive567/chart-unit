@@ -31,12 +31,16 @@ scratchpad
 </html>
 
 
+Rough todo list is:
 
-
-
-~~~
-stack ghc -- --show-options
-~~~
+- work towards an iconic scatterchart - minimalist design; Axes, ticks and ranges that work over any data scale, and render nicely at about 200x200.
+- transform data to 1D histograms and work up an iconic bar chart.
+- transform data to 2D hitogram and work up a heatmap/surface/contour chart
+- add a line chart
+- add a 1D chart (which might be iso with an axis)
+- add a tiny socket that can:
+  - receive new data
+  - send mouse clicks
 
 > {-# LANGUAGE TypeFamilies #-}
 > {-# LANGUAGE NoImplicitPrelude #-}
@@ -62,17 +66,13 @@ a random source of data. I usually like to work with (0,1) uniform variates, or 
 
 > import Random
 
-helpers
+helper libraries
 ---
 
 > import Formatting
 > import qualified Control.Foldl as L
 
-What I'm aiming for is a core set of charts I can inject into adhoc number crunching, and the chart can take care of scaling to suit, rather than go through the costly boiler-plate of making a chart pretty.
-
-
-data sources
----
+I find this a useful technique when testing to avoid having to instantiate the data and other IO guff all the time in ghci.
 
 > xys = unsafeInlineIO (rvcorrL 1000 0.7)
 >
@@ -94,7 +94,7 @@ main
 >   toFile "other/test_001.svg" (200,200) steps1
 >   toFile "other/test_002.svg" (200,200) (dots xys)
 >   toFile "other/test_003.svg" (200,200) (canvas xys)
->   toFile "other/test_004.svg" (200,200) (axisX xys mempty)
+>   toFile "other/test_004.svg" (200,200) (axisX xys unitSquare)
 >   toFile "other/test_005.svg" (200,200)
 >     ( canvas xys
 >       `atop`
@@ -104,7 +104,7 @@ main
 >       # pad 1.1)
 >
 
-This is the main series of steps from the abstract to the concrete:
+This is the main series of steps from the abstract to the concrete, from left to right:
 
 - start with a pointful, no origin shape
 - turn it into a Trail
@@ -124,7 +124,9 @@ circles in XY space
 >      lw none
 >     )
 
-A rectangle located at the exact chart extent, with the same origin
+A rectangle located at the exact chart extent, with the same origin.  I use this as a backboard for the actual data area.
+
+*To Do* add crosshairs
 
 > canvas xys = extentXYs xys # canvasStyle
 > canvasStyle =
@@ -142,6 +144,9 @@ A rectangle located at the exact chart extent, with the same origin
 >   . scaleY (maxY-minY)
 >   $ unitSquare
 >
+
+Deciding to make the chart units the same as the data is an important choice, with the main alternative being leaving the chart units as a unit (0,1) domain.
+
 
 axis concepts
 ---
@@ -169,11 +174,29 @@ axis concepts
 >   lcA (withOpacity black 0) #
 >   lw none
 >
-> axisX xys = (flip (beside (r2 (0,-1)))) $ (axisx 0.2 (range1D $ fst <$> xys) # axisStyle)
-> axisY xys = (flip (beside (r2 (-1,0)))) $ (axisy 0.2 (range1D $ snd <$> xys) # axisStyle)
+> axisX xys = (flip (beside (r2 (0,-1)))) $ (axisx 0.2 (fst <$> xys) # axisStyle)
+> axisY xys = (flip (beside (r2 (-1,0)))) $ (axisy 0.2 (snd <$> xys) # axisStyle)
 
 ticks
 ---
+
+from d3
+---
+
+~~~ js
+function d3_scale_linearTickRange(domain, m) {
+    if (m == null) m = 10;
+    var extent = d3_scaleExtent(domain), span = extent[1] - extent[0], step = Math.pow(10, Math.floor(Math.log(span / m) / Math.LN10)), err = m / span * step;
+    if (err <= .15) step *= 10; else if (err <= .35) step *= 5; else if (err <= .75) step *= 2;
+    extent[0] = Math.ceil(extent[0] / step) * step;
+    extent[1] = Math.floor(extent[1] / step) * step + step * .5;
+    extent[2] = step;
+    return extent;
+  }
+~~~
+
+uptohere
+===
 
 > ticksX = [min, 0, max] where (minX,maxX) = range1D (fst <$> xys)
 > 
@@ -233,45 +256,13 @@ folds
 >       Nothing -> (-0.5, 0.5)
 >       Just x' -> x'
 
-
 chart-svg
 ---
 
 [![Build Status](https://travis-ci.org/tonyday567/chart-svg.png)](https://travis-ci.org/tonyday567/chart-svg)
 
-I've tried charting in haskell many ways: using the Charts package, going via d3, writing js in haskell, and going via ghcjs.
-
-This is attempt 78: locking in a small canonical set of charts that are scale invariant.
-
-todo
----
-
-- explore haskell svg toolkit
-- standard scatter chart spec
-- bar chart
-- line chart
-- 1dline
-- heatmap
-- square composite
-
-Build, run, render svg output
+Build, run, render readme
 
 ~~~
 filewatcher '**/*.{lhs,hs,cabal}' 'stack install && readme && pandoc -f markdown+lhs -t html -i readme.lhs -o readme.html && echo "run"' 
 ~~~
-
-from d3 apropos ticks
----
-
-~~~ js
-function d3_scale_linearTickRange(domain, m) {
-    if (m == null) m = 10;
-    var extent = d3_scaleExtent(domain), span = extent[1] - extent[0], step = Math.pow(10, Math.floor(Math.log(span / m) / Math.LN10)), err = m / span * step;
-    if (err <= .15) step *= 10; else if (err <= .35) step *= 5; else if (err <= .75) step *= 2;
-    extent[0] = Math.ceil(extent[0] / step) * step;
-    extent[1] = Math.floor(extent[1] / step) * step + step * .5;
-    extent[2] = step;
-    return extent;
-  }
-~~~
- 
