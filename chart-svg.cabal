@@ -16,14 +16,14 @@ library
   default-language:    Haskell2010
   ghc-options:         -Wall
   hs-source-dirs:      src
-  exposed-modules:     Random
+  exposed-modules:     
   build-depends:       base >= 4.7 && < 5
                      , lens
                      , diagrams
                      , diagrams-lib
                      , diagrams-svg
                      , diagrams-core
-                     , mwc-random
+                     , random-fu
                      , vector
                      , colour
                      , formatting
@@ -48,7 +48,7 @@ executable readme
                      , diagrams-lib
                      , diagrams-svg
                      , diagrams-core
-                     , mwc-random
+                     , random-fu
                      , vector
                      , colour
                      , formatting
