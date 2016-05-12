@@ -1,66 +1,31 @@
 <meta charset='utf-8'> <link rel="stylesheet" href="lhs.css">
 
-scratchpad
-----------
+chart-svg
+---------
 
 ![](other/scratchpad.svg)
 
-<html>
-<div class="pic">
+scratchpad
+----------
 
-<caption align="top">
-An abstract square
-</caption>
-<img src="other/test_001.svg"/>
+This is a scratchpad repo for some chart experiments. The current
+scratchpad has up a minimalist and reasonably scale invariant
+scatterplot.
 
-</div>
+Hewing close to the spirit of
+[diagrams](http://projects.haskell.org/diagrams/haddock/index.html), the
+rendering units are in the x in the range (-0.5,0.5), y in the range
+(-0.5,0.5), and origin in the center. This is exactly the same setup as
+unitSquare.
 
-<div class="pic">
+The aim is a scatter chart that renders robustly over both a wide
+physical sized svg and a wide data range.
 
-<caption align="top">
-1000 correlated dots
-</caption>
-<img src="other/test_002.svg"/>
+todo
+----
 
-</div>
+My rough R&D roadmap is:
 
-<div class="pic">
-
-<caption align="top">
-canvas
-</caption>
-<img src="other/test_003.svg"/>
-
-</div>
-
-<div class="pic">
-
-<caption align="top">
-axes
-</caption>
-<img src="other/test_004.svg"/>
-
-</div>
-
-<div class="pic">
-
-<caption align="top">
-current fave
-</caption>
-<img src="other/test_005.svg"/>
-
-</div>
-
-<div style="clear: both">
-
-</div>
-
-</html>
-Rough todo list is:
-
--   work towards an iconic scatterchart - minimalist design; Axes, ticks
-    and ranges that work over any data scale, and render nicely at
-    about 200x200.
 -   transform data to 1D histograms and work up an iconic bar chart.
 -   transform data to 2D hitogram and work up a heatmap/surface/contour
     chart
@@ -76,6 +41,7 @@ Rough todo list is:
 {-# LANGUAGE NoMonomorphismRestriction #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE RankNTypes #-}
+{-# LANGUAGE TemplateHaskell #-}
 {-# OPTIONS_GHC -fno-warn-name-shadowing #-}
 {-# OPTIONS_GHC -fno-warn-unused-binds #-}
 {-# OPTIONS_GHC -fno-warn-type-defaults #-}
@@ -92,26 +58,106 @@ import Diagrams.Backend.SVG
 import Diagrams.Core.Envelope
 ```
 
-a random source of data. I usually like to work with (0,1) uniform
-variates, or standard normals.
-
-``` {.sourceCode .literate .haskell}
-import Random
-```
-
 helper libraries
 ----------------
 
 ``` {.sourceCode .literate .haskell}
 import Formatting
 import qualified Control.Foldl as L
+import qualified Data.Vector.Unboxed as V
+import qualified Data.Random as R
 ```
 
-I find this a useful technique when testing to avoid having to
-instantiate the data and other IO guff all the time in ghci.
+create some test data
+---------------------
 
 ``` {.sourceCode .literate .haskell}
-xys = unsafeInlineIO (rvcorrL 1000 0.7)
+rXYs :: Int -> Double -> IO [(Double,Double)]
+rXYs n c = do
+  s0 <- replicateM n $ R.runRVar R.stdNormal R.StdRandom
+  s1 <- replicateM n $ R.runRVar R.stdNormal R.StdRandom
+  let s1' = zipWith (\x y -> c * x + sqrt (1 - c * c) * y) s0 s1
+  pure $ zip s0 s1'
+
+xys = unsafeInlineIO $
+  fmap (\(x,y) -> (x,y)) <$> rXYs 1000 0.8
+```
+
+The main downside of using lens is template haskell, which enforces an
+order to module functions.
+
+The main upside is a rapid gathering of a config file, once you've
+hacked a prototype together.
+
+``` {.sourceCode .literate .haskell}
+data ScatterConfig = ScatterConfig
+  { _scatterPad :: Double
+  , _scatterSize :: Double
+  , _scatterColor :: AlphaColour Double
+  , _scatterAxisHeight :: Double
+  , _scatterAxisColor :: AlphaColour Double
+  , _scatterNticks :: Int
+  , _scatterVruleSize :: Double
+  , _scatterVruleColor :: AlphaColour Double
+  , _scatterStrutSize :: Double
+  , _scatterTextSize :: Double
+  , _scatterTextColor :: AlphaColour Double
+  }
+
+rgba (r,g,b,a) = withOpacity (sRGB (r/255) (g/255) (b/255)) a
+
+instance Default ScatterConfig where
+  def =
+    ScatterConfig
+    1.3
+    0.03
+    (rgba(128, 128, 128, 0.1))
+    0.02
+    (rgba(94, 19, 94, 0.5))
+    5
+    0.02
+    (rgba (40, 102, 200, 1))
+    0.02
+    0.04
+    (rgba (30,30,30,1))
+    
+makeLenses ''ScatterConfig
+```
+
+And, to try and limit lensification of the project, keep all the lens
+refs in one spot.
+
+``` {.sourceCode .literate .haskell}
+scatter :: ScatterConfig -> [(Double,Double)] -> QDiagram SVG V2 Double Any
+scatter cfg xys =
+  (beside (r2 (-1,0))
+   (beside (r2 (0,-1))
+    (dots (view scatterSize cfg) (view scatterColor cfg) xys)
+    (axisX
+     (view scatterAxisHeight cfg)
+     (view scatterNticks cfg)
+     (view scatterVruleSize cfg)
+     (view scatterStrutSize cfg)
+     (view scatterTextSize cfg)
+     (view scatterAxisColor cfg)
+     (view scatterVruleColor cfg)
+     (view scatterTextColor cfg)
+     xys
+    )
+   )
+   (axisY
+    (view scatterAxisHeight cfg)
+    (view scatterNticks cfg)
+    (view scatterVruleSize cfg)
+    (view scatterStrutSize cfg)
+    (view scatterTextSize cfg)
+    (view scatterAxisColor cfg)
+    (view scatterVruleColor cfg)
+    (view scatterTextColor cfg)
+    xys
+   )
+   # pad (view scatterPad cfg)
+  )
 ```
 
 main
@@ -120,27 +166,12 @@ main
 ``` {.sourceCode .literate .haskell}
 
 main :: IO ()
-main = do 
-
-  padq $
-    ( canvas xys
-      `atop`
-      dots xys # showOrigin
-      # axisX xys
-      # axisY xys
-      # pad 1.1)
-  toFile "other/test_001.svg" (200,200) steps1
-  toFile "other/test_002.svg" (200,200) (dots xys)
-  toFile "other/test_003.svg" (200,200) (canvas xys)
-  toFile "other/test_004.svg" (200,200) (axisX xys unitSquare)
-  toFile "other/test_005.svg" (200,200)
-    ( canvas xys
-      `atop`
-      dots xys # showOrigin
-      # axisX xys
-      # axisY xys
-      # pad 1.1)
+main = do
+  padq $ scatter def xys
 ```
+
+notes
+-----
 
 This is the main series of steps from the abstract to the concrete, from
 left to right:
@@ -155,44 +186,27 @@ steps1 :: QDiagram SVG V2 Double Any
 steps1 = unitSquare # fromVertices # closeTrail # strokeTrail
 ```
 
-circles in XY space
+unit' converts the data to the same space as unitSquare
 
 ``` {.sourceCode .literate .haskell}
-dots xys =
-  atPoints (p2 <$> xys)
-    (repeat $ circle 0.1 #
-     fcA (rgba (102, 102, 102, 0.1)) #
+unit' xys =
+  let (minX,maxX,minY,maxY) = range2D xys in
+  (\(x,y) -> ( (x-minX)/(maxX-minX) - 0.5
+             , (y-minY)/(maxY-minY) - 0.5)) <$> xys
+unitX' xs =
+  let (minX,maxX) = range1D xs in
+  (\x -> (x-minX)/(maxX-minX) - 0.5) <$> xs
+```
+
+``` {.sourceCode .literate .haskell}
+dots size c xys =
+  atPoints (p2 <$> unit' xys)
+    (repeat $ circle size #
+     fcA c #
      lcA (withOpacity black 0) #
      lw none
     )
 ```
-
-A rectangle located at the exact chart extent, with the same origin. I
-use this as a backboard for the actual data area.
-
-*To Do* add crosshairs
-
-``` {.sourceCode .literate .haskell}
-canvas xys = extentXYs xys # canvasStyle
-canvasStyle =
-    showOrigin' (oColor .~ black $ oScale .~ 0.01 $ def)
-  # fcA (rgba (30, 120, 120, 0.1))
-  # lcA (rgba (30, 120, 120, 1.0))
-  # lw veryThick
-
-extentXYs xys = let (minX,maxX,minY,maxY) = range2D xys in
-    moveTo (p2 (maxX,minY))
-  . strokeTrail
-  . closeTrail
-  . fromVertices
-  . scaleX (maxX-minX)
-  . scaleY (maxY-minY)
-  $ unitSquare
-```
-
-Deciding to make the chart units the same as the data is an important
-choice, with the main alternative being leaving the chart units as a
-unit (0,1) domain.
 
 axis concepts
 -------------
@@ -216,38 +230,61 @@ axisy width ys = let (min,max) = range1D ys in
   . scaleX width
   $ unitSquare
 
-axisStyle =
-  fcA (rgba (102, 102, 102, 0.4)) #
+axisStyle c =
+  fcA c #
   lcA (withOpacity black 0) #
   lw none
 
-axisX xys = (flip (beside (r2 (0,-1)))) $ (axisx 0.2 (fst <$> xys) # axisStyle)
-axisY xys = (flip (beside (r2 (-1,0)))) $ (axisy 0.2 (snd <$> xys) # axisStyle)
+axisX height nticks vruleSize strutSize textSize axisColor vruleColor textColor xys =
+  let ticksX = tickList (range1D (fst <$> xys)) nticks in
+  let ticksX' = tickList (range1D (fst <$> unit' xys)) nticks in
+  ((atPoints (p2 <$> (\x -> (x,0)) <$> ticksX')
+   (fmap (\tick ->
+           (beside (r2 (0,-1))
+            (beside (r2 (0,-1))
+             (vrule vruleSize # fcA vruleColor)
+             (strutY strutSize))
+            (Diagrams.Prelude.alignedText 0.5 1 tick # scale textSize # fcA textColor)
+           ))
+    (formatToString (prec 2) <$> ticksX)))
+  `atop`
+  (axisx height (fst <$> unit' xys) # axisStyle axisColor))
+
+axisY width nticks vruleSize strutSize textSize
+      axisColor vruleColor textColor xys =
+  ((atPoints (p2 <$> (\y -> (-vruleSize,y)) <$> unitX' ticksY)
+    (fmap (\tick ->
+            (beside (r2 (-1,0))
+             (beside (r2 (-1,0))
+              (hrule vruleSize # fcA vruleColor)
+              (strutX strutSize))
+             (Diagrams.Prelude.alignedText 1 0.5 tick # scale textSize # fcA textColor)
+            ))
+     (formatToString (prec 2) <$> ticksY)))
+   `atop`
+   (axisy width (snd <$> unit' xys) # axisStyle axisColor))
+  where
+    ticksY = tickList (range1D (snd <$> xys)) nticks
 ```
 
 ticks
 -----
 
-from d3
--------
-
-``` {.js}
-function d3_scale_linearTickRange(domain, m) {
-    if (m == null) m = 10;
-    var extent = d3_scaleExtent(domain), span = extent[1] - extent[0], step = Math.pow(10, Math.floor(Math.log(span / m) / Math.LN10)), err = m / span * step;
-    if (err <= .15) step *= 10; else if (err <= .35) step *= 5; else if (err <= .75) step *= 2;
-    extent[0] = Math.ceil(extent[0] / step) * step;
-    extent[1] = Math.floor(extent[1] / step) * step + step * .5;
-    extent[2] = step;
-    return extent;
-  }
-```
-
-uptohere
-========
-
 ``` {.sourceCode .literate .haskell}
-ticksX = [min, 0, max] where (minX,maxX) = range1D (fst <$> xys)
+tickList :: (Double,Double) -> Int -> [Double]
+tickList (min,max) n = (first +) . (step *) . fromIntegral <$> [0..n']
+  where
+    span' = max - min
+    step' = 10 ^^ (floor (log(span'/fromIntegral n)/log 10))
+    err = fromIntegral n / span' * step'
+    step
+      | err <= 0.15 = 10 * step'
+      | err <= 0.35 = 5 * step'
+      | err <= 0.75 = 2 * step'
+      | otherwise = step'
+    first = step * fromIntegral (floor (min/step) + 1)
+    last = fromIntegral (floor (max/step)) * step
+    n' = round ((last - first)/step)
 ```
 
 helpers
@@ -270,14 +307,13 @@ padp = padq . strokePath
 hex s = sRGB r b g
   where
     (RGB r g b) = toSRGB $ sRGB24read s
-rgba (r,g,b,a) = withOpacity (sRGB (r/255) (g/255) (b/255)) a
 
 toFile :: FilePath -> (Double, Double) -> QDiagram SVG V2 Double Any -> IO ()
 toFile name size = renderSVG name (mkSizeSpec (Just <$> r2 size))
 ```
 
-folds
------
+ranges
+------
 
 ``` {.sourceCode .literate .haskell}
 
