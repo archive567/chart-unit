@@ -166,7 +166,16 @@ develop
 Build, run, render readme
 
 ~~~
-filewatcher '**/*.{lhs,hs,cabal}' 'stack install && readme && pandoc -f markdown+lhs -t html -i readme.lhs -o readme.html && echo "run"' 
+filewatcher '**/*.{lhs,hs,cabal}' 'stack install && readme && pandoc -f markdown+lhs -t html -i readme.lhs -o readme.html && echo "run"'
+~~~
+
+Publish
+
+~~~
+pandoc -f markdown+lhs -t html -i readme.lhs -o ~/git/tonyday567.github.io/perf.html
+readme | pandoc -f markdown+lhs -t html -o ~/git/tonyday567.github.io/perf-out.html
+cp other/* ~/git/tonyday567.github.io/other
+pandoc -f markdown+lhs -t markdown -i readme.lhs -o readme.md
 ~~~
 
 todo
@@ -175,8 +184,5 @@ todo
 My rough R&D roadmap is:
 
 - transform data to 2D histogram and work up an area/heatmap/surface/contour chart
-- add a line chart
+- add a line chart (or work out iso to a scatter chart)
 - add a 1D chart (which might be iso with an axis)
-- add a tiny socket that can:
-  - receive new data
-  - send mouse clicks
