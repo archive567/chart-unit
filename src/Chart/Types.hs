@@ -34,10 +34,13 @@ rgba (r,g,b,a) = withOpacity (sRGB (r/255) (g/255) (b/255)) a
 
 data Orientation = X | Y
 
+data Placement = AxisLeft | AxisRight | AxisTop | AxisBottom
+
 data TickStyle = TickNone | TickLabels [String] | TickNumber Int
 
 data AxisConfig = AxisConfig
   { _axisOrientation :: Orientation
+  , _axisPlacement :: Placement
   , _axisHeight :: Double
   , _axisColor :: AlphaColour Double
   , _axisVruleSize :: Double
@@ -47,11 +50,12 @@ data AxisConfig = AxisConfig
   , _axisTextColor :: AlphaColour Double
   , _axisTickStyle :: TickStyle
   }
-  
+
 instance Default AxisConfig where
   def =
     AxisConfig
     X
+    AxisBottom
     0.02
     (rgba(94, 19, 94, 0.5))
     0.02
@@ -63,34 +67,47 @@ instance Default AxisConfig where
 
 makeLenses ''AxisConfig 
 
+data ChartConfig = ChartConfig
+  { _chartPad :: Double
+  , _chartColor :: AlphaColour Double
+  , _chartAxes :: [AxisConfig]
+  }
+
+instance Default ChartConfig where
+  def =
+    ChartConfig
+    1.3
+    (rgba(128, 128, 128, 0.6))
+    [def, axisOrientation .~ Y $ axisPlacement .~ AxisLeft $ def]
+
+makeLenses ''ChartConfig
+
 data ScatterConfig = ScatterConfig
-  { _scatterPad :: Double
+  { _scatterChart :: ChartConfig
   , _scatterSize :: Double
-  , _scatterColor :: AlphaColour Double
   }
 
 instance Default ScatterConfig where
-  def =
-    ScatterConfig
-    1.3
-    0.03
-    (rgba(128, 128, 128, 0.1))
-    
+  def = ScatterConfig (chartColor .~ rgba(128, 128, 128, 0.1) $ def) 0.03
+
 makeLenses ''ScatterConfig
 
 data BarConfig = BarConfig
-  { _barPad :: Double
+  { _barChart :: ChartConfig
   , _barSep :: Double
-  , _barColor :: AlphaColour Double
   }
 
 instance Default BarConfig where
-  def =
-    BarConfig
-    1.2
-    0.1
-    (rgba(59, 89, 152, 0.6
-          
-         ))
-    
+  def = BarConfig (chartColor .~ rgba(59, 89, 152, 0.6) $ def) 0.01
+
 makeLenses ''BarConfig
+
+data LineConfig = LineConfig
+  { _lineChart :: ChartConfig
+  , _lineSize :: Double
+  }
+
+instance Default LineConfig where
+  def = LineConfig (chartColor .~ rgba(59, 89, 152, 0.6) $ def) 0.001
+
+makeLenses ''LineConfig

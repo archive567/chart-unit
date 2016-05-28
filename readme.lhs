@@ -1,4 +1,4 @@
-<meta charset='utf-8'>
+<meta charset="utf-8">
 <link rel="stylesheet" href="lhs.css">
 
 chart-svg
@@ -12,9 +12,17 @@ Scatter Chart
 
 ![](other/scatter.svg)
 
-Bar Chart
+Line Chart
+
+![](other/line.svg)
+
+Labelled Bar Chart
 
 ![](other/bar.svg)
+
+Bar Chart
+
+![](other/hist.svg)
 
 
 This is a scratchpad repo for some chart experiments.  The scratchpad usually has whatever I'm up to.  Next chart to develop is an area chart.
@@ -44,7 +52,7 @@ The aim is a series of charts that
 > import Control.Category (id)
 > import Data.List (transpose)
 > import System.IO (FilePath)
-> import Diagrams.Prelude
+> import Diagrams.Prelude hiding ((<>))
 > import Diagrams.Backend.SVG
 > import Diagrams.Core.Envelope
 
@@ -56,16 +64,19 @@ helper libraries
 > import qualified Control.Foldl as L
 > import qualified Data.Vector.Unboxed as V
 > import qualified Data.Random as R
-> import qualified Control.Foldl.Incremental.Histogram as H
 > import Data.Vector.Unboxed  (Vector,(!))
 > import qualified Data.Vector.Unboxed as VU
-> import qualified Data.Histogram as H
-> import qualified Data.Histogram.Bin.BinDU as H
+> import qualified Data.Vector.Mutable as VM
+> import qualified Data.Vector.Generic as VG
+> import Data.Primitive.Array
+> import qualified Data.Map.Strict as Map
+>
 
 Chart library
 ---
 
 > import Chart
+> import Chart.Types
 
 some test data - a pair of correlated normal random variates.  random-fu has such a clear api for this.
 
@@ -78,7 +89,22 @@ some test data - a pair of correlated normal random variates.  random-fu has suc
 >
 > xys = unsafeInlineIO $
 >   fmap (\(x,y) -> (x,y)) <$> rXYs 1000 0.8
+> xs = fst <$> xys
+> ys = snd <$> xys
 >
+> rw2d = L.scan (L.Fold (\(x,y) (x',y') -> (x+x',y+y')) (0.0,0.0) id) (take 100 xys)
+> rw1d = zip [0..] (L.scan (L.Fold (+) 0.0 id) (take 100 $ xs))
+>
+> barData :: IO [(Double,Double)]
+> barData = do
+>   ys <- replicateM 10000 $ R.runRVar R.stdNormal R.StdRandom :: IO [Double]
+>   let (first,step,n) = mkTicks True ys 100
+>   let cuts = (\x -> first+step*fromIntegral x) <$> [0..n]
+>   let mids = (+(step/2)) <$> (drop (-1) cuts)
+>   let histMap = L.fold count $ (\x -> L.fold countBool (zipWith (>) (repeat x) cuts)) <$> ys
+>   let histList = (\x -> Map.findWithDefault 0 x histMap) <$> [0..n]
+>   return (zip mids (fromIntegral <$> histList))
+> 
 
 Rendered on the XY plane into a scatter chart with no axes:
 
@@ -88,29 +114,6 @@ Axes break the scale invariance of the above chart (the diagram will look exactl
 
 ![](other/scatter.svg)
 
-histogram
----
-
-Taking a histogram of the X data, using the tick technology as histogram bins.
-
-> histX t xs =
->   zip
->   ((H.fromIndex bins) <$> [1..])
->   (V.toList $ V.init $ V.tail $ H.histData $ hist)
->   where
->     hist = 
->       L.fold
->       (H.incrementalizeHistU
->        (H.binDU $ V.fromList $ inf $
->         tickList (range1D xs) t) (const 1) 1) xs
->     bins = H.bins hist
->     inf x = [-1/0] ++ x ++ [1/0]
-
-> histXs = histX 10 (fst <$> xys)
-
-λ> histXs
-[(-2.75,5.0e-3),(-2.25,1.9e-2),(-1.75,3.7e-2),(-1.25,9.5e-2),(-0.75,0.153),(-0.25,0.186),(0.25,0.184),(0.75,0.159),(1.25,9.3e-2),(1.75,4.5e-2),(2.25,1.8e-2)]
-
 bar
 ---
 
@@ -118,21 +121,21 @@ Each bar is a rectangle with height equal to y in (x,y) and placement equal to x
 
 ![](other/bar.svg)
 
-
-
 main
 ---
 
 >
 > main :: IO ()
 > main = do
->   padq $ unitScatter def def xys
->   toFile "other/dots.svg" (100,100) (dots 0.01 (rgba(120,40,30,0.1)) xys)
->   toFile "other/scatter.svg" (100,100) (unitScatter def def xys)
+>   -- padq $ barX def (snd <$> barData)
+>   toFile "other/dots.svg" (100,100) (scatter def xys)
+>   toFile "other/scatter.svg" (100,100) (scatterXY def xys)
 >   toFile "other/bar.svg" (200,200) $
->     unitBar def (snd <$> histXs) (formatToString (prec 2) <$> (fst <$> histXs))
->     # barStyle def
-
+>     barLabelled def (take 10 $ fst <$> xys) (take 10 $ (:[]) <$> ['a'..])
+>   barData' <- barData
+>   toFile "other/hist.svg" (200,200) $
+>     barRange def barData'
+>   toFile "other/line.svg" (100,100) (lineXY def rw2d)
 
 recipe
 ---
@@ -158,6 +161,26 @@ Quick renderer
 >   toFile "other/scratchpad.svg" (400,400) t
 >
 
+Histogram
+---
+
+> hist' cuts xs = L.fold count $ (\x -> L.fold countBool (zipWith (>) (repeat x) cuts)) <$> xs
+> 
+> thist = hist' (tickList' True xs 6) xs
+>
+> count :: L.Fold Int (Map Int Int)
+> count = L.Fold step Map.empty id
+>   where
+>     step x a = Map.insertWith (+) a 1 x
+>
+> countBool :: L.Fold Bool Int
+> countBool = L.Fold (\x a -> x + if a then 1 else 0) 0 id
+>
+>
+>
+
+
+
 develop
 ---
 
@@ -172,17 +195,5 @@ filewatcher '**/*.{lhs,hs,cabal}' 'stack install && readme && pandoc -f markdown
 Publish
 
 ~~~
-pandoc -f markdown+lhs -t html -i readme.lhs -o ~/git/tonyday567.github.io/perf.html
-readme | pandoc -f markdown+lhs -t html -o ~/git/tonyday567.github.io/perf-out.html
-cp other/* ~/git/tonyday567.github.io/other
-pandoc -f markdown+lhs -t markdown -i readme.lhs -o readme.md
+pandoc -f markdown+lhs -t html -i readme.lhs -o ~/git/tonyday567.github.io/other/chart-svg.html && cp other/* ~/git/tonyday567.github.io/other && pandoc -f markdown+lhs -t markdown -i readme.lhs -o readme.md
 ~~~
-
-todo
----
-
-My rough R&D roadmap is:
-
-- transform data to 2D histogram and work up an area/heatmap/surface/contour chart
-- add a line chart (or work out iso to a scatter chart)
-- add a 1D chart (which might be iso with an axis)
