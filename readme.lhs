@@ -1,6 +1,8 @@
 <meta charset="utf-8">
 <link rel="stylesheet" href="lhs.css">
 
+[![Build Status](https://travis-ci.org/tonyday567/chart-svg.png)](https://travis-ci.org/tonyday567/chart-svg)
+
 chart-svg
 ---
 
@@ -93,7 +95,7 @@ some test data - a pair of correlated normal random variates.  random-fu has suc
 > ys = snd <$> xys
 >
 > rw2d = L.scan (L.Fold (\(x,y) (x',y') -> (x+x',y+y')) (0.0,0.0) id) (take 100 xys)
-> rw1d = zip [0..] (L.scan (L.Fold (+) 0.0 id) (take 100 $ xs))
+> rw1d = zip [0..] (L.scan (L.Fold (+) 0.0 id) (take 100 xs))
 >
 > barData :: IO [(Double,Double)]
 > barData = do
