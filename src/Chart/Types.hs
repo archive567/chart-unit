@@ -20,6 +20,7 @@ import Data.List (transpose)
 import System.IO (FilePath)
 import Diagrams.Prelude
 import Diagrams.Backend.SVG
+-- import Diagrams.Backend.Cairo
 import Diagrams.Core.Envelope
 import Formatting
 import GHC.Base (String)
@@ -28,8 +29,9 @@ import qualified Data.Vector.Unboxed as V
 import Data.Vector.Unboxed  (Vector,(!))
 import qualified Data.Vector.Unboxed as VU
 
+type ChartSvg a = QDiagram SVG V2 a Any
 
-
+rgba :: (Floating a, Ord a) => (a, a, a, a) -> AlphaColour a
 rgba (r,g,b,a) = withOpacity (sRGB (r/255) (g/255) (b/255)) a
 
 data Orientation = X | Y
@@ -43,27 +45,31 @@ data AxisConfig = AxisConfig
   , _axisPlacement :: Placement
   , _axisHeight :: Double
   , _axisColor :: AlphaColour Double
-  , _axisVruleSize :: Double
-  , _axisVruleColor :: AlphaColour Double
-  , _axisStrutSize :: Double
+  , _axisMarkSize :: Double -- mark length
+  , _axisMarkColor :: AlphaColour Double
+  , _axisStrutSize :: Double -- distance of label from mark
   , _axisTextSize :: Double
   , _axisTextColor :: AlphaColour Double
   , _axisTickStyle :: TickStyle
+  , _axisAlignedTextRight :: Double
+  , _axisAlignedTextBottom :: Double
   }
 
 instance Default AxisConfig where
   def =
-    AxisConfig
+    AxisConfig 
     X
     AxisBottom
     0.02
     (rgba(94, 19, 94, 0.5))
     0.02
-    (rgba (40, 102, 200, 1))
+    (rgba (0, 102, 200, 0.5))
     0.02
     0.04
-    (rgba (30,30,30,1))
+    (rgba (30,30,30,0.7))
     (TickNumber 10)
+    0.5
+    1
 
 makeLenses ''AxisConfig 
 
@@ -78,7 +84,12 @@ instance Default ChartConfig where
     ChartConfig
     1.3
     (rgba(128, 128, 128, 0.6))
-    [def, axisOrientation .~ Y $ axisPlacement .~ AxisLeft $ def]
+    [def,
+     axisAlignedTextBottom .~ 0.65 $
+     axisAlignedTextRight .~ 1 $
+     axisOrientation .~ Y $
+     axisPlacement .~ AxisLeft $
+     def]
 
 makeLenses ''ChartConfig
 

@@ -1,13 +1,24 @@
 <p><meta charset="utf-8"> <link rel="stylesheet" href="lhs.css"></p>
+<p><a href="https://travis-ci.org/tonyday567/chart-svg"><img src="https://travis-ci.org/tonyday567/chart-svg.png" alt="Build Status" /></a></p>
 <h2 id="chart-svg">chart-svg</h2>
+<p>Unless I abandon the svg monomorphism, github fails to render svg in a markdown format. It all looks much better in served <a href="http://tonyday567.github.io/chart-svg.html">html</a>.</p>
 <p>scratchpad</p>
 <div class="figure">
 <img src="other/scratchpad.svg" />
 
 </div>
+<p>My last bugfix. <code>scaleY 0</code> silently failed and needed to shove a small number in.</p>
+<p>unitSquare # moveOriginTo (p2 (-0.5,-0.5)) # scaleY (1e-8) # showOrigin</p>
+<p><code>todo:</code> QuickCheck for these corner cases.</p>
+<p>Currently implemented charts:</p>
 <p>Scatter Chart</p>
 <div class="figure">
 <img src="other/scatter.svg" />
+
+</div>
+<p>Histogram</p>
+<div class="figure">
+<img src="other/hist.svg" />
 
 </div>
 <p>Line Chart</p>
@@ -20,19 +31,22 @@
 <img src="other/bar.svg" />
 
 </div>
-<p>Bar Chart</p>
-<div class="figure">
-<img src="other/hist.svg" />
-
-</div>
-<p>This is a scratchpad repo for some chart experiments. The scratchpad usually has whatever I'm up to. Next chart to develop is an area chart.</p>
+<p>To be implemented:</p>
+<ul class="incremental">
+<li>one-dimensional chart aka an axis</li>
+<li>variable-width bar chart (rectangle chart)</li>
+<li>area chart</li>
+</ul>
+<h2 id="purpose">Purpose</h2>
 <p>The aim is a series of charts that</p>
 <ul class="incremental">
+<li>utilise svg technology</li>
 <li>render robustly over a wide chart size range</li>
 <li>render automatically over different data magnitude scales</li>
 <li>are minimalist</li>
 <li>have the same vector space as the unit shapes in <a href="http://projects.haskell.org/diagrams/haddock/index.html">diagrams</a></li>
 </ul>
+<p>The other purpose is to showcase the current precision tool kits that haskell has to offer the visual data nerd.</p>
 <div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell">
 <span class="ot">{-# LANGUAGE TypeFamilies #-}</span>
 <span class="ot">{-# LANGUAGE NoImplicitPrelude #-}</span>
@@ -41,35 +55,22 @@
 <span class="ot">{-# LANGUAGE RankNTypes #-}</span>
 <span class="ot">{-# LANGUAGE GADTs #-}</span>
 <span class="ot">{-# OPTIONS_GHC -fno-warn-name-shadowing #-}</span>
-<span class="ot">{-# OPTIONS_GHC -fno-warn-unused-binds #-}</span>
-<span class="ot">{-# OPTIONS_GHC -fno-warn-type-defaults #-}</span>
-<span class="ot">{-# OPTIONS_GHC -fno-warn-unused-imports #-}</span>
-<span class="ot">{-# OPTIONS_GHC -fno-warn-missing-signatures #-}</span>
-
+<span class="ot">{-# OPTIONS_GHC -fno-warn-missing-signatures #-}</span></code></pre></div>
+<div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell">
 <span class="kw">import </span><span class="dt">Protolude</span>
-<span class="kw">import </span><span class="dt">Control.Monad.Primitive</span> (unsafeInlineIO)
-<span class="kw">import </span><span class="dt">Control.Category</span> (id)
-<span class="kw">import </span><span class="dt">Data.List</span> (transpose)
-<span class="kw">import </span><span class="dt">System.IO</span> (<span class="dt">FilePath</span>)
+<span class="kw">import </span><span class="dt">Control.Category</span> (id)</code></pre></div>
+<p>Forgive the IO hiding but I tend to do a lot of one-line experiments in intero, and this hides the state well for that.</p>
+<div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell"><span class="kw">import </span><span class="dt">Control.Monad.Primitive</span> (unsafeInlineIO)
 <span class="kw">import </span><span class="dt">Diagrams.Prelude</span> <span class="kw">hiding</span> ((&lt;&gt;))
-<span class="kw">import </span><span class="dt">Diagrams.Backend.SVG</span>
-<span class="kw">import </span><span class="dt">Diagrams.Core.Envelope</span></code></pre></div>
+<span class="kw">import </span><span class="dt">Diagrams.Backend.SVG</span> (<span class="dt">SVG</span>)</code></pre></div>
 <h2 id="helper-libraries">helper libraries</h2>
-<div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell"><span class="kw">import </span><span class="dt">Formatting</span>
-<span class="kw">import </span><span class="dt">GHC.Base</span> (<span class="dt">String</span>)
-<span class="kw">import qualified</span> <span class="dt">Control.Foldl</span> <span class="kw">as</span> <span class="dt">L</span>
-<span class="kw">import qualified</span> <span class="dt">Data.Vector.Unboxed</span> <span class="kw">as</span> <span class="dt">V</span>
+<div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell"><span class="kw">import qualified</span> <span class="dt">Control.Foldl</span> <span class="kw">as</span> <span class="dt">L</span>
 <span class="kw">import qualified</span> <span class="dt">Data.Random</span> <span class="kw">as</span> <span class="dt">R</span>
-<span class="kw">import </span><span class="dt">Data.Vector.Unboxed</span>  (<span class="dt">Vector</span>,(!))
-<span class="kw">import qualified</span> <span class="dt">Data.Vector.Unboxed</span> <span class="kw">as</span> <span class="dt">VU</span>
-<span class="kw">import qualified</span> <span class="dt">Data.Vector.Mutable</span> <span class="kw">as</span> <span class="dt">VM</span>
-<span class="kw">import qualified</span> <span class="dt">Data.Vector.Generic</span> <span class="kw">as</span> <span class="dt">VG</span>
-<span class="kw">import </span><span class="dt">Data.Primitive.Array</span>
 <span class="kw">import qualified</span> <span class="dt">Data.Map.Strict</span> <span class="kw">as</span> <span class="dt">Map</span></code></pre></div>
 <h2 id="chart-library">Chart library</h2>
-<div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell"><span class="kw">import </span><span class="dt">Chart</span>
-<span class="kw">import </span><span class="dt">Chart.Types</span></code></pre></div>
-<p>some test data - a pair of correlated normal random variates. random-fu has such a clear api for this.</p>
+<div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell"><span class="kw">import </span><span class="dt">Chart</span></code></pre></div>
+<h2 id="some-test-data">some test data</h2>
+<p>xys is a list of X,Y pairs, that happen to be correlated normal random variates.</p>
 <div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell"><span class="ot">rXYs ::</span> <span class="dt">Int</span> <span class="ot">-&gt;</span> <span class="dt">Double</span> <span class="ot">-&gt;</span> <span class="dt">IO</span> [(<span class="dt">Double</span>,<span class="dt">Double</span>)]
 rXYs n c <span class="fu">=</span> <span class="kw">do</span>
   s0 <span class="ot">&lt;-</span> replicateM n <span class="fu">$</span> R.runRVar R.stdNormal <span class="dt">R.StdRandom</span>
@@ -79,21 +80,31 @@ rXYs n c <span class="fu">=</span> <span class="kw">do</span>
 
 xys <span class="fu">=</span> unsafeInlineIO <span class="fu">$</span>
   fmap (\(x,y) <span class="ot">-&gt;</span> (x,y)) <span class="fu">&lt;$&gt;</span> rXYs <span class="dv">1000</span> <span class="fl">0.8</span>
-xs <span class="fu">=</span> fst <span class="fu">&lt;$&gt;</span> xys
-ys <span class="fu">=</span> snd <span class="fu">&lt;$&gt;</span> xys
 
 rw2d <span class="fu">=</span> L.scan (<span class="dt">L.Fold</span> (\(x,y) (x&#39;,y&#39;) <span class="ot">-&gt;</span> (x<span class="fu">+</span>x&#39;,y<span class="fu">+</span>y&#39;)) (<span class="fl">0.0</span>,<span class="fl">0.0</span>) id) (take <span class="dv">100</span> xys)
-rw1d <span class="fu">=</span> zip [<span class="dv">0</span><span class="fu">..</span>] (L.scan (<span class="dt">L.Fold</span> (<span class="fu">+</span>) <span class="fl">0.0</span> id) (take <span class="dv">100</span> <span class="fu">$</span> xs))
 
-barData <span class="fu">=</span> unsafeInlineIO <span class="fu">$</span> <span class="kw">do</span>
-  ys <span class="ot">&lt;-</span> replicateM <span class="dv">10000</span> <span class="fu">$</span> R.runRVar R.stdNormal <span class="dt">R.StdRandom</span><span class="ot"> ::</span> <span class="dt">IO</span> [<span class="dt">Double</span>]
-  <span class="kw">let</span> (first,step,n) <span class="fu">=</span> mkTicks <span class="dt">True</span> ys <span class="dv">100</span>
+<span class="ot">xysHist ::</span> [(<span class="dt">Double</span>,<span class="dt">Double</span>)]
+xysHist <span class="fu">=</span> unsafeInlineIO <span class="fu">$</span> <span class="kw">do</span>
+  ys <span class="ot">&lt;-</span> replicateM <span class="dv">10000</span> <span class="fu">$</span> R.runRVar R.stdNormal <span class="dt">R.StdRandom</span><span class="ot"> ::</span> <span class="dt">IO</span> [<span class="dt">Double</span>]</code></pre></div>
+<p>This piece of code is taking a binned histogram of random one-dim data. cuts are the edges of the bins, and we reuse mkTicks without a hitch to regularize the buckets.</p>
+<p>The data out is a (X,Y) pair list, with mid-point of the bucket as X, and bucket count as Y.</p>
+<div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell">  <span class="kw">let</span> (first,step,n) <span class="fu">=</span> mkTicks <span class="dt">True</span> ys <span class="dv">100</span>
   <span class="kw">let</span> cuts <span class="fu">=</span> (\x <span class="ot">-&gt;</span> first<span class="fu">+</span>step<span class="fu">*</span>fromIntegral x) <span class="fu">&lt;$&gt;</span> [<span class="dv">0</span><span class="fu">..</span>n]
-  <span class="kw">let</span> mids <span class="fu">=</span> (<span class="fu">+</span>(step<span class="fu">/</span><span class="dv">2</span>)) <span class="fu">&lt;$&gt;</span> (drop (<span class="fu">-</span><span class="dv">1</span>) cuts)
-  <span class="kw">let</span> histMap <span class="fu">=</span> L.fold count <span class="fu">$</span> (\x <span class="ot">-&gt;</span> L.fold countBool (zipWith (<span class="fu">&gt;</span>) (repeat x) cuts)) <span class="fu">&lt;$&gt;</span> ys
+  <span class="kw">let</span> mids <span class="fu">=</span> (<span class="fu">+</span>(step<span class="fu">/</span><span class="dv">2</span>)) <span class="fu">&lt;$&gt;</span> cuts
+  <span class="kw">let</span> histMap <span class="fu">=</span> L.fold count <span class="fu">$</span> (\x <span class="ot">-&gt;</span> L.fold countBool (fmap (x <span class="fu">&gt;</span>) cuts)) <span class="fu">&lt;$&gt;</span> ys
   <span class="kw">let</span> histList <span class="fu">=</span> (\x <span class="ot">-&gt;</span> Map.findWithDefault <span class="dv">0</span> x histMap) <span class="fu">&lt;$&gt;</span> [<span class="dv">0</span><span class="fu">..</span>n]
-  return (zip mids (fromIntegral <span class="fu">&lt;$&gt;</span> histList))</code></pre></div>
-<p>Rendered on the XY plane into a scatter chart with no axes:</p>
+  return (zip mids (fromIntegral <span class="fu">&lt;$&gt;</span> histList))
+
+<span class="ot">count ::</span> <span class="dt">L.Fold</span> <span class="dt">Int</span> (<span class="dt">Map</span> <span class="dt">Int</span> <span class="dt">Int</span>)
+count <span class="fu">=</span> <span class="dt">L.Fold</span> step Map.empty id
+  <span class="kw">where</span>
+    step x a <span class="fu">=</span> Map.insertWith (<span class="fu">+</span>) a <span class="dv">1</span> x
+
+<span class="ot">countBool ::</span> <span class="dt">L.Fold</span> <span class="dt">Bool</span> <span class="dt">Int</span>
+countBool <span class="fu">=</span> <span class="dt">L.Fold</span> (\x a <span class="ot">-&gt;</span> x <span class="fu">+</span> <span class="kw">if</span> a <span class="kw">then</span> <span class="dv">1</span> <span class="kw">else</span> <span class="dv">0</span>) <span class="dv">0</span> id
+
+</code></pre></div>
+<p>the test data is rendered on the XY plane as dots: a scatter chart with no axes:</p>
 <div class="figure">
 <img src="other/dots.svg" />
 
@@ -103,24 +114,39 @@ barData <span class="fu">=</span> unsafeInlineIO <span class="fu">$</span> <span
 <img src="other/scatter.svg" />
 
 </div>
+<p>So this chart will look the same on a data scale change, except for tick magnitudes.</p>
 <h2 id="bar">bar</h2>
 <p>Each bar is a rectangle with height equal to y in (x,y) and placement equal to x in (x,y). x is often dropped and left to the rendering assuming equal intervals. x = [1..] works for instance</p>
 <div class="figure">
 <img src="other/bar.svg" />
 
 </div>
+<p>With axes, histograms are natural bar charts.</p>
+<div class="figure">
+<img src="other/hist.svg" />
+
+</div>
+<p>Note that we have a real x axis, not a label-centric one.</p>
+<h2 id="line">line</h2>
+<p>A 2D random walk:</p>
+<div class="figure">
+<img src="other/line.svg" />
+
+</div>
 <h2 id="main">main</h2>
 <div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell">
 <span class="ot">main ::</span> <span class="dt">IO</span> ()
-main <span class="fu">=</span> <span class="kw">do</span>
-  padq <span class="fu">$</span> barX def (snd <span class="fu">&lt;$&gt;</span> barData)
+main <span class="fu">=</span> <span class="kw">do</span></code></pre></div>
+<p>My workflow, especially when bug hunting, is to keep an intero session up and fine tune a diagram on the fly, mashing the refresh button on a browser.</p>
+<div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell">  padq <span class="fu">$</span>
+      unitSquare <span class="fu">#</span> moveOriginTo (p2 (<span class="fu">-</span><span class="fl">0.5</span>,<span class="fu">-</span><span class="fl">0.5</span>)) <span class="fu">#</span> scaleY (1e<span class="fu">-</span><span class="dv">8</span>) <span class="fu">#</span> showOrigin
   toFile <span class="st">&quot;other/dots.svg&quot;</span> (<span class="dv">100</span>,<span class="dv">100</span>) (scatter def xys)
-  toFile <span class="st">&quot;other/scatter.svg&quot;</span> (<span class="dv">100</span>,<span class="dv">100</span>) (scatterXY def xys)
+  toFile <span class="st">&quot;other/scatter.svg&quot;</span> (<span class="dv">200</span>,<span class="dv">200</span>) (scatterXY def xys)
   toFile <span class="st">&quot;other/bar.svg&quot;</span> (<span class="dv">200</span>,<span class="dv">200</span>) <span class="fu">$</span>
-    barXYLabelled def (take <span class="dv">10</span> <span class="fu">$</span> fst <span class="fu">&lt;$&gt;</span> xys) ((<span class="fu">:</span>[]) <span class="fu">&lt;$&gt;</span> [<span class="ch">&#39;a&#39;</span><span class="fu">..</span>])
+    barLabelled def (take <span class="dv">10</span> <span class="fu">$</span> fst <span class="fu">&lt;$&gt;</span> xys) (take <span class="dv">10</span> <span class="fu">$</span> (<span class="fu">:</span>[]) <span class="fu">&lt;$&gt;</span> [<span class="ch">&#39;a&#39;</span><span class="fu">..</span>])
   toFile <span class="st">&quot;other/hist.svg&quot;</span> (<span class="dv">200</span>,<span class="dv">200</span>) <span class="fu">$</span>
-    barX def (take <span class="dv">100</span> <span class="fu">$</span> fst <span class="fu">&lt;$&gt;</span> xys)
-  toFile <span class="st">&quot;other/line.svg&quot;</span> (<span class="dv">100</span>,<span class="dv">100</span>) (lineXY def rw2d)</code></pre></div>
+    barRange def xysHist
+  toFile <span class="st">&quot;other/line.svg&quot;</span> (<span class="dv">200</span>,<span class="dv">200</span>) (lineXY def rw2d)</code></pre></div>
 <h2 id="recipe">recipe</h2>
 <p>In constructing new <code>units</code>:</p>
 <ul class="incremental">
@@ -137,20 +163,6 @@ main <span class="fu">=</span> <span class="kw">do</span>
 <div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell"><span class="ot">padq ::</span> <span class="dt">QDiagram</span> <span class="dt">SVG</span> <span class="dt">V2</span> <span class="dt">Double</span> <span class="dt">Any</span> <span class="ot">-&gt;</span> <span class="dt">IO</span> ()
 padq t <span class="fu">=</span>
   toFile <span class="st">&quot;other/scratchpad.svg&quot;</span> (<span class="dv">400</span>,<span class="dv">400</span>) t</code></pre></div>
-<h2 id="histogram">Histogram</h2>
-<div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell">hist&#39; cuts xs <span class="fu">=</span> L.fold count <span class="fu">$</span> (\x <span class="ot">-&gt;</span> L.fold countBool (zipWith (<span class="fu">&gt;</span>) (repeat x) cuts)) <span class="fu">&lt;$&gt;</span> xs
-
-thist <span class="fu">=</span> hist&#39; (tickList&#39; <span class="dt">True</span> xs <span class="dv">6</span>) xs
-
-<span class="ot">count ::</span> <span class="dt">L.Fold</span> <span class="dt">Int</span> (<span class="dt">Map</span> <span class="dt">Int</span> <span class="dt">Int</span>)
-count <span class="fu">=</span> <span class="dt">L.Fold</span> step Map.empty id
-  <span class="kw">where</span>
-    step x a <span class="fu">=</span> Map.insertWith (<span class="fu">+</span>) a <span class="dv">1</span> x
-
-<span class="ot">countBool ::</span> <span class="dt">L.Fold</span> <span class="dt">Bool</span> <span class="dt">Int</span>
-countBool <span class="fu">=</span> <span class="dt">L.Fold</span> (\x a <span class="ot">-&gt;</span> x <span class="fu">+</span> <span class="kw">if</span> a <span class="kw">then</span> <span class="dv">1</span> <span class="kw">else</span> <span class="dv">0</span>) <span class="dv">0</span> id
-
-</code></pre></div>
 <h2 id="develop">develop</h2>
 <p><a href="https://travis-ci.org/tonyday567/chart-svg"><img src="https://travis-ci.org/tonyday567/chart-svg.png" alt="Build Status" /></a></p>
 <p>Build, run, render readme</p>

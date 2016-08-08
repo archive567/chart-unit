@@ -24,18 +24,19 @@ library
               -fforce-recomp
               
   build-depends:     base ==4.*
-                   , protolude
+                   , colour
+                   , containers
+                   , data-default
                    , diagrams
+                   , diagrams-core
                    , diagrams-lib
                    , diagrams-svg
-                   , diagrams-core
-                   , vector
-                   , colour
-                   , formatting
                    , foldl
+                   , formatting
+                   , lens
                    , primitive
+                   , protolude
                    , vector
-                   , containers
 
   default-language: Haskell2010
 
@@ -51,20 +52,20 @@ executable readme
   main-is:             readme.lhs
   build-depends:       base
                      , chart-svg
-                     , protolude
-                     , text
+                     , colour
+                     , containers
                      , diagrams
+                     , diagrams-core
                      , diagrams-lib
                      , diagrams-svg
-                     , diagrams-core
-                     , random-fu
-                     , vector
-                     , colour
-                     , formatting
                      , foldl
+                     , formatting
+                     , lens
                      , primitive
+                     , protolude
+                     , random-fu
+                     , text
                      , vector
-                     , containers
 
 source-repository head
   type:     git

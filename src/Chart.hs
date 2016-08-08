@@ -8,7 +8,26 @@
 {-# OPTIONS_GHC -fno-warn-unused-binds #-}
 {-# OPTIONS_GHC -fno-warn-type-defaults #-}
 
-module Chart where
+module Chart (
+    range1D,
+    unit,
+    unitXY,
+    chartXY,
+    scatter,
+    scatterXY,
+    barRange,
+    barLabelled,
+    bars,
+    line,
+    lineXY,
+    axisXY,
+    toFile,
+    mkTicks,
+    tickList,
+    module Chart.Types,
+    module Control.Lens,
+    module Data.Default
+) where
 
 import Protolude
 import GHC.Base (String)
@@ -17,8 +36,9 @@ import Diagrams.Prelude hiding (unit)
 import Diagrams.Backend.SVG
 import Formatting
 import qualified Control.Foldl as L
-
+import Control.Lens hiding (beside, none, (#))
 import Chart.Types
+import Data.Default (def)
 
 range1D :: (Fractional t, Ord t, Foldable f) => f t -> (t, t)
 range1D = L.fold (L.Fold step initial extract)
@@ -42,6 +62,8 @@ unit xs =
 
 unitXY :: (Fractional b, Fractional a, Ord b, Ord a) => [(a, b)] -> [(a, b)]
 unitXY xys = zip (unit $ fst <$> xys) (unit $ snd <$> xys)
+
+rect c = fcA c # lcA (withOpacity black 0) # lw none
 
 chartXY ::
   ChartConfig
@@ -69,9 +91,7 @@ scatter :: (Typeable (N r), Monoid r, Semigroup r, Transformable r,HasStyle r, H
 scatter cfg xys =
   atPoints (p2 <$> unitXY xys)
     (repeat $ circle (cfg ^. scatterSize) #
-     fcA (cfg ^. scatterChart ^. chartColor) #
-     lcA (withOpacity black 0) #
-     lw none
+     Chart.rect (cfg ^. scatterChart ^. chartColor)
     )
 
 scatterXY :: ScatterConfig -> [(Double,Double)] -> QDiagram SVG V2 Double Any
@@ -83,7 +103,7 @@ barRange :: BarConfig -> [(Double, Double)] -> QDiagram SVG V2 Double Any
 barRange cfg xys = chartXY (cfg ^. barChart) (\xys -> bars cfg (snd <$> xys)) xys
 
 barLabelled :: Real a => BarConfig -> [Double] -> [String] -> QDiagram SVG V2 Double Any
-barLabelled cfg ys labels= barRange
+barLabelled cfg ys labels = barRange
      ( barChart . chartAxes .~
        [ axisTickStyle .~
          TickLabels labels $ def
@@ -97,16 +117,13 @@ bars cfg ys =
   ((\y ->
     unitSquare
     # moveOriginTo (p2 (-0.5,-0.5))
-    # scaleY y) <$> ys)
-    # barStyle cfg
+    # if y==0 then scaleY epsilon else scaleY y) <$> ys)
+    # Chart.rect (cfg ^. barChart ^. chartColor)
     # centerXY
     # scaleX (1/fromIntegral (length ys)) # scaleY (1/(max-min))
   where
     (min,max) = range1D ys
-    barStyle cfg =
-      fcA (cfg ^. barChart ^. chartColor) #
-      lcA (withOpacity black 0) #
-      lw none
+    epsilon = 1e-8
 
 -- a line is just a scatter chart rendered with a line (and with a usually stable x-value series)
 line xys = strokeT $ trailFromVertices $ p2 <$> unitXY xys
@@ -121,11 +138,11 @@ axisXY cfg xs = centerXY $
     ((\x -> mkLabel x cfg) <$> tickLabels)
   `atop`
   (axisRect (cfg ^. axisHeight) (range1D $ unit xs)
-   # axisStyle (cfg ^. axisColor))
+   # Chart.rect (cfg ^. axisColor))
   where
     trans = case cfg ^. axisOrientation of
       X -> \x -> (x,0)
-      Y -> \y -> (-(cfg ^. axisVruleSize), y)
+      Y -> \y -> (-(cfg ^. axisMarkSize), y)
     tickLocations = case cfg ^. axisTickStyle of
       TickNone -> []
       TickNumber n -> unit $ tickList (range1D xs) n
@@ -137,7 +154,6 @@ axisXY cfg xs = centerXY $
     axisRect height (min, max) = case cfg ^. axisOrientation of
       X -> moveTo (p2 (max,0)) . strokeTrail . closeTrail . fromVertices . scaleX (max-min) . scaleY height $ unitSquare
       Y -> moveTo (p2 (0,min)) . strokeTrail . closeTrail . fromVertices . scaleY (max-min) . scaleX height $ unitSquare
-    axisStyle c = fcA c # lcA (withOpacity black 0) # lw none
 
 tickList :: (Double,Double) -> Int -> [Double]
 tickList (min,max) n = (first +) . (step *) . fromIntegral <$> [0..n']
@@ -152,22 +168,6 @@ tickList (min,max) n = (first +) . (step *) . fromIntegral <$> [0..n']
       | otherwise = step'
     first = step * fromIntegral (floor (min/step) + 1)
     last = fromIntegral (floor (max/step)) * step
-    n' = round ((last - first)/step)
-
-tickList' :: Bool -> [Double] -> Int -> [Double]
-tickList' outerTicks xs n = (first +) . (step *) . fromIntegral <$> [0..n']
-  where
-    (min, max) = range1D xs
-    span' = max - min
-    step' = 10 ^^ floor (logBase 10 (span'/fromIntegral n))
-    err = fromIntegral n / span' * step'
-    step
-      | err <= 0.15 = 10 * step'
-      | err <= 0.35 = 5 * step'
-      | err <= 0.75 = 2 * step'
-      | otherwise = step'
-    first = step * fromIntegral (floor (min/step) + if outerTicks then 0 else 1)
-    last = step * fromIntegral (floor (max/step) + if outerTicks then 1 else 0)
     n' = round ((last - first)/step)
 
 mkTickList :: Bool -> [Double] -> Int -> [Double]
@@ -194,11 +194,17 @@ mkTicks outerTicks xs n = (first,step,n')
 
 mkLabel :: String -> AxisConfig -> QDiagram SVG V2 Double Any
 mkLabel label cfg =
-  beside dir (beside dir (fcA (cfg ^. axisVruleColor) $
-                          rule (cfg ^. axisVruleSize)) gap)
-  ( Diagrams.Prelude.alignedText 0.5 1 label
-  # scale (cfg ^. axisTextSize)
-  # fcA (cfg ^. axisTextColor))
+  beside dir
+  (beside dir
+   (rule (cfg ^. axisMarkSize) #
+   lcA (cfg ^. axisMarkColor))
+    gap)
+  (Diagrams.Prelude.alignedText
+    (cfg ^. axisAlignedTextRight)
+    (cfg ^. axisAlignedTextBottom)
+    label #
+  scale (cfg ^. axisTextSize) #
+  fcA (cfg ^.axisTextColor))
   where
     dir = case cfg ^. axisOrientation of
       X -> r2 (0,-1)
@@ -211,9 +217,6 @@ mkLabel label cfg =
       Y -> strutX (cfg ^. axisStrutSize)
 
 -- helpers
-rgba :: (Floating a, Ord a) => (a, a, a, a) -> AlphaColour a
-rgba (r,g,b,a) = withOpacity (sRGB (r/255) (g/255) (b/255)) a
-
 hex :: (Floating b, Ord b) =>  String -> Colour b
 hex s = sRGB r b g
   where
