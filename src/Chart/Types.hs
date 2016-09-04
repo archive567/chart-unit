@@ -122,3 +122,26 @@ instance Default LineConfig where
   def = LineConfig (chartColor .~ rgba(59, 89, 152, 0.6) $ def) 0.001
 
 makeLenses ''LineConfig
+
+
+data OneLine = OneLine
+    { _lColor :: AlphaColour Double
+    , _lSize :: Double
+    }
+
+instance Default OneLine where
+  def = OneLine (rgba(59, 89, 152, 0.6)) 0.001
+
+makeLenses ''OneLine
+
+data LinesConfig = LinesConfig
+  { _linesChart :: ChartConfig
+  , _linesLines :: [OneLine]
+  }
+
+instance Default LinesConfig where
+  def = LinesConfig def [def]
+
+makeLenses ''LinesConfig
+
+

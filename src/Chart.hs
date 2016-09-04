@@ -51,6 +51,19 @@ range1D = L.fold (L.Fold step initial extract)
     initial = Nothing
     extract = fromMaybe (-0.5,0.5)
 
+range1Ds :: (Fractional t, Ord t, Foldable f, Foldable f') => f' (f t) -> (t, t)
+range1Ds xss = L.fold (L.Fold step initial extract) xss
+  where
+    step Nothing x = Just (range1D x)
+    step (Just (min,max)) x =
+      Just (min', max')
+      where
+        (min0, max0) = range1D x
+        min' = if min0 < min then min else min0
+        max' = if max0 > max then max0 else max
+    initial = Nothing
+    extract = fromMaybe (-0.5,0.5)
+
 {-
 unit scales and translates to a [-0.5,0.5] extent
 -}
@@ -60,8 +73,21 @@ unit xs =
   let (minX,maxX) = range1D xs in
   (\x -> (x-minX)/(maxX-minX) - 0.5) <$> xs
 
+units :: (Fractional b, Functor f, Ord b, Foldable f, Functor f', Foldable f') => f' (f b) -> f' (f b)
+units xss =
+  let (minX,maxX) = range1Ds xss in
+  (fmap (\x -> (x-minX)/(maxX-minX) - 0.5)) <$> xss
+
 unitXY :: (Fractional b, Fractional a, Ord b, Ord a) => [(a, b)] -> [(a, b)]
 unitXY xys = zip (unit $ fst <$> xys) (unit $ snd <$> xys)
+
+unitXYs :: (Fractional a, Ord a, Fractional b, Ord b) => [[(a, b)]] -> [[(a, b)]]
+unitXYs xyss = zipWith (\x y -> zip x y) xs' ys'
+    where
+      xs = fmap fst <$> xyss
+      ys = fmap snd <$> xyss
+      xs' = units xs
+      ys' = units ys
 
 rect c = fcA c # lcA (withOpacity black 0) # lw none
 
@@ -126,9 +152,23 @@ bars cfg ys =
     epsilon = 1e-8
 
 -- a line is just a scatter chart rendered with a line (and with a usually stable x-value series)
+line :: [(Double,Double)] -> QDiagram SVG V2 Double Any
 line xys = strokeT $ trailFromVertices $ p2 <$> unitXY xys
 
+lineXY :: LineConfig -> [(Double,Double)] -> QDiagram SVG V2 Double Any
 lineXY cfg xys = chartXY (cfg ^. lineChart) (\xys -> line xys # centerXY # lcA (cfg ^. lineChart ^. chartColor) # lwN (cfg ^. lineSize)) xys
+
+-- multiple lines with a common range for both x and y values
+lines :: [[(Double,Double)]] -> QDiagram SVG V2 Double Any
+lines xyss = mconcat $ (\xys -> (strokeT $ trailFromVertices $ p2 <$> xys)) <$> unitXYs xyss
+
+-- lineXYs :: LinesConfig -> [[(Double,Double)]] -> QDiagram SVG V2 Double Any
+lineXYs cfg xyss = mconcat $
+    zipWith
+    (\xys lcfg -> chartXY (cfg ^. linesChart) (\xys -> line xys # centerXY # lcA (lcfg ^. lColor) # lwN (lcfg ^. lSize)))
+    xyss
+    (cycle $ cfg ^. linesLines)
+
 
 -- axis rendering
 axisXY :: AxisConfig -> [Double] -> QDiagram SVG V2 Double Any
