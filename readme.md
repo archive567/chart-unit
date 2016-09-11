@@ -1,4 +1,4 @@
-<meta charset="utf-8"> <link rel="stylesheet" href="lhs.css">
+<meta charset="utf-8"> <link rel="stylesheet" href="other/lhs.css">
 
 [![Build
 Status](https://travis-ci.org/tonyday567/chart-svg.png)](https://travis-ci.org/tonyday567/chart-svg)

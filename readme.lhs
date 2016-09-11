@@ -1,5 +1,5 @@
 <meta charset="utf-8">
-<link rel="stylesheet" href="lhs.css">
+<link rel="stylesheet" href="other/lhs.css">
 
 [![Build Status](https://travis-ci.org/tonyday567/chart-svg.png)](https://travis-ci.org/tonyday567/chart-svg)
 
@@ -145,7 +145,7 @@ main
 >
 > main :: IO ()
 > main = do
-
+ 
 See develop section below for my workflow.
 
 >   padq $
