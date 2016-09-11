@@ -140,7 +140,12 @@ data LinesConfig = LinesConfig
   }
 
 instance Default LinesConfig where
-  def = LinesConfig def [def]
+  def = LinesConfig def [ OneLine (rgba(60,90,150,1)) 0.002
+                        , OneLine (rgba(0,128,255,1)) 0.002
+                        , OneLine (rgba(255,128,0,1)) 0.002
+                        , OneLine (rgba(128,0,255,1)) 0.002
+                        , OneLine (rgba(0,255,255,1)) 0.002
+                        ]
 
 makeLenses ''LinesConfig
 

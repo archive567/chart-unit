@@ -19,7 +19,9 @@ module Chart (
     barLabelled,
     bars,
     line,
+    lines,
     lineXY,
+    linesXY,
     axisXY,
     toFile,
     mkTicks,
@@ -159,16 +161,33 @@ lineXY :: LineConfig -> [(Double,Double)] -> QDiagram SVG V2 Double Any
 lineXY cfg xys = chartXY (cfg ^. lineChart) (\xys -> line xys # centerXY # lcA (cfg ^. lineChart ^. chartColor) # lwN (cfg ^. lineSize)) xys
 
 -- multiple lines with a common range for both x and y values
-lines :: [[(Double,Double)]] -> QDiagram SVG V2 Double Any
-lines xyss = mconcat $ (\xys -> (strokeT $ trailFromVertices $ p2 <$> xys)) <$> unitXYs xyss
+lines :: LinesConfig -> [[(Double,Double)]] -> QDiagram SVG V2 Double Any
+lines cfg xyss = mconcat $
+    zipWith (\d c -> d # centerXY # lcA (c ^. lColor) # lwN (c ^. lSize))
+    l
+    (cycle $ cfg ^.linesLines)
+  where
+    l = (\xys -> (strokeT $ trailFromVertices $ p2 <$> xys)) <$> unitXYs xyss
 
--- lineXYs :: LinesConfig -> [[(Double,Double)]] -> QDiagram SVG V2 Double Any
-lineXYs cfg xyss = mconcat $
-    zipWith
-    (\xys lcfg -> chartXY (cfg ^. linesChart) (\xys -> line xys # centerXY # lcA (lcfg ^. lColor) # lwN (lcfg ^. lSize)))
-    xyss
-    (cycle $ cfg ^. linesLines)
+linesXY ::
+  LinesConfig
+  -> [[(Double, Double)]]
+  -> QDiagram SVG V2 Double Any
+linesXY cfg@(LinesConfig (ChartConfig p _ axes) styles) xyss =
+  L.fold (L.Fold step (lines cfg xyss) (pad p)) axes
+  where
+    step x a =
+      beside (v (a ^. axisPlacement))
+      x
+      (axisXY a (d (a ^. axisOrientation)))
 
+    v AxisBottom = r2 (0,-1)
+    v AxisTop = r2 (0,1)
+    v AxisLeft = r2 (-1,0)
+    v AxisRight = r2 (1,0)
+
+    d X = mconcat $ fmap fst <$> xyss
+    d Y = mconcat $ fmap snd <$> xyss
 
 -- axis rendering
 axisXY :: AxisConfig -> [Double] -> QDiagram SVG V2 Double Any

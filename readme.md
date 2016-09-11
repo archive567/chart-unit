@@ -3,63 +3,56 @@
 [![Build
 Status](https://travis-ci.org/tonyday567/chart-svg.png)](https://travis-ci.org/tonyday567/chart-svg)
 
-chart-svg
----------
+Github refuses to render svg in a readme.md, so it all looks much better
+in served [html](http://tonyday567.github.io/chart-svg.html).
 
-Unless I abandon the svg monomorphism, github fails to render svg in a
-markdown format. It all looks much better in served
-[html](http://tonyday567.github.io/chart-svg.html).
+chart-svg
+=========
 
 scratchpad
+----------
 
-![](other/scratchpad.png)
+![](other/scratchpad.svg)
 
-My last bugfix. `scaleY 0` silently failed and needed to shove a small
-number in.
+`padq $ unitSquare # moveOriginTo (p2 (-0.5,-0.5)) # scaleY (1e-8) # showOrigin`
 
-unitSquare \# moveOriginTo (p2 (-0.5,-0.5)) \# scaleY (1e-8) \#
-showOrigin
+My last bugfix. `scaleY 0` was silently failing.
 
-`todo:` QuickCheck for these corner cases.
+Welcome to chart-svg.
 
-Currently implemented charts:
+This slowly growing collection of svg charts:
 
-Scatter Chart
+-   render nicely over a wide chart size range
+-   render similarly at different scale
+-   are opinionated minimalism
+-   are unit shapes in the spirit of the
+    [diagrams](http://projects.haskell.org/diagrams/doc/quickstart.html)
+    design space.
+-   can be quickly integrated into ad-hoc haskell data analytics,
+    providing a visual feedback loop.
 
-![](other/scatter.png)
+charts
+------
+
+Scatter
+
+![](other/scatter.svg)
 
 Histogram
 
-![](other/hist.png)
+![](other/hist.svg)
 
-Line Chart
+Line
 
-![](other/line.png)
+![](other/line.svg)
+
+Lines
+
+![](other/lines.svg)
 
 Labelled Bar Chart
 
-![](other/bar.png)
-
-To be implemented:
-
--   one-dimensional chart aka an axis
--   variable-width bar chart (rectangle chart)
--   area chart
-
-Purpose
--------
-
-The aim is a series of charts that
-
--   utilise svg technology
--   render robustly over a wide chart size range
--   render automatically over different data magnitude scales
--   are minimalist
--   have the same vector space as the unit shapes in
-    [diagrams](http://projects.haskell.org/diagrams/haddock/index.html)
-
-The other purpose is to showcase the current precision tool kits that
-haskell has to offer the visual data nerd.
+![](other/bar.svg)
 
 ``` {.sourceCode .literate .haskell}
 
@@ -71,125 +64,98 @@ haskell has to offer the visual data nerd.
 {-# LANGUAGE GADTs #-}
 {-# OPTIONS_GHC -fno-warn-name-shadowing #-}
 {-# OPTIONS_GHC -fno-warn-missing-signatures #-}
-```
-
-``` {.sourceCode .literate .haskell}
 
 import Protolude
 import Control.Category (id)
-```
-
-Forgive the IO hiding but I tend to do a lot of one-line experiments in
-intero, and this hides the state well for that.
-
-``` {.sourceCode .literate .haskell}
 import Control.Monad.Primitive (unsafeInlineIO)
 import Diagrams.Prelude hiding ((<>))
 import Diagrams.Backend.SVG (SVG)
-```
-
-helper libraries
-----------------
-
-``` {.sourceCode .literate .haskell}
 import qualified Control.Foldl as L
 import qualified Data.Random as R
 import qualified Data.Map.Strict as Map
-```
 
-Chart library
--------------
-
-``` {.sourceCode .literate .haskell}
 import Chart
 ```
 
 some test data
 --------------
 
-xys is a list of X,Y pairs, that happen to be correlated normal random
-variates.
+Standard normal random variates. Called ys to distinguish from the
+horizontal axis of the chart (xs) which are often implicitly \[0..\]
 
 ``` {.sourceCode .literate .haskell}
-rXYs :: Int -> Double -> IO [(Double,Double)]
-rXYs n c = do
+ys :: Int -> IO [Double]
+ys n =
+  replicateM n $ R.runRVar R.stdNormal R.StdRandom
+```
+
+A bunch of ys, accumulated.
+
+``` {.sourceCode .literate .haskell}
+yss :: (Int, Int) -> [[Double]]
+yss (n,m) = unsafeInlineIO $ do
+  yss' <- replicateM m $ ys n
+  pure $ (drop 1 . L.scan L.sum) <$> yss'
+```
+
+xys is a list of X,Y pairs, correlated normal random variates to add
+some shape to chart examples.
+
+``` {.sourceCode .literate .haskell}
+rXYs :: Int -> Double -> [(Double,Double)]
+rXYs n c = unsafeInlineIO $ do
   s0 <- replicateM n $ R.runRVar R.stdNormal R.StdRandom
   s1 <- replicateM n $ R.runRVar R.stdNormal R.StdRandom
   let s1' = zipWith (\x y -> c * x + sqrt (1 - c * c) * y) s0 s1
   pure $ zip s0 s1'
 
-xys = unsafeInlineIO $
-  fmap (\(x,y) -> (x,y)) <$> rXYs 1000 0.8
-
-rw2d = L.scan (L.Fold (\(x,y) (x',y') -> (x+x',y+y')) (0.0,0.0) id) (take 100 xys)
-
-xysHist :: [(Double,Double)]
-xysHist = unsafeInlineIO $ do
-  ys <- replicateM 10000 $ R.runRVar R.stdNormal R.StdRandom :: IO [Double]
+xys = rXYs 1000 0.8
 ```
 
-This piece of code is taking a binned histogram of random one-dim data.
-cuts are the edges of the bins, and we reuse mkTicks without a hitch to
-regularize the buckets.
+XY random walk
+
+``` {.sourceCode .literate .haskell}
+rwxy = L.scan (L.Fold (\(x,y) (x',y') -> (x+x',y+y')) (0.0,0.0) id) (take 100 xys)
+```
+
+xysHist is a histogram of 10000 one-dim random normals.
+
+cuts are the edges between the bins, and we reuse mkTicks without a
+hitch to regularize the buckets.
 
 The data out is a (X,Y) pair list, with mid-point of the bucket as X,
 and bucket count as Y.
 
 ``` {.sourceCode .literate .haskell}
+xysHist :: [(Double,Double)]
+xysHist = unsafeInlineIO $ do
+  ys <- replicateM 10000 $ R.runRVar R.stdNormal R.StdRandom :: IO [Double]
   let (first,step,n) = mkTicks True ys 100
   let cuts = (\x -> first+step*fromIntegral x) <$> [0..n]
   let mids = (+(step/2)) <$> cuts
+  let count = L.Fold (\x a -> Map.insertWith (+) a 1 x) Map.empty id
+  let countBool = L.Fold (\x a -> x + if a then 1 else 0) 0 id
   let histMap = L.fold count $ (\x -> L.fold countBool (fmap (x >) cuts)) <$> ys
   let histList = (\x -> Map.findWithDefault 0 x histMap) <$> [0..n]
   return (zip mids (fromIntegral <$> histList))
-
-count :: L.Fold Int (Map Int Int)
-count = L.Fold step Map.empty id
-  where
-    step x a = Map.insertWith (+) a 1 x
-
-countBool :: L.Fold Bool Int
-countBool = L.Fold (\x a -> x + if a then 1 else 0) 0 id
-
-
 ```
 
-the test data is rendered on the XY plane as dots: a scatter chart with
-no axes:
+Scale Robustness
+----------------
 
-![](other/dots.png)
+xys rendered on the XY plane as dots - a scatter chart with no axes - is
+invariant to scale. The data could be multiplied by any scalar, and look
+exactly the same.
 
-Axes break the scale invariance of the above chart (the diagram will
-look exactly the same at any data scale change). But ticks and tick
-labels can hide this info leakage so that scale invariance continues to
-hold.
+![](other/dots.svg)
 
-![](other/scatter.png)
+Axes break this scale invariance. Ticks and tick labels can hide this to
+some extent and look almost the same across scales.
 
-So this chart will look the same on a data scale change, except for tick
+![](other/scatter.svg)
+
+This chart will look the same on a data scale change, except for tick
 magnitudes.
-
-bar
----
-
-Each bar is a rectangle with height equal to y in (x,y) and placement
-equal to x in (x,y). x is often dropped and left to the rendering
-assuming equal intervals. x = \[1..\] works for instance
-
-![](other/bar.png)
-
-With axes, histograms are natural bar charts.
-
-![](other/hist.png)
-
-Note that we have a real x axis, not a label-centric one.
-
-line
-----
-
-A 2D random walk:
-
-![](other/line.png)
 
 main
 ----
@@ -200,24 +166,23 @@ main :: IO ()
 main = do
 ```
 
-My workflow, especially when bug hunting, is to keep an intero session
-up and fine tune a diagram on the fly, mashing the refresh button on a
-browser.
+See develop section below for my workflow.
 
 ``` {.sourceCode .literate .haskell}
   padq $
       unitSquare # moveOriginTo (p2 (-0.5,-0.5)) # scaleY (1e-8) # showOrigin
+  toFile "other/line.svg" (200,200) (lineXY def rwxy)
+  toFile "other/lines.svg" (200,200) (linesXY def $ zip [0..] <$> yss (40, 5))
   toFile "other/dots.svg" (100,100) (scatter def xys)
   toFile "other/scatter.svg" (200,200) (scatterXY def xys)
   toFile "other/bar.svg" (200,200) $
-    barLabelled def (take 10 $ fst <$> xys) (take 10 $ (:[]) <$> ['a'..])
+    barLabelled def (unsafeInlineIO $ ys 10) (take 10 $ (:[]) <$> ['a'..])
   toFile "other/hist.svg" (200,200) $
     barRange def xysHist
-  toFile "other/line.svg" (200,200) (lineXY def rw2d)
 ```
 
-recipe
-------
+diagrams development recipe
+---------------------------
 
 In constructing new `units`:
 
@@ -225,7 +190,7 @@ In constructing new `units`:
 -   start with the unitSquare: 4 points, 1x1, origin in the center
 -   work out where the origin should be, given the scaling needed.
 -   turn the pointful shape into a Trail
--   close the Trail into a PNG-like loop
+-   close the Trail into a SVG-like loop
 -   turn the Trail into a QDiagram
 
 You can slide up and down the various diagrams abstraction levels
@@ -248,13 +213,22 @@ padq t =
 develop
 -------
 
-[![Build
-Status](https://travis-ci.org/tonyday567/chart-png.png)](https://travis-ci.org/tonyday567/chart-png)
+Hacking
+
+    pandoc -f markdown+lhs -t html -i readme.lhs -o readme.html
+
+Then fire up an intero session, and use padq to display coding results
+on-the-fly, mashing the refresh button on a browser pointed to
+readme.html.
 
 Build, run, render readme
+
+todo: switch to stack watch
 
     filewatcher '**/*.{lhs,hs,cabal}' 'stack install && readme && pandoc -f markdown+lhs -t html -i readme.lhs -o readme.html && echo "run"'
 
 Publish
+
+todo: svg2png and change readme.md links to reflect.
 
     pandoc -f markdown+lhs -t html -i readme.lhs -o ~/git/tonyday567.github.io/other/chart-svg.html && cp other/* ~/git/tonyday567.github.io/other && pandoc -f markdown+lhs -t markdown -i readme.lhs -o readme.md
