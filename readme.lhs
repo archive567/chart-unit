@@ -1,6 +1,8 @@
 <meta charset="utf-8">
 <link rel="stylesheet" href="other/lhs.css">
- 
+
+[![repo](other/GitHub-Mark-32px.png)](https://github.com/tonyday567/chart-svg)
+
 [![Build Status](https://travis-ci.org/tonyday567/chart-svg.png)](https://travis-ci.org/tonyday567/chart-svg)
 
 Github refuses to render svg in a readme.md, so it all looks much better in served [html](http://tonyday567.github.io/chart-svg.html).
