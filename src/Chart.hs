@@ -10,8 +10,11 @@
 
 module Chart (
     range1D,
+    range1Ds,
     unit,
+    units,
     unitXY,
+    unitsXY,
     chartXY,
     scatter,
     scatterXY,
@@ -25,7 +28,7 @@ module Chart (
     axisXY,
     toFile,
     mkTicks,
-    tickList,
+    mkTicks',
     module Chart.Types,
     module Control.Lens,
     module Data.Default
@@ -34,7 +37,7 @@ module Chart (
 import Protolude
 import GHC.Base (String)
 import System.IO (FilePath)
-import Diagrams.Prelude hiding (unit)
+import Diagrams.Prelude hiding (unit) 
 import Diagrams.Backend.SVG
 import Formatting
 import qualified Control.Foldl as L
@@ -48,8 +51,8 @@ range1D = L.fold (L.Fold step initial extract)
     step Nothing x = Just (x,x)
     step (Just (min,max)) x =
       Just (min' x min, max' x max)
-    max' x1 x2 = if x1 >= x2 then x1 else x2
-    min' x1 x2 = if x1 <= x2 then x1 else x2
+    max' x1 x2 = if x1 > x2 then x1 else x2
+    min' x1 x2 = if x1 < x2 then x1 else x2
     initial = Nothing
     extract = fromMaybe (-0.5,0.5)
 
@@ -57,41 +60,41 @@ range1Ds :: (Fractional t, Ord t, Foldable f, Foldable f') => f' (f t) -> (t, t)
 range1Ds xss = L.fold (L.Fold step initial extract) xss
   where
     step Nothing x = Just (range1D x)
-    step (Just (min,max)) x =
+    step (Just (min, max)) x =
       Just (min', max')
       where
-        (min0, max0) = range1D x
-        min' = if min0 < min then min else min0
-        max' = if max0 > max then max0 else max
+        (min'', max'') = range1D x
+        min' = if min'' < min then min'' else min
+        max' = if max'' > max then max'' else max
     initial = Nothing
     extract = fromMaybe (-0.5,0.5)
 
-{-
-unit scales and translates to a [-0.5,0.5] extent
--}
-
+-- unit scales and translates to a [-0.5,0.5] range
 unit :: (Fractional b, Functor f, Ord b, Foldable f) => f b -> f b
 unit xs =
   let (minX,maxX) = range1D xs in
   (\x -> (x-minX)/(maxX-minX) - 0.5) <$> xs
 
+-- units scales multiple xs to a common range
 units :: (Fractional b, Functor f, Ord b, Foldable f, Functor f', Foldable f') => f' (f b) -> f' (f b)
 units xss =
   let (minX,maxX) = range1Ds xss in
   (fmap (\x -> (x-minX)/(maxX-minX) - 0.5)) <$> xss
 
+-- scale 2d points (XY) to ((-0.5,-0.5), (0.5,0.5))
 unitXY :: (Fractional b, Fractional a, Ord b, Ord a) => [(a, b)] -> [(a, b)]
 unitXY xys = zip (unit $ fst <$> xys) (unit $ snd <$> xys)
 
-unitXYs :: (Fractional a, Ord a, Fractional b, Ord b) => [[(a, b)]] -> [[(a, b)]]
-unitXYs xyss = zipWith (\x y -> zip x y) xs' ys'
+-- scale multiple 2d series
+unitsXY :: (Fractional a, Ord a, Fractional b, Ord b) => [[(a, b)]] -> [[(a, b)]]
+unitsXY xyss = zipWith (\x y -> zip x y) xs' ys'
     where
       xs = fmap fst <$> xyss
       ys = fmap snd <$> xyss
       xs' = units xs
       ys' = units ys
 
-rect c = fcA c # lcA (withOpacity black 0) # lw none
+unitRect c = fcA c # lcA (withOpacity black 0) # lw none
 
 chartXY ::
   ChartConfig
@@ -111,15 +114,41 @@ chartXY (ChartConfig p _ axes) chart xys =
     v AxisLeft = r2 (-1,0)
     v AxisRight = r2 (1,0)
 
-    d X = fst <$> xys
-    d Y = snd <$> xys
+    d X = range1D $ fst <$> xys
+    d Y = range1D $ snd <$> xys
+
+-- axis rendering
+axisXY :: AxisConfig -> (Double,Double) -> QDiagram SVG V2 Double Any
+axisXY cfg range = centerXY $
+  atPoints
+    (p2 . trans <$> tickLocations)
+    ((\x -> mkLabel x cfg) <$> tickLabels)
+  `atop`
+  (axisRect (cfg ^. axisHeight) (-0.5,0.5)
+   # unitRect (cfg ^. axisColor))
+  where
+    trans = case cfg ^. axisOrientation of
+      X -> \x -> (x,0)
+      Y -> \y -> (-(cfg ^. axisMarkSize), y)
+    tickLocations = case cfg ^. axisTickStyle of
+      TickNone -> []
+      TickNumber n -> unit $ mkTicks range n
+      TickLabels ls -> unit $ fromIntegral <$> [1..length ls]
+    tickLabels = case cfg ^. axisTickStyle of
+      TickNone -> []
+      TickNumber n -> formatToString (prec 2) <$> mkTicks range n
+      TickLabels ls -> ls
+    axisRect height (min, max) = case cfg ^. axisOrientation of
+      X -> moveTo (p2 (max,0)) . strokeTrail . closeTrail . fromVertices . scaleX (max-min) . scaleY height $ unitSquare
+      Y -> moveTo (p2 (0,min)) . strokeTrail . closeTrail . fromVertices . scaleY (max-min) . scaleX height $ unitSquare
+
 
 -- polymorphic dots
 scatter :: (Typeable (N r), Monoid r, Semigroup r, Transformable r,HasStyle r, HasOrigin r, TrailLike r, V r ~ V2, N r ~ Double) => ScatterConfig -> [(N r, N r)] -> r
 scatter cfg xys =
   atPoints (p2 <$> unitXY xys)
     (repeat $ circle (cfg ^. scatterSize) #
-     Chart.rect (cfg ^. scatterChart ^. chartColor)
+     unitRect (cfg ^. scatterChart ^. chartColor)
     )
 
 scatterXY :: ScatterConfig -> [(Double,Double)] -> QDiagram SVG V2 Double Any
@@ -146,7 +175,7 @@ bars cfg ys =
     unitSquare
     # moveOriginTo (p2 (-0.5,-0.5))
     # if y==0 then scaleY epsilon else scaleY y) <$> ys)
-    # Chart.rect (cfg ^. barChart ^. chartColor)
+    # unitRect (cfg ^. barChart ^. chartColor)
     # centerXY
     # scaleX (1/fromIntegral (length ys)) # scaleY (1/(max-min))
   where
@@ -162,12 +191,12 @@ lineXY cfg xys = chartXY (cfg ^. lineChart) (\xys -> line xys # centerXY # lcA (
 
 -- multiple lines with a common range for both x and y values
 lines :: LinesConfig -> [[(Double,Double)]] -> QDiagram SVG V2 Double Any
-lines cfg xyss = mconcat $
-    zipWith (\d c -> d # centerXY # lcA (c ^. lColor) # lwN (c ^. lSize))
-    l
+lines cfg xyss = centerXY $ mconcat $
+    zipWith (\d c -> d # lcA (c ^. lColor) # lwN (c ^. lSize))
+    (l xyss)
     (cycle $ cfg ^.linesLines)
   where
-    l = (\xys -> (strokeT $ trailFromVertices $ p2 <$> xys)) <$> unitXYs xyss
+    l xyss' = strokeT . trailFromVertices . fmap p2 <$> unitsXY xyss'
 
 linesXY ::
   LinesConfig
@@ -186,36 +215,12 @@ linesXY cfg@(LinesConfig (ChartConfig p _ axes) styles) xyss =
     v AxisLeft = r2 (-1,0)
     v AxisRight = r2 (1,0)
 
-    d X = mconcat $ fmap fst <$> xyss
-    d Y = mconcat $ fmap snd <$> xyss
+    d X = range1Ds $ fmap fst <$> xyss
+    d Y = range1Ds $ fmap snd <$> xyss
 
--- axis rendering
-axisXY :: AxisConfig -> [Double] -> QDiagram SVG V2 Double Any
-axisXY cfg xs = centerXY $
-  atPoints
-    (p2 . trans <$> tickLocations)
-    ((\x -> mkLabel x cfg) <$> tickLabels)
-  `atop`
-  (axisRect (cfg ^. axisHeight) (range1D $ unit xs)
-   # Chart.rect (cfg ^. axisColor))
-  where
-    trans = case cfg ^. axisOrientation of
-      X -> \x -> (x,0)
-      Y -> \y -> (-(cfg ^. axisMarkSize), y)
-    tickLocations = case cfg ^. axisTickStyle of
-      TickNone -> []
-      TickNumber n -> unit $ tickList (range1D xs) n
-      TickLabels ls -> unit $ fromIntegral <$> [1..length ls]
-    tickLabels = case cfg ^. axisTickStyle of
-      TickNone -> []
-      TickNumber n -> formatToString (prec 2) <$> tickList (range1D xs) n
-      TickLabels ls -> ls
-    axisRect height (min, max) = case cfg ^. axisOrientation of
-      X -> moveTo (p2 (max,0)) . strokeTrail . closeTrail . fromVertices . scaleX (max-min) . scaleY height $ unitSquare
-      Y -> moveTo (p2 (0,min)) . strokeTrail . closeTrail . fromVertices . scaleY (max-min) . scaleX height $ unitSquare
 
-tickList :: (Double,Double) -> Int -> [Double]
-tickList (min,max) n = (first +) . (step *) . fromIntegral <$> [0..n']
+mkTicks :: (Double,Double) -> Int -> [Double]
+mkTicks (min, max) n = (first +) . (step *) . fromIntegral <$> [0..n']
   where
     span' = max - min
     step' = 10 ^^ floor (logBase 10 (span'/fromIntegral n))
@@ -225,19 +230,14 @@ tickList (min,max) n = (first +) . (step *) . fromIntegral <$> [0..n']
       | err <= 0.35 = 5 * step'
       | err <= 0.75 = 2 * step'
       | otherwise = step'
-    first = step * fromIntegral (floor (min/step) + 1)
-    last = fromIntegral (floor (max/step)) * step
+    epsilon = 1e-8
+    first = step * fromIntegral (floor (min/step))
+    last = step * fromIntegral (floor (max/step))
     n' = round ((last - first)/step)
 
-mkTickList :: Bool -> [Double] -> Int -> [Double]
-mkTickList outerTicks xs n = (first +) . (step *) . fromIntegral <$> [0..n']
+mkTicks' :: (Double,Double) -> Int -> (Double, Double, Int)
+mkTicks' (min, max) n = (first, step', n')
   where
-    (first,step,n') = mkTicks outerTicks xs n
-
-mkTicks :: Bool -> [Double] -> Int -> (Double,Double,Int)
-mkTicks outerTicks xs n = (first,step,n')
-  where
-    (min, max) = range1D xs
     span' = max - min
     step' = 10 ^^ floor (logBase 10 (span'/fromIntegral n))
     err = fromIntegral n / span' * step'
@@ -246,9 +246,12 @@ mkTicks outerTicks xs n = (first,step,n')
       | err <= 0.35 = 5 * step'
       | err <= 0.75 = 2 * step'
       | otherwise = step'
-    first = step * fromIntegral (floor (min/step) + if outerTicks then 0 else 1)
-    last = step * fromIntegral (floor (max/step) + if outerTicks then 1 else 0)
+    epsilon = 1e-8
+    first = step * fromIntegral (floor (min/step))
+    last = step * fromIntegral (floor (max/step))
     n' = round ((last - first)/step)
+
+
 
 
 mkLabel :: String -> AxisConfig -> QDiagram SVG V2 Double Any

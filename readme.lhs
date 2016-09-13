@@ -1,6 +1,6 @@
 <meta charset="utf-8">
 <link rel="stylesheet" href="other/lhs.css">
-
+ 
 [![Build Status](https://travis-ci.org/tonyday567/chart-svg.png)](https://travis-ci.org/tonyday567/chart-svg)
 
 Github refuses to render svg in a readme.md, so it all looks much better in served [html](http://tonyday567.github.io/chart-svg.html).
@@ -11,14 +11,13 @@ chart-svg
 scratchpad
 ---
 
+My newest chart `padq $ linesXY def [[(0,0),(1,1)],[(0,0),(1,2)]]`
+
 ![](other/scratchpad.svg)
 
-`padq $ unitSquare # moveOriginTo (p2 (-0.5,-0.5)) # scaleY (1e-8) # showOrigin`
 
-
-My last bugfix.  `scaleY 0` was silently failing.
-
-Welcome to chart-svg.
+chart-svg
+---
 
 This slowly growing collection of svg charts:
 
@@ -109,14 +108,12 @@ XY random walk
 
 xysHist is a histogram of 10000 one-dim random normals.
 
-cuts are the edges between the bins, and we reuse mkTicks without a hitch to regularize the buckets.
-
 The data out is a (X,Y) pair list, with mid-point of the bucket as X, and bucket count as Y.
 
 > xysHist :: [(Double,Double)]
 > xysHist = unsafeInlineIO $ do
 >   ys <- replicateM 10000 $ R.runRVar R.stdNormal R.StdRandom :: IO [Double]
->   let (first,step,n) = mkTicks True ys 100
+>   let (first,step,n) = mkTicks' (range1D ys) 100
 >   let cuts = (\x -> first+step*fromIntegral x) <$> [0..n]
 >   let mids = (+(step/2)) <$> cuts
 >   let count = L.Fold (\x a -> Map.insertWith (+) a 1 x) Map.empty id
@@ -149,9 +146,9 @@ main
 See develop section below for my workflow.
 
 >   padq $
->       unitSquare # moveOriginTo (p2 (-0.5,-0.5)) # scaleY (1e-8) # showOrigin
+>       linesXY def [[(0,0),(1,1)],[(0,0),(1,2)]]
 >   toFile "other/line.svg" (200,200) (lineXY def rwxy)
->   toFile "other/lines.svg" (200,200) (linesXY def $ zip [0..] <$> yss (40, 5))
+>   toFile "other/lines.svg" (200,200) (linesXY def $ zip [0..] <$> yss (1000, 10))
 >   toFile "other/dots.svg" (100,100) (scatter def xys)
 >   toFile "other/scatter.svg" (200,200) (scatterXY def xys)
 >   toFile "other/bar.svg" (200,200) $
