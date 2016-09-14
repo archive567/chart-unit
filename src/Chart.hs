@@ -39,11 +39,11 @@ import GHC.Base (String)
 import System.IO (FilePath)
 import Diagrams.Prelude hiding (unit) 
 import Diagrams.Backend.SVG
-import Formatting
 import qualified Control.Foldl as L
 import Control.Lens hiding (beside, none, (#))
 import Chart.Types
 import Data.Default (def)
+import Text.Printf
 
 range1D :: (Fractional t, Ord t, Foldable f) => f t -> (t, t)
 range1D = L.fold (L.Fold step initial extract)
@@ -136,7 +136,7 @@ axisXY cfg range = centerXY $
       TickLabels ls -> unit $ fromIntegral <$> [1..length ls]
     tickLabels = case cfg ^. axisTickStyle of
       TickNone -> []
-      TickNumber n -> formatToString (prec 2) <$> mkTicks range n
+      TickNumber n -> printf "%7.1g" <$> mkTicks range n
       TickLabels ls -> ls
     axisRect height (min, max) = case cfg ^. axisOrientation of
       X -> moveTo (p2 (max,0)) . strokeTrail . closeTrail . fromVertices . scaleX (max-min) . scaleY height $ unitSquare

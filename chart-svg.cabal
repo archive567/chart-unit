@@ -32,7 +32,6 @@ library
                    , diagrams-lib
                    , diagrams-svg
                    , foldl
-                   , formatting
                    , lens
                    , primitive
                    , protolude
@@ -59,13 +58,12 @@ executable readme
                      , diagrams-lib
                      , diagrams-svg
                      , foldl
-                     , formatting
                      , lens
                      , primitive
                      , protolude
-                     , random-fu
                      , text
                      , vector
+                     , random-fu
 
 source-repository head
   type:     git

@@ -22,7 +22,6 @@ import Diagrams.Prelude
 import Diagrams.Backend.SVG
 -- import Diagrams.Backend.Cairo
 import Diagrams.Core.Envelope
-import Formatting
 import GHC.Base (String)
 import qualified Control.Foldl as L
 import qualified Data.Vector.Unboxed as V
