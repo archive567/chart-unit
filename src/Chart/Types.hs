@@ -7,10 +7,6 @@ module Chart.Types where
 import Protolude
 import Diagrams.Prelude
 -- import Data.Default
-import Diagrams.Backend.SVG (SVG)
-import GHC.Base (String)
-
-type ChartSvg a = QDiagram SVG V2 a Any
 
 rgba :: (Floating a, Ord a) => (a, a, a, a) -> AlphaColour a
 rgba (r,g,b,a) = withOpacity (sRGB (r/255) (g/255) (b/255)) a
@@ -19,7 +15,7 @@ data Orientation = X | Y
 
 data Placement = AxisLeft | AxisRight | AxisTop | AxisBottom
 
-data TickStyle = TickNone | TickLabels [String] | TickNumber Int
+data TickStyle = TickNone | TickLabels [Text] | TickNumber Int
 
 data AxisConfig = AxisConfig
   { _axisOrientation :: Orientation

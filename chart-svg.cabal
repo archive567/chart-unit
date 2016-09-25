@@ -45,7 +45,8 @@ library
     foldl,
     lens,
     primitive,
-    protolude
+    protolude,
+    text
   default-language:
     Haskell2010
   default-extensions:
@@ -108,12 +109,14 @@ executable readme
     diagrams,
     diagrams-core,
     diagrams-lib,
+    diagrams-rasterific,
     diagrams-svg,
     foldl,
     lens,
     primitive,
     protolude,
-    random-fu
+    random-fu,
+    text
   default-extensions:
     NoImplicitPrelude,
     UnicodeSyntax,

@@ -7,6 +7,31 @@ chart-svg [![repo](https://a248.e.akamai.net/assets.github.com/images/icons/emoj
 
 Github refuses to render svg in a readme.md, so it all looks much better in served [html](http://tonyday567.github.io/chart-svg.html).
 
+rasterific renders
+---
+
+![](other/scratchpad.png)
+
+Scatter
+
+![](other/scatter.png)
+
+Histogram
+
+![](other/hist.png)
+
+Line
+
+![](other/line.png)
+
+Lines
+
+![](other/lines.png)
+
+Labelled Bar Chart
+
+![](other/bar.png)
+
 chart-svg
 ===
 
@@ -58,10 +83,12 @@ Labelled Bar Chart
 > import Protolude
 > import Control.Monad.Primitive (unsafeInlineIO)
 > import Diagrams.Prelude hiding ((<>))
-> import Diagrams.Backend.SVG (SVG)
+> import Diagrams.Backend.SVG (SVG, renderSVG)
+> import Diagrams.Backend.Rasterific (Rasterific, renderRasterific)
 > import qualified Control.Foldl as L
 > import qualified Data.Random as R
 > import qualified Data.Map.Strict as Map
+> import qualified Data.Text as Text
 >
 > import Chart
 
@@ -139,15 +166,31 @@ main
  
 See develop section below for my workflow.
 
->   padq $
+>   pads $
 >       linesXY def [[(0,0),(1,1)],[(0,0),(1,2)]]
->   toFile "other/line.svg" (200,200) (lineXY def rwxy)
->   toFile "other/lines.svg" (200,200) (linesXY def $ zip [0..] <$> yss (1000, 10))
->   toFile "other/dots.svg" (100,100) (scatter def xys)
->   toFile "other/scatter.svg" (200,200) (scatterXY def xys)
->   toFile "other/bar.svg" (200,200) $
->     barLabelled def (unsafeInlineIO $ ys 10) (take 10 $ (:[]) <$> ['a'..])
->   toFile "other/hist.svg" (200,200) $
+>   renderSVG "other/line.svg" (mkSizeSpec (Just <$> r2 (200,200)))
+>     (lineXY def rwxy)
+>   renderRasterific "other/line.png" (mkSizeSpec (Just <$> r2 (200,200)))
+>     (lineXY def rwxy)
+>   renderSVG "other/lines.svg" (mkSizeSpec (Just <$> r2 (200,200)))
+>     (linesXY def $ zip [0..] <$> yss (1000, 10))
+>   renderRasterific "other/lines.png" (mkSizeSpec (Just <$> r2 (200,200)))
+>     (linesXY def $ zip [0..] <$> yss (1000, 10))
+>   renderSVG "other/dots.svg" (mkSizeSpec (Just <$> r2 (200,200)))
+>     (scatter def xys)
+>   renderRasterific "other/dots.png" (mkSizeSpec (Just <$> r2 (200,200)))
+>     (scatter def xys)
+>   renderSVG "other/scatter.svg" (mkSizeSpec (Just <$> r2 (200,200)))
+>     (scatterXY def xys)
+>   renderRasterific "other/scatter.png" (mkSizeSpec (Just <$> r2 (200,200)))
+>     (scatterXY def xys)
+>   renderSVG "other/bar.svg" (mkSizeSpec (Just <$> r2 (200,200))) $
+>     barLabelled def (unsafeInlineIO $ ys 10) (fmap Text.pack <$> take 10 $ (:[]) <$> ['a'..])
+>   renderRasterific "other/bar.png" (mkSizeSpec (Just <$> r2 (200,200))) $
+>     barLabelled def (unsafeInlineIO $ ys 10) (fmap Text.pack <$> take 10 $ (:[]) <$> ['a'..])
+>   renderSVG "other/hist.svg" (mkSizeSpec (Just <$> r2 (200,200))) $
+>     barRange def xysHist
+>   renderRasterific "other/hist.png" (mkSizeSpec (Just <$> r2 (200,200))) $
 >     barRange def xysHist
 
 diagrams development recipe
@@ -169,9 +212,13 @@ You can slide up and down the various diagrams abstraction levels creating trans
 workflow
 ---
 
-> padq :: QDiagram SVG V2 Double Any -> IO ()
-> padq t =
->   toFile "other/scratchpad.svg" (400,400) t
+> pads :: QDiagram SVG V2 Double Any -> IO ()
+> pads t =
+>   renderSVG "other/scratchpad.svg" (mkSizeSpec (Just <$> r2 (400,400))) t
+>
+> padr :: QDiagram Rasterific V2 Double Any -> IO ()
+> padr t =
+>   renderRasterific "other/scratchpad.png" (mkSizeSpec (Just <$> r2 (400,400))) t
 >
 
 Create a markdown version of readme.lhs:
@@ -185,5 +232,6 @@ Then fire up an intero session, and use padq to display coding results on-the-fl
 or go for a compilation loop like:
 
 ~~~
-stack install && readme && pandoc -f markdown+lhs -t html -i readme.lhs -o readme.html --mathjax --filter pandoc-include
+stack install && readme && pandoc -f markdown+lhs -t html -i readme.lhs -o readme.html --mathjax --filter pandoc-include && pandoc -f markdown+lhs -t markdown -i readme.lhs -o readme.md --mathjax --filter pandoc-include
 ~~~
+

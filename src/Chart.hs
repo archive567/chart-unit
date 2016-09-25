@@ -19,7 +19,7 @@ module Chart (
     lineXY,
     linesXY,
     axisXY,
-    toFile,
+    -- toFile,
     mkTicks,
     mkTicks',
     module Chart.Types,
@@ -31,11 +31,11 @@ import Chart.Types
 import qualified Control.Foldl as L
 import Control.Lens hiding (beside, none, (#))
 import Data.Default (def)
-import Diagrams.Backend.SVG
+import qualified Data.Text as Text
 import Diagrams.Prelude hiding (unit) 
-import GHC.Base (String)
 import Protolude hiding (min,max)
 import Text.Printf
+import qualified Diagrams.TwoD.Text
 
 range1D :: (Fractional t, Ord t, Foldable f) => f t -> (t, t)
 range1D = L.fold (L.Fold step initial extract)
@@ -87,11 +87,10 @@ unitsXY xyss = zipWith (\x y -> zip x y) xs' ys'
     xs' = units xs
     ys' = units ys
 
-chartXY ::
-  ChartConfig
-  -> ([(Double, Double)] -> QDiagram SVG V2 Double Any)
+chartXY :: (Renderable (Path V2 Double) a, (Renderable (Diagrams.TwoD.Text.Text Double) a)) => ChartConfig
+  -> ([(Double, Double)] -> QDiagram a V2 Double Any)
   -> [(Double, Double)]
-  -> QDiagram SVG V2 Double Any
+  -> QDiagram a V2 Double Any
 chartXY (ChartConfig p _ axes) chart xys =
   L.fold (L.Fold step (chart xys) (pad p)) axes
   where
@@ -109,7 +108,7 @@ chartXY (ChartConfig p _ axes) chart xys =
     d Y = range1D $ snd <$> xys
 
 -- axis rendering
-axisXY :: AxisConfig -> (Double,Double) -> QDiagram SVG V2 Double Any
+axisXY :: ((Renderable (Diagrams.TwoD.Text.Text Double) a), Renderable (Path V2 Double) a) => AxisConfig -> (Double,Double) -> QDiagram a V2 Double Any
 axisXY cfg range = centerXY $
   atPoints
     (p2 . t <$> tickLocations)
@@ -127,7 +126,7 @@ axisXY cfg range = centerXY $
       TickLabels ls -> unit $ fromIntegral <$> [1..length ls]
     tickLabels = case cfg ^. axisTickStyle of
       TickNone -> []
-      TickNumber n -> printf "%7.1g" <$> mkTicks range n
+      TickNumber n -> Text.pack . printf "%7.1g" <$> mkTicks range n
       TickLabels ls -> ls
     axisRect h (min, max) = case cfg ^. axisOrientation of
       X -> moveTo (p2 (max,0)) .
@@ -159,12 +158,12 @@ scatter cfg xys =
      unitRect (cfg ^. scatterChart ^. chartColor)
     )
 
-scatterXY :: ScatterConfig -> [(Double,Double)] -> QDiagram SVG V2 Double Any
+scatterXY :: (Renderable (Path V2 Double) a, (Renderable (Diagrams.TwoD.Text.Text Double) a)) => ScatterConfig -> [(Double,Double)] -> QDiagram a V2 Double Any
 scatterXY cfg xys =
   chartXY (cfg ^. scatterChart) (scatter cfg) xys
 
 -- bar
-bars :: BarConfig -> [Double] -> QDiagram SVG V2 Double Any
+bars :: (Renderable (Path V2 Double) a) => BarConfig -> [Double] -> QDiagram a V2 Double Any
 bars cfg ys =
   cat' (r2 (1,0)) (with Diagrams.Prelude.& sep .~ cfg ^. barSep)
   ((\y ->
@@ -178,10 +177,10 @@ bars cfg ys =
     (min,max) = range1D ys
     epsilon = 1e-8
 
-barRange :: BarConfig -> [(Double, Double)] -> QDiagram SVG V2 Double Any
+barRange :: (Renderable (Path V2 Double) a, (Renderable (Diagrams.TwoD.Text.Text Double) a)) => BarConfig -> [(Double, Double)] -> QDiagram a V2 Double Any
 barRange cfg xys = chartXY (cfg ^. barChart) (\x -> bars cfg (snd <$> x)) xys
 
-barLabelled :: Real a => BarConfig -> [Double] -> [String] -> QDiagram SVG V2 Double Any
+barLabelled :: (Renderable (Path V2 Double) a, (Renderable (Diagrams.TwoD.Text.Text Double) a)) => BarConfig -> [Double] -> [Text] -> QDiagram a V2 Double Any
 barLabelled cfg ys labels = barRange
      ( barChart . chartAxes .~
        [ axisTickStyle .~
@@ -191,17 +190,17 @@ barLabelled cfg ys labels = barRange
      ) (zip [0..] ys)
 
 -- a line is just a scatter chart rendered with a line (and with a usually stable x-value series)
-line :: [(Double,Double)] -> QDiagram SVG V2 Double Any
+line :: (Renderable (Path V2 Double) a) => [(Double,Double)] -> QDiagram a V2 Double Any
 line xys = strokeT $ trailFromVertices $ p2 <$> unitXY xys
 
-lineXY :: LineConfig -> [(Double,Double)] -> QDiagram SVG V2 Double Any
+lineXY :: (Renderable (Path V2 Double) a, (Renderable (Diagrams.TwoD.Text.Text Double) a)) => LineConfig -> [(Double,Double)] -> QDiagram a V2 Double Any
 lineXY cfg xys =
     chartXY (cfg ^. lineChart)
     (\x -> line x # centerXY # lcA (cfg ^. lineChart ^. chartColor) # lwN (cfg ^. lineSize))
     xys
 
 -- multiple lines with a common range for both x and y values
-lines :: LinesConfig -> [[(Double,Double)]] -> QDiagram SVG V2 Double Any
+lines :: (Renderable (Path V2 Double) a) => LinesConfig -> [[(Double,Double)]] -> QDiagram a V2 Double Any
 lines cfg xyss = centerXY $ mconcat $
     zipWith (\d c -> d # lcA (c ^. lColor) # lwN (c ^. lSize))
     (l xyss)
@@ -209,10 +208,10 @@ lines cfg xyss = centerXY $ mconcat $
   where
     l xyss' = strokeT . trailFromVertices . fmap p2 <$> unitsXY xyss'
 
-linesXY ::
+linesXY :: ((Renderable (Diagrams.TwoD.Text.Text Double) a), Renderable (Path V2 Double) a) =>
   LinesConfig
   -> [[(Double, Double)]]
-  -> QDiagram SVG V2 Double Any
+  -> QDiagram a V2 Double Any
 linesXY cfg@(LinesConfig (ChartConfig p _ axes) _) xyss =
   L.fold (L.Fold step (lines cfg xyss) (pad p)) axes
   where
@@ -250,7 +249,7 @@ mkTicks' (min, max) n = (f, step', n')
     l = step * fromIntegral (floor (max/step))
     n' = round ((l - f)/step)
 
-mkLabel :: String -> AxisConfig -> QDiagram SVG V2 Double Any
+mkLabel :: ((Renderable (Diagrams.TwoD.Text.Text Double) a), Renderable (Path V2 Double) a) => Text -> AxisConfig -> QDiagram a V2 Double Any
 mkLabel label cfg =
   beside dir
   (beside dir
@@ -260,7 +259,7 @@ mkLabel label cfg =
   (Diagrams.Prelude.alignedText
     (cfg ^. axisAlignedTextRight)
     (cfg ^. axisAlignedTextBottom)
-    label #
+    (Text.unpack label) #
   scale (cfg ^. axisTextSize) #
   fcA (cfg ^.axisTextColor))
   where
@@ -274,6 +273,3 @@ mkLabel label cfg =
       X -> strutY (cfg ^. axisStrutSize)
       Y -> strutX (cfg ^. axisStrutSize)
 
--- the point
-toFile :: FilePath -> (Double, Double) -> QDiagram SVG V2 Double Any -> IO ()
-toFile name s = renderSVG name (mkSizeSpec (Just <$> r2 s))
