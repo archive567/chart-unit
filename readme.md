@@ -2,11 +2,11 @@
 <script type="text/javascript" async
   src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-MML-AM_CHTML">
 </script>
-chart-svg [![repo](https://a248.e.akamai.net/assets.github.com/images/icons/emoji/octocat.png)](https://github.com/tonyday567/chart-svg) [![Build Status](https://travis-ci.org/tonyday567/chart-svg.png)](https://travis-ci.org/tonyday567/chart-svg)
-======================================================================================================================================================================================================================================================
+chart-unit [![repo](https://a248.e.akamai.net/assets.github.com/images/icons/emoji/octocat.png)](https://github.com/tonyday567/chart-unit) [![Build Status](https://travis-ci.org/tonyday567/chart-unit.png)](https://travis-ci.org/tonyday567/chart-unit)
+==========================================================================================================================================================================================================================================================
 
 Github refuses to render svg in a readme.md, so it all looks much better
-in served [html](http://tonyday567.github.io/chart-svg.html).
+in served [html](http://tonyday567.github.io/chart-unit.html).
 
 rasterific renders
 ------------------
@@ -33,8 +33,8 @@ Labelled Bar Chart
 
 ![](other/bar.png)
 
-chart-svg
-=========
+chart-unit
+==========
 
 scratchpad
 ----------
@@ -43,12 +43,12 @@ My newest chart `padq $ linesXY def [[(0,0),(1,1)],[(0,0),(1,2)]]`
 
 ![](other/scratchpad.svg)
 
-chart-svg
----------
+chart-unit
+----------
 
-This slowly growing collection of svg charts:
+This slowly growing collection of charts:
 
--   render nicely over a wide chart size range
+-   render nicely over a wide chart size range, svg and png formats.
 -   render similarly at different scale
 -   are opinionated minimalism
 -   are unit shapes in the spirit of the
@@ -87,14 +87,12 @@ Labelled Bar Chart
 import Protolude
 import Control.Monad.Primitive (unsafeInlineIO)
 import Diagrams.Prelude hiding ((<>))
-import Diagrams.Backend.SVG (SVG, renderSVG)
-import Diagrams.Backend.Rasterific (Rasterific, renderRasterific)
 import qualified Control.Foldl as L
 import qualified Data.Random as R
 import qualified Data.Map.Strict as Map
 import qualified Data.Text as Text
 
-import Chart
+import Chart.Unit
 ```
 
 some test data
@@ -186,31 +184,31 @@ main = do
 See develop section below for my workflow.
 
 ``` {.sourceCode .literate .haskell}
-  pads $
+  padsvg $
       linesXY def [[(0,0),(1,1)],[(0,0),(1,2)]]
-  renderSVG "other/line.svg" (mkSizeSpec (Just <$> r2 (200,200)))
+  fileSvg "other/line.svg" (200,200) $
     (lineXY def rwxy)
-  renderRasterific "other/line.png" (mkSizeSpec (Just <$> r2 (200,200)))
+  filePng "other/line.png" (200,200) $
     (lineXY def rwxy)
-  renderSVG "other/lines.svg" (mkSizeSpec (Just <$> r2 (200,200)))
+  fileSvg "other/lines.svg" (200,200) $
     (linesXY def $ zip [0..] <$> yss (1000, 10))
-  renderRasterific "other/lines.png" (mkSizeSpec (Just <$> r2 (200,200)))
+  filePng "other/lines.png" (200,200) $
     (linesXY def $ zip [0..] <$> yss (1000, 10))
-  renderSVG "other/dots.svg" (mkSizeSpec (Just <$> r2 (200,200)))
+  fileSvg "other/dots.svg" (200,200) $
     (scatter def xys)
-  renderRasterific "other/dots.png" (mkSizeSpec (Just <$> r2 (200,200)))
+  filePng "other/dots.png" (200,200) $
     (scatter def xys)
-  renderSVG "other/scatter.svg" (mkSizeSpec (Just <$> r2 (200,200)))
+  fileSvg "other/scatter.svg" (200,200) $
     (scatterXY def xys)
-  renderRasterific "other/scatter.png" (mkSizeSpec (Just <$> r2 (200,200)))
+  filePng "other/scatter.png" (200,200) $
     (scatterXY def xys)
-  renderSVG "other/bar.svg" (mkSizeSpec (Just <$> r2 (200,200))) $
+  fileSvg "other/bar.svg" (200,200) $
     barLabelled def (unsafeInlineIO $ ys 10) (fmap Text.pack <$> take 10 $ (:[]) <$> ['a'..])
-  renderRasterific "other/bar.png" (mkSizeSpec (Just <$> r2 (200,200))) $
+  filePng "other/bar.png" (200,200) $
     barLabelled def (unsafeInlineIO $ ys 10) (fmap Text.pack <$> take 10 $ (:[]) <$> ['a'..])
-  renderSVG "other/hist.svg" (mkSizeSpec (Just <$> r2 (200,200))) $
+  fileSvg "other/hist.svg" (200,200) $
     barRange def xysHist
-  renderRasterific "other/hist.png" (mkSizeSpec (Just <$> r2 (200,200))) $
+  filePng "other/hist.png" (200,200) $
     barRange def xysHist
 ```
 
@@ -238,13 +236,13 @@ workflow
 --------
 
 ``` {.sourceCode .literate .haskell}
-pads :: QDiagram SVG V2 Double Any -> IO ()
-pads t =
-  renderSVG "other/scratchpad.svg" (mkSizeSpec (Just <$> r2 (400,400))) t
+padsvg :: ChartSvg -> IO ()
+padsvg t =
+  fileSvg "other/scratchpad.svg" (400,400) t
 
-padr :: QDiagram Rasterific V2 Double Any -> IO ()
-padr t =
-  renderRasterific "other/scratchpad.png" (mkSizeSpec (Just <$> r2 (400,400))) t
+padpng :: ChartPng -> IO ()
+padpng t =
+  filePng "other/scratchpad.png" (400,400) t
 ```
 
 Create a markdown version of readme.lhs:

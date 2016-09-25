@@ -1,13 +1,13 @@
 name:
-  chart-svg
+  chart-unit
 version:
   0.1.0.0
 synopsis:
-  charts rendered to svg using diagrams
+  A set of native haskell charts.
 description:
   readme.lhs
 homepage:
-  https://github.com/tonyday567/chart-svg
+  https://github.com/tonyday567/chart-unit
 license:
   BSD3
 license-file:
@@ -27,7 +27,7 @@ library
   hs-source-dirs:
     src
   exposed-modules:
-    Chart,
+    Chart.Unit,
     Chart.Types
   ghc-options:
     -O2
@@ -42,6 +42,7 @@ library
     diagrams-core,
     diagrams-lib,
     diagrams-svg,
+    diagrams-rasterific,
     foldl,
     lens,
     primitive,
@@ -104,7 +105,7 @@ executable readme
     readme.lhs
   build-depends:
     base,
-    chart-svg,
+    chart-unit,
     containers,
     diagrams,
     diagrams-core,
@@ -160,4 +161,4 @@ source-repository head
   type:
     git
   location:
-    https://github.com/tonyday567/chart-svg
+    https://github.com/tonyday567/chart-unit

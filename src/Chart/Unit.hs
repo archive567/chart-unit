@@ -1,7 +1,7 @@
 {-# OPTIONS_GHC -Wall #-}
 {-# OPTIONS_GHC -fno-warn-type-defaults #-}
 
-module Chart (
+module Chart.Unit (
     range1D,
     range1Ds,
     unit,

@@ -7,6 +7,17 @@ module Chart.Types where
 import Protolude
 import Diagrams.Prelude
 -- import Data.Default
+import Diagrams.Backend.SVG (SVG, renderSVG)
+import Diagrams.Backend.Rasterific (Rasterific, renderRasterific)
+
+type ChartSvg = QDiagram SVG V2 Double Any
+type ChartPng = QDiagram Rasterific V2 Double Any
+
+fileSvg ∷ FilePath → (Double, Double) → ChartSvg → IO ()
+fileSvg f s = renderSVG f (mkSizeSpec (Just <$> r2 s))
+
+filePng ∷ FilePath → (Double,Double) → ChartPng → IO ()
+filePng f s = renderRasterific f (mkSizeSpec (Just <$> r2 s))
 
 rgba :: (Floating a, Ord a) => (a, a, a, a) -> AlphaColour a
 rgba (r,g,b,a) = withOpacity (sRGB (r/255) (g/255) (b/255)) a
