@@ -1,32 +1,14 @@
-{-# LANGUAGE TypeFamilies #-}
-{-# LANGUAGE NoImplicitPrelude #-}
-{-# LANGUAGE NoMonomorphismRestriction #-}
-{-# LANGUAGE FlexibleContexts #-}
-{-# LANGUAGE RankNTypes #-}
-{-# LANGUAGE GADTs #-}
-{-# LANGUAGE TemplateHaskell #-}
-{-# OPTIONS_GHC -fno-warn-name-shadowing #-}
-{-# OPTIONS_GHC -fno-warn-unused-binds #-}
+{-# OPTIONS_GHC -Wall #-}
 {-# OPTIONS_GHC -fno-warn-type-defaults #-}
-{-# OPTIONS_GHC -fno-warn-unused-imports #-}
-{-# OPTIONS_GHC -fno-warn-missing-signatures #-}
+{-# LANGUAGE TemplateHaskell #-}
 
 module Chart.Types where
 
 import Protolude
-import Control.Monad.Primitive (unsafeInlineIO)
-import Control.Category (id)
-import Data.List (transpose)
-import System.IO (FilePath)
 import Diagrams.Prelude
-import Diagrams.Backend.SVG
--- import Diagrams.Backend.Cairo
-import Diagrams.Core.Envelope
+-- import Data.Default
+import Diagrams.Backend.SVG (SVG)
 import GHC.Base (String)
-import qualified Control.Foldl as L
-import qualified Data.Vector.Unboxed as V
-import Data.Vector.Unboxed  (Vector,(!))
-import qualified Data.Vector.Unboxed as VU
 
 type ChartSvg a = QDiagram SVG V2 a Any
 
@@ -122,7 +104,6 @@ instance Default LineConfig where
 
 makeLenses ''LineConfig
 
-
 data OneLine = OneLine
     { _lColor :: AlphaColour Double
     , _lSize :: Double
@@ -147,5 +128,3 @@ instance Default LinesConfig where
                         ]
 
 makeLenses ''LinesConfig
-
-

@@ -1,11 +1,4 @@
-{-# LANGUAGE TypeFamilies #-}
-{-# LANGUAGE NoImplicitPrelude #-}
-{-# LANGUAGE NoMonomorphismRestriction #-}
-{-# LANGUAGE FlexibleContexts #-}
-{-# LANGUAGE RankNTypes #-}
-{-# LANGUAGE GADTs #-}
-{-# OPTIONS_GHC -fno-warn-name-shadowing #-}
-{-# OPTIONS_GHC -fno-warn-unused-binds #-}
+{-# OPTIONS_GHC -Wall #-}
 {-# OPTIONS_GHC -fno-warn-type-defaults #-}
 
 module Chart (
@@ -34,15 +27,14 @@ module Chart (
     module Data.Default
 ) where
 
-import Protolude
-import GHC.Base (String)
-import System.IO (FilePath)
-import Diagrams.Prelude hiding (unit) 
-import Diagrams.Backend.SVG
+import Chart.Types
 import qualified Control.Foldl as L
 import Control.Lens hiding (beside, none, (#))
-import Chart.Types
 import Data.Default (def)
+import Diagrams.Backend.SVG
+import Diagrams.Prelude hiding (unit) 
+import GHC.Base (String)
+import Protolude hiding (min,max)
 import Text.Printf
 
 range1D :: (Fractional t, Ord t, Foldable f) => f t -> (t, t)
@@ -76,7 +68,8 @@ unit xs =
   (\x -> (x-minX)/(maxX-minX) - 0.5) <$> xs
 
 -- units scales multiple xs to a common range
-units :: (Fractional b, Functor f, Ord b, Foldable f, Functor f', Foldable f') => f' (f b) -> f' (f b)
+units :: (Fractional b, Functor f, Ord b, Foldable f, Functor f', Foldable f') =>
+    f' (f b) -> f' (f b)
 units xss =
   let (minX,maxX) = range1Ds xss in
   (fmap (\x -> (x-minX)/(maxX-minX) - 0.5)) <$> xss
@@ -88,13 +81,11 @@ unitXY xys = zip (unit $ fst <$> xys) (unit $ snd <$> xys)
 -- scale multiple 2d series
 unitsXY :: (Fractional a, Ord a, Fractional b, Ord b) => [[(a, b)]] -> [[(a, b)]]
 unitsXY xyss = zipWith (\x y -> zip x y) xs' ys'
-    where
-      xs = fmap fst <$> xyss
-      ys = fmap snd <$> xyss
-      xs' = units xs
-      ys' = units ys
-
-unitRect c = fcA c # lcA (withOpacity black 0) # lw none
+  where
+    xs = fmap fst <$> xyss
+    ys = fmap snd <$> xyss
+    xs' = units xs
+    ys' = units ys
 
 chartXY ::
   ChartConfig
@@ -121,13 +112,13 @@ chartXY (ChartConfig p _ axes) chart xys =
 axisXY :: AxisConfig -> (Double,Double) -> QDiagram SVG V2 Double Any
 axisXY cfg range = centerXY $
   atPoints
-    (p2 . trans <$> tickLocations)
+    (p2 . t <$> tickLocations)
     ((\x -> mkLabel x cfg) <$> tickLabels)
   `atop`
   (axisRect (cfg ^. axisHeight) (-0.5,0.5)
    # unitRect (cfg ^. axisColor))
   where
-    trans = case cfg ^. axisOrientation of
+    t = case cfg ^. axisOrientation of
       X -> \x -> (x,0)
       Y -> \y -> (-(cfg ^. axisMarkSize), y)
     tickLocations = case cfg ^. axisTickStyle of
@@ -138,13 +129,30 @@ axisXY cfg range = centerXY $
       TickNone -> []
       TickNumber n -> printf "%7.1g" <$> mkTicks range n
       TickLabels ls -> ls
-    axisRect height (min, max) = case cfg ^. axisOrientation of
-      X -> moveTo (p2 (max,0)) . strokeTrail . closeTrail . fromVertices . scaleX (max-min) . scaleY height $ unitSquare
-      Y -> moveTo (p2 (0,min)) . strokeTrail . closeTrail . fromVertices . scaleY (max-min) . scaleX height $ unitSquare
+    axisRect h (min, max) = case cfg ^. axisOrientation of
+      X -> moveTo (p2 (max,0)) .
+          strokeTrail .
+          closeTrail .
+          fromVertices .
+          scaleX (max-min) .
+          scaleY h $
+          unitSquare
+      Y -> moveTo (p2 (0,min)) .
+          strokeTrail .
+          closeTrail .
+          fromVertices .
+          scaleY (max-min) .
+          scaleX h $
+          unitSquare
 
+-- somewhat a base class of a wide variety of chart marks
+unitRect ∷ (Floating (N a), Ord (N a), Typeable (N a), HasStyle a, V a ~ V2) ⇒
+    AlphaColour Double → a → a
+unitRect c = fcA c # lcA (withOpacity black 0) # lw none
 
 -- polymorphic dots
-scatter :: (Typeable (N r), Monoid r, Semigroup r, Transformable r,HasStyle r, HasOrigin r, TrailLike r, V r ~ V2, N r ~ Double) => ScatterConfig -> [(N r, N r)] -> r
+scatter :: (Typeable (N r), Monoid r, Semigroup r, Transformable r,HasStyle r, HasOrigin r, TrailLike r, V r ~ V2, N r ~ Double) =>
+    ScatterConfig -> [(N r, N r)] -> r
 scatter cfg xys =
   atPoints (p2 <$> unitXY xys)
     (repeat $ circle (cfg ^. scatterSize) #
@@ -156,18 +164,6 @@ scatterXY cfg xys =
   chartXY (cfg ^. scatterChart) (scatter cfg) xys
 
 -- bar
-barRange :: BarConfig -> [(Double, Double)] -> QDiagram SVG V2 Double Any
-barRange cfg xys = chartXY (cfg ^. barChart) (\xys -> bars cfg (snd <$> xys)) xys
-
-barLabelled :: Real a => BarConfig -> [Double] -> [String] -> QDiagram SVG V2 Double Any
-barLabelled cfg ys labels = barRange
-     ( barChart . chartAxes .~
-       [ axisTickStyle .~
-         TickLabels labels $ def
-       ]
-       $ cfg
-     ) (zip [0..] ys)
-
 bars :: BarConfig -> [Double] -> QDiagram SVG V2 Double Any
 bars cfg ys =
   cat' (r2 (1,0)) (with Diagrams.Prelude.& sep .~ cfg ^. barSep)
@@ -182,12 +178,27 @@ bars cfg ys =
     (min,max) = range1D ys
     epsilon = 1e-8
 
+barRange :: BarConfig -> [(Double, Double)] -> QDiagram SVG V2 Double Any
+barRange cfg xys = chartXY (cfg ^. barChart) (\x -> bars cfg (snd <$> x)) xys
+
+barLabelled :: Real a => BarConfig -> [Double] -> [String] -> QDiagram SVG V2 Double Any
+barLabelled cfg ys labels = barRange
+     ( barChart . chartAxes .~
+       [ axisTickStyle .~
+         TickLabels labels $ def
+       ]
+       $ cfg
+     ) (zip [0..] ys)
+
 -- a line is just a scatter chart rendered with a line (and with a usually stable x-value series)
 line :: [(Double,Double)] -> QDiagram SVG V2 Double Any
 line xys = strokeT $ trailFromVertices $ p2 <$> unitXY xys
 
 lineXY :: LineConfig -> [(Double,Double)] -> QDiagram SVG V2 Double Any
-lineXY cfg xys = chartXY (cfg ^. lineChart) (\xys -> line xys # centerXY # lcA (cfg ^. lineChart ^. chartColor) # lwN (cfg ^. lineSize)) xys
+lineXY cfg xys =
+    chartXY (cfg ^. lineChart)
+    (\x -> line x # centerXY # lcA (cfg ^. lineChart ^. chartColor) # lwN (cfg ^. lineSize))
+    xys
 
 -- multiple lines with a common range for both x and y values
 lines :: LinesConfig -> [[(Double,Double)]] -> QDiagram SVG V2 Double Any
@@ -202,7 +213,7 @@ linesXY ::
   LinesConfig
   -> [[(Double, Double)]]
   -> QDiagram SVG V2 Double Any
-linesXY cfg@(LinesConfig (ChartConfig p _ axes) styles) xyss =
+linesXY cfg@(LinesConfig (ChartConfig p _ axes) _) xyss =
   L.fold (L.Fold step (lines cfg xyss) (pad p)) axes
   where
     step x a =
@@ -220,23 +231,12 @@ linesXY cfg@(LinesConfig (ChartConfig p _ axes) styles) xyss =
 
 
 mkTicks :: (Double,Double) -> Int -> [Double]
-mkTicks (min, max) n = (first +) . (step *) . fromIntegral <$> [0..n']
+mkTicks r n = (f +) . (s *) . fromIntegral <$> [0..n']
   where
-    span' = max - min
-    step' = 10 ^^ floor (logBase 10 (span'/fromIntegral n))
-    err = fromIntegral n / span' * step'
-    step
-      | err <= 0.15 = 10 * step'
-      | err <= 0.35 = 5 * step'
-      | err <= 0.75 = 2 * step'
-      | otherwise = step'
-    epsilon = 1e-8
-    first = step * fromIntegral (floor (min/step))
-    last = step * fromIntegral (floor (max/step))
-    n' = round ((last - first)/step)
+    (f,s,n') = mkTicks' r n
 
 mkTicks' :: (Double,Double) -> Int -> (Double, Double, Int)
-mkTicks' (min, max) n = (first, step', n')
+mkTicks' (min, max) n = (f, step', n')
   where
     span' = max - min
     step' = 10 ^^ floor (logBase 10 (span'/fromIntegral n))
@@ -246,13 +246,9 @@ mkTicks' (min, max) n = (first, step', n')
       | err <= 0.35 = 5 * step'
       | err <= 0.75 = 2 * step'
       | otherwise = step'
-    epsilon = 1e-8
-    first = step * fromIntegral (floor (min/step))
-    last = step * fromIntegral (floor (max/step))
-    n' = round ((last - first)/step)
-
-
-
+    f = step * fromIntegral (floor (min/step))
+    l = step * fromIntegral (floor (max/step))
+    n' = round ((l - f)/step)
 
 mkLabel :: String -> AxisConfig -> QDiagram SVG V2 Double Any
 mkLabel label cfg =
@@ -260,7 +256,7 @@ mkLabel label cfg =
   (beside dir
    (rule (cfg ^. axisMarkSize) #
    lcA (cfg ^. axisMarkColor))
-    gap)
+    s)
   (Diagrams.Prelude.alignedText
     (cfg ^. axisAlignedTextRight)
     (cfg ^. axisAlignedTextBottom)
@@ -274,15 +270,10 @@ mkLabel label cfg =
     rule = case cfg ^. axisOrientation of
       X -> vrule
       Y -> hrule
-    gap = case cfg ^. axisOrientation of
+    s = case cfg ^. axisOrientation of
       X -> strutY (cfg ^. axisStrutSize)
       Y -> strutX (cfg ^. axisStrutSize)
 
--- helpers
-hex :: (Floating b, Ord b) =>  String -> Colour b
-hex s = sRGB r b g
-  where
-    (RGB r g b) = toSRGB $ sRGB24read s
-
+-- the point
 toFile :: FilePath -> (Double, Double) -> QDiagram SVG V2 Double Any -> IO ()
-toFile name size = renderSVG name (mkSizeSpec (Just <$> r2 size))
+toFile name s = renderSVG name (mkSizeSpec (Just <$> r2 s))

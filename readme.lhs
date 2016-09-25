@@ -1,9 +1,9 @@
-<meta charset="utf-8">
-<link rel="stylesheet" href="other/lhs.css">
+```include
+other/header.md
+```
 
-[![repo](other/GitHub-Mark-32px.png)](https://github.com/tonyday567/chart-svg)
-
-[![Build Status](https://travis-ci.org/tonyday567/chart-svg.png)](https://travis-ci.org/tonyday567/chart-svg)
+chart-svg [![repo](https://a248.e.akamai.net/assets.github.com/images/icons/emoji/octocat.png)](https://github.com/tonyday567/chart-svg) [![Build Status](https://travis-ci.org/tonyday567/chart-svg.png)](https://travis-ci.org/tonyday567/chart-svg)
+===
 
 Github refuses to render svg in a readme.md, so it all looks much better in served [html](http://tonyday567.github.io/chart-svg.html).
 
@@ -52,18 +52,10 @@ Labelled Bar Chart
 
 ![](other/bar.svg)
 
->
-> {-# LANGUAGE TypeFamilies #-}
-> {-# LANGUAGE NoImplicitPrelude #-}
-> {-# LANGUAGE NoMonomorphismRestriction #-}
-> {-# LANGUAGE FlexibleContexts #-}
-> {-# LANGUAGE RankNTypes #-}
-> {-# LANGUAGE GADTs #-}
-> {-# OPTIONS_GHC -fno-warn-name-shadowing #-}
+> {-# OPTIONS_GHC -Wall #-}
+> {-# OPTIONS_GHC -fno-warn-type-defaults #-}
 > {-# OPTIONS_GHC -fno-warn-missing-signatures #-}
->
 > import Protolude
-> import Control.Category (id)
 > import Control.Monad.Primitive (unsafeInlineIO)
 > import Diagrams.Prelude hiding ((<>))
 > import Diagrams.Backend.SVG (SVG)
@@ -105,7 +97,7 @@ xys is a list of X,Y pairs, correlated normal random variates to add some shape 
 
 XY random walk
 
-> rwxy = L.scan (L.Fold (\(x,y) (x',y') -> (x+x',y+y')) (0.0,0.0) id) (take 100 xys)
+> rwxy = L.scan (L.Fold (\(x,y) (x',y') -> (x+x',y+y')) (0.0,0.0) identity) (take 100 xys)
 >
 
 xysHist is a histogram of 10000 one-dim random normals.
@@ -114,13 +106,13 @@ The data out is a (X,Y) pair list, with mid-point of the bucket as X, and bucket
 
 > xysHist :: [(Double,Double)]
 > xysHist = unsafeInlineIO $ do
->   ys <- replicateM 10000 $ R.runRVar R.stdNormal R.StdRandom :: IO [Double]
->   let (first,step,n) = mkTicks' (range1D ys) 100
->   let cuts = (\x -> first+step*fromIntegral x) <$> [0..n]
->   let mids = (+(step/2)) <$> cuts
->   let count = L.Fold (\x a -> Map.insertWith (+) a 1 x) Map.empty id
->   let countBool = L.Fold (\x a -> x + if a then 1 else 0) 0 id
->   let histMap = L.fold count $ (\x -> L.fold countBool (fmap (x >) cuts)) <$> ys
+>   ys' <- replicateM 10000 $ R.runRVar R.stdNormal R.StdRandom :: IO [Double]
+>   let (f,s,n) = mkTicks' (range1D ys') 100
+>   let cuts = (\x -> f+s*fromIntegral x) <$> [0..n]
+>   let mids = (+(s/2)) <$> cuts
+>   let count = L.Fold (\x a -> Map.insertWith (+) a 1 x) Map.empty identity
+>   let countBool = L.Fold (\x a -> x + if a then 1 else 0) 0 identity
+>   let histMap = L.fold count $ (\x -> L.fold countBool (fmap (x >) cuts)) <$> ys'
 >   let histList = (\x -> Map.findWithDefault 0 x histMap) <$> [0..n]
 >   return (zip mids (fromIntegral <$> histList))
 >
@@ -174,7 +166,7 @@ You can slide up and down the various diagrams abstraction levels creating trans
 
 > unitp f = unitSquare # f # fromVertices # closeTrail # strokeTrail
 
-Quick renderer
+workflow
 ---
 
 > padq :: QDiagram SVG V2 Double Any -> IO ()
@@ -182,10 +174,7 @@ Quick renderer
 >   toFile "other/scratchpad.svg" (400,400) t
 >
 
-develop
----
-
-Hacking
+Create a markdown version of readme.lhs:
 
 ~~~
 pandoc -f markdown+lhs -t html -i readme.lhs -o readme.html
@@ -193,20 +182,8 @@ pandoc -f markdown+lhs -t html -i readme.lhs -o readme.html
 
 Then fire up an intero session, and use padq to display coding results on-the-fly, mashing the refresh button on a browser pointed to readme.html.
 
-
-Build, run, render readme
-
-todo: switch to stack watch
+or go for a compilation loop like:
 
 ~~~
-filewatcher '**/*.{lhs,hs,cabal}' 'stack install && readme && pandoc -f markdown+lhs -t html -i readme.lhs -o readme.html && echo "run"'
+stack install && readme && pandoc -f markdown+lhs -t html -i readme.lhs -o readme.html --mathjax --filter pandoc-include
 ~~~
-
-Publish
-
-todo: svg2png and change readme.md links to reflect.
-
-~~~
-pandoc -f markdown+lhs -t html -i readme.lhs -o ~/git/tonyday567.github.io/other/chart-svg.html && cp other/* ~/git/tonyday567.github.io/other && pandoc -f markdown+lhs -t markdown -i readme.lhs -o readme.md
-~~~
-
