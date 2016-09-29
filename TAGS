@@ -1,0 +1,152 @@
+
+./readme.lhs,417
+ rXYs rXYs84,85
+ rXYs rXYs85,86
+ xys xys91,92
+ xs xs93,94
+ ys ys94,95
+ rw2d rw2d96,97
+ rw1d rw1d97,98
+ barData barData99,100
+ barData barData100,101
+ main main129,130
+ main main130,131
+ unitp unitp155,156
+ padq padq160,161
+ padq padq161,162
+ hist' hist'168,169
+ thist thist170,171
+ count count172,173
+ count count173,174
+ countBool countBool177,178
+ countBool countBool178,179
+
+./Setup.hs,15
+main main1,2
+
+./src/Chart/Types.hs,1851
+module Chart.Types Chart.Types13,14
+type ChartSvg ChartSvg30,31
+type ChartSvg a a30,31
+rgba rgba32,33
+rgba rgba33,34
+data Orientation Orientation35,36
+data Orientation = X X35,36
+data Orientation = X | YY35,36
+data Placement Placement37,38
+data Placement = AxisLeft AxisLeft37,38
+data Placement = AxisLeft | AxisRight AxisRight37,38
+data Placement = AxisLeft | AxisRight | AxisTop AxisTop37,38
+data Placement = AxisLeft | AxisRight | AxisTop | AxisBottomAxisBottom37,38
+data TickStyle TickStyle39,40
+data TickStyle = TickNone TickNone39,40
+data TickStyle = TickNone | TickLabels TickLabels39,40
+data TickStyle = TickNone | TickLabels [String] | TickNumber TickNumber39,40
+data AxisConfig AxisConfig41,42
+data AxisConfig = AxisConfigAxisConfig41,42
+  { _axisOrientation _axisOrientation42,43
+  , _axisPlacement _axisPlacement43,44
+  , _axisHeight _axisHeight44,45
+  , _axisColor _axisColor45,46
+  , _axisVruleSize _axisVruleSize46,47
+  , _axisVruleColor _axisVruleColor47,48
+  , _axisStrutSize _axisStrutSize48,49
+  , _axisTextSize _axisTextSize49,50
+  , _axisTextColor _axisTextColor50,51
+  , _axisTickStyle _axisTickStyle51,52
+instance instance54,55
+data ChartConfig ChartConfig70,71
+data ChartConfig = ChartConfigChartConfig70,71
+  { _chartPad _chartPad71,72
+  , _chartColor _chartColor72,73
+  , _chartAxes _chartAxes73,74
+data ScatterConfig ScatterConfig85,86
+data ScatterConfig = ScatterConfigScatterConfig85,86
+  { _scatterChart _scatterChart86,87
+  , _scatterSize _scatterSize87,88
+data BarConfig BarConfig95,96
+data BarConfig = BarConfigBarConfig95,96
+  { _barChart _barChart96,97
+  , _barSep _barSep97,98
+data LineConfig LineConfig105,106
+data LineConfig = LineConfigLineConfig105,106
+  { _lineChart _lineChart106,107
+  , _lineSize _lineSize107,108
+
+./src/Chart.hs,894
+module Chart Chart10,11
+range1D range1D42,43
+range1D range1D43,44
+unit unit57,58
+unit unit58,59
+unitXY unitXY62,63
+unitXY unitXY63,64
+chartXY chartXY65,66
+chartXY chartXY70,71
+scatter scatter87,88
+scatter scatter88,89
+scatterXY scatterXY96,97
+scatterXY scatterXY97,98
+barRange barRange101,102
+barRange barRange102,103
+barLabelled barLabelled104,105
+barLabelled barLabelled105,106
+bars bars113,114
+bars bars114,115
+line line131,132
+lineXY lineXY133,134
+axisXY axisXY136,137
+axisXY axisXY137,138
+tickList tickList161,162
+tickList tickList162,163
+tickList' tickList'176,177
+tickList' tickList'177,178
+mkTickList mkTickList192,193
+mkTickList mkTickList193,194
+mkTicks mkTicks197,198
+mkTicks mkTicks198,199
+mkLabel mkLabel214,215
+mkLabel mkLabel215,216
+hex hex233,234
+hex hex234,235
+toFile toFile238,239
+toFile toFile239,240
+
+./src/flycheck_Chart.hs,894
+module Chart Chart10,11
+range1D range1D42,43
+range1D range1D43,44
+unit unit57,58
+unit unit58,59
+unitXY unitXY62,63
+unitXY unitXY63,64
+chartXY chartXY65,66
+chartXY chartXY70,71
+scatter scatter87,88
+scatter scatter88,89
+scatterXY scatterXY96,97
+scatterXY scatterXY97,98
+barRange barRange101,102
+barRange barRange102,103
+barLabelled barLabelled104,105
+barLabelled barLabelled105,106
+bars bars113,114
+bars bars114,115
+line line131,132
+lineXY lineXY133,134
+axisXY axisXY136,137
+axisXY axisXY137,138
+tickList tickList161,162
+tickList tickList162,163
+tickList' tickList'176,177
+tickList' tickList'177,178
+mkTickList mkTickList192,193
+mkTickList mkTickList193,194
+mkTicks mkTicks197,198
+mkTicks mkTicks198,199
+mkLabel mkLabel214,215
+mkLabel mkLabel215,216
+hex hex233,234
+hex hex234,235
+toFile toFile238,239
+toFile toFile239,240
