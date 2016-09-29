@@ -1,39 +1,39 @@
 body {
-  background-color: #f6f5ee;
-  color: #141414;
-  font-family: "Avenir", "Helvetica Neue", Helvetica, "Segoe UI", Arial, freesans, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
-  font-size: 16px;
-  line-height: 1.6;
-  word-wrap: break-word;
-  box-sizing: border-box;
-  min-width: 200px;
-  max-width: 980px;
-  margin: 0 auto;
-  padding: 45px; }
-  body strong {
-    font-weight: bold; }
-  body h1 {
+    background-color: #f6f6f6;
+    color: #141414;
+    font-family: "Avenir", "Helvetica Neue", Helvetica, "Segoe UI", Arial, freesans, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+    font-size: 16px;
+    line-height: 1.6;
+    word-wrap: break-word;
+    box-sizing: border-box;
+    min-width: 200px;
+    max-width: 980px;
+    margin: 0 auto;
+    padding: 45px; }
+body strong {
+    font-weightht: bold; }
+body h1 {
     font-family: "lucida console", "9x15", "DejaVu Sans Mono", "Monaco";
     font-size: 24px;
     margin: 15px 0;
     line-height: 1.1; }
-  body h2 {
+body h2 {
     font-family: "lucida console", "9x15", "DejaVu Sans Mono", "Monaco";
     font-size: 20px;
     margin: 15px 0;
     line-height: 1.1; }
-  body a {
+body a {
     background-color: transparent;
     color: #4078c0;
     text-decoration: none; }
-    body a:hover {
-      text-decoration: underline;
-      outline: 0; }
-  body img {
+body a:hover {
+    text-decoration: underline;
+    outline: 0; }
+body img {
     max-width: 100%;
     box-sizing: content-box;
     border: 0; }
-  body hr {
+body hr {
     box-sizing: content-box;
     height: 0;
     margin: 15px 0;
@@ -179,14 +179,14 @@ body {
       overflow: auto;
       font-size: 85%;
       line-height: 1.45;
-      background-color: rgba(232, 228, 223, 0.5);
+      background-color: #f0f0f0;
       border-radius: 3px; }
   body pre {
     padding: 16px;
     overflow: auto;
     font-size: 85%;
     line-height: 1.45;
-    background-color: rgba(232, 228, 223, 0.5);
+    background-color: #f0f0f0;
     border-radius: 3px; }
   body .highlight pre {
     margin-bottom: 0;
@@ -240,7 +240,7 @@ pre {
   overflow: auto; }
 
 .sourceCode {
-  background-color: #E8E4DF; }
+  background-color: #f0f0f0; }
 
 code, kbd, pre {
   font-family: "lucida console", "9x15", "DejaVu Sans Mono", "Monaco";
@@ -277,7 +277,7 @@ td.sourceCode {
   padding-left: 5px; }
 
 code.sourceCode span.kw {
-  color: #a9a9a9; }
+    color: #5c5c5c; }
 code.sourceCode span.dt {
   color: #800000; }
 code.sourceCode span.dv {
@@ -294,12 +294,12 @@ code.sourceCode span.co {
   color: #808080;
   font-style: italic; }
 code.sourceCode span.ot {
-  color: #916C3D; }
+    color: #485a91; }
 code.sourceCode span.al {
   color: green;
   font-weight: bold; }
 code.sourceCode span.fu {
-  color: #8a7501; }
+    color: #485a91; }
 code.sourceCode span.er {
   color: red;
   font-weight: bold; }

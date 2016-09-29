@@ -2,36 +2,13 @@
 <script type="text/javascript" async
   src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-MML-AM_CHTML">
 </script>
-chart-unit [![repo](https://a248.e.akamai.net/assets.github.com/images/icons/emoji/octocat.png)](https://github.com/tonyday567/chart-unit) [![Build Status](https://travis-ci.org/tonyday567/chart-unit.png)](https://travis-ci.org/tonyday567/chart-unit)
-==========================================================================================================================================================================================================================================================
+[chart-unit](http://tonyday567.github.io/chart-unit.html)
+=========================================================
 
-Github refuses to render svg in a readme.md, so it all looks much better
-in served [html](http://tonyday567.github.io/chart-unit.html).
+[![repo](https://a248.e.akamai.net/assets.github.com/images/icons/emoji/octocat.png)](https://github.com/tonyday567/chart-unit)
 
-rasterific renders
-------------------
-
-![](other/scratchpad.png)
-
-Scatter
-
-![](other/scatter.png)
-
-Histogram
-
-![](other/hist.png)
-
-Line
-
-![](other/line.png)
-
-Lines
-
-![](other/lines.png)
-
-Labelled Bar Chart
-
-![](other/bar.png)
+[![Build
+Status](https://travis-ci.org/tonyday567/chart-unit.png)](https://travis-ci.org/tonyday567/chart-unit)
 
 chart-unit
 ==========
@@ -42,9 +19,6 @@ scratchpad
 My newest chart `padq $ linesXY def [[(0,0),(1,1)],[(0,0),(1,2)]]`
 
 ![](other/scratchpad.svg)
-
-chart-unit
-----------
 
 This slowly growing collection of charts:
 
@@ -79,6 +53,31 @@ Lines
 Labelled Bar Chart
 
 ![](other/bar.svg)
+
+rasterific png renders
+----------------------
+
+![](other/scratchpad.png)
+
+Scatter
+
+![](other/scatter.png)
+
+Histogram
+
+![](other/hist.png)
+
+Line
+
+![](other/line.png)
+
+Lines
+
+![](other/lines.png)
+
+Labelled Bar Chart
+
+![](other/bar.png)
 
 ``` {.sourceCode .literate .haskell}
 {-# OPTIONS_GHC -Wall #-}
@@ -247,7 +246,7 @@ padpng t =
 
 Create a markdown version of readme.lhs:
 
-    pandoc -f markdown+lhs -t html -i readme.lhs -o readme.html
+    pandoc -f markdown+lhs -t html -i readme.lhs -o index.html
 
 Then fire up an intero session, and use padq to display coding results
 on-the-fly, mashing the refresh button on a browser pointed to
@@ -255,4 +254,4 @@ readme.html.
 
 or go for a compilation loop like:
 
-    stack install && readme && pandoc -f markdown+lhs -t html -i readme.lhs -o readme.html --mathjax --filter pandoc-include && pandoc -f markdown+lhs -t markdown -i readme.lhs -o readme.md --mathjax --filter pandoc-include
+    stack install && readme && pandoc -f markdown+lhs -t html -i readme.lhs -o index.html --mathjax --filter pandoc-include && pandoc -f markdown+lhs -t markdown -i readme.lhs -o readme.md --mathjax --filter pandoc-include
