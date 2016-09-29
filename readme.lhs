@@ -2,26 +2,19 @@
 other/header.md
 ```
 
-[chart-unit](http://tonyday567.github.io/chart-unit.html)
-===
-
-[![repo](https://a248.e.akamai.net/assets.github.com/images/icons/emoji/octocat.png)](https://github.com/tonyday567/chart-unit)
-
-[![Build Status](https://travis-ci.org/tonyday567/chart-unit.png)](https://travis-ci.org/tonyday567/chart-unit)
-
-chart-unit
+[chart-unit](https://tonyday567.github.io/chart-unit.html) [![Build Status](https://travis-ci.org/tonyday567/chart-unit.png)](https://travis-ci.org/tonyday567/chart-unit)
 ===
 
 scratchpad
 ---
 
-My newest chart `padq $ linesXY def [[(0,0),(1,1)],[(0,0),(1,2)]]`
+My newest chart `padsvg $ linesXY def [[(0,0),(1,1)],[(0,0),(1,2)]]`
 
 ![](other/scratchpad.svg)
 
 This slowly growing collection of charts:
 
-- render nicely over a wide chart size range, svg and png formats.
+- renders nicely over a wide chart size range, svg and png formats.
 - render similarly at different scale
 - are opinionated minimalism
 - are unit shapes in the spirit of the [diagrams](http://projects.haskell.org/diagrams/doc/quickstart.html) design space.
