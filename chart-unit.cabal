@@ -6,6 +6,8 @@ synopsis:
   A set of native haskell charts.
 description:
   readme.lhs
+category:
+  
 homepage:
   https://github.com/tonyday567/chart-unit
 license:
@@ -30,11 +32,10 @@ library
     Chart.Unit,
     Chart.Types
   ghc-options:
-    -O2
     -funbox-strict-fields
     -fforce-recomp          
   build-depends:
-    base ==4.*,
+    base >= 4.7 && < 5,
     colour,
     containers,
     data-default,
@@ -83,17 +84,11 @@ library
     TupleSections,
     TypeFamilies,
     TypeOperators
-  if impl(ghc>=8.0.1)
-    default-extensions:
-      ApplicativeDo,
-      DuplicateRecordFields,
-      TypeApplications
 
 executable readme
   default-language:
     Haskell2010
   ghc-options:
-    -O2
     -funbox-strict-fields
     -fforce-recomp
     -threaded
@@ -104,7 +99,7 @@ executable readme
   main-is:
     readme.lhs
   build-depends:
-    base,
+    base >= 4.7 && < 5,
     chart-unit,
     containers,
     diagrams,
@@ -151,11 +146,6 @@ executable readme
     TupleSections,
     TypeFamilies,
     TypeOperators
-  if impl(ghc>=8.0.1)
-    default-extensions:
-      ApplicativeDo,
-      DuplicateRecordFields,
-      TypeApplications
 
 source-repository head
   type:
