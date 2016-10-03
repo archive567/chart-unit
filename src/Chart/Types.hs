@@ -19,10 +19,8 @@ data RangeXY = RangeXY
     , rangeY :: Range
     } deriving (Show, Eq)
 
-type P = (Double,Double)
-type D = [Double]
-type S = [(Double,Double)]
-type M = [[(Double,Double)]]
+type Q2 = [[V2 Double]]
+type Q1 = [V2 Double]
 
 type Chart a =
     ( Renderable (Path V2 Double) a

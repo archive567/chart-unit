@@ -116,11 +116,6 @@ xys is a list of X,Y pairs, correlated normal random variates to add some shape 
 > xys = rXYs 1000 0.8
 >
 
-XY random walk
-
-> rwxy = L.scan (L.Fold (\(x,y) (x',y') -> (x+x',y+y')) (0.0,0.0) identity) (take 100 xys)
->
-
 xysHist is a histogram of 10000 one-dim random normals.
 
 The data out is a (X,Y) pair list, with mid-point of the bucket as X, and bucket count as Y.
@@ -152,7 +147,7 @@ Axes break this scale invariance. Ticks and tick labels can hide this to some ex
 
 This chart will look the same on a data scale change, except for tick magnitudes.
 
-chartXY
+chart
 ---
 
 todo: this should be easy to abstract to something like:
@@ -167,53 +162,77 @@ chartXY :: [ChartData] -> ChartSvg
 main
 ---
 
-> l1 = [[(0.0, 0.0),(1.0,1.0),(2.0,10.0)], [(0.0,1.0),(1.0,2.0)], [(0.0,5.0),(3.0,5.0)]]
+A few values pulled out of main, on their way to abstraction
+
 > dGrid :: [(Double,Double)]
 > dGrid = (,) <$> [0..10] <*> [0..10]
+>
 > lc1 = zipWith LineConfig [0.01,0.02,0.03] $ opac 0.5 palette1
 > sc1 = zipWith ScatterConfig [0.02,0.05,0.1] $ opac 0.1 palette1
 > swish = [(0.0,1.0),(1.0,1.0),(2.0,5.0)]
 > swish2 = [(0.0,0.0),(3.0,3.0)]
 >
-> r1 = RangeXY (Range 0 2) (Range 0 6)
+> linedef :: Chart a
+> linedef = line def lc1 (fmap r2 <$> [swish,swish2])
 >
-> lchart :: Chart a
-> lchart = lineM def lc1 [swish,swish2]
-> 
+> linesdef :: Chart a
+> linesdef = line def (cycle lc1) $ (fmap r2) <$>
+>     zip (fromIntegral <$> [0..] :: [Double]) <$> yss (1000, 10)
+>
+> dotsdef :: Chart a
+> dotsdef = scatter1 def $ fmap r2 xys
+>
+> scatterdef :: Chart a
+> scatterdef = scatter def [def] $ (fmap r2) <$> [xys]
+>
+> scattersdef :: Chart a
+> scattersdef = scatter def sc1 $ (fmap r2) <$>
+>     [take 200 $ xys, take 20 $ drop 200 $ xys]
+>
+>
+> histdef :: Chart a
+> histdef = bar
+>     (chartAxes .~ [def] $ def)
+>     [def] (fmap r2 <$> [xysHist])
+>
+> grid :: Chart a
+> grid = (scatter def [def]) ([r2 <$> dGrid])
+>
+> bardef :: Chart a
+> bardef = bar
+>     ( chartAxes .~
+>       [ axisTickStyle .~
+>         TickLabels labels $ def
+>       , axisOrientation .~ Y $
+>         axisPlacement .~ AxisRight $ def
+>       ]
+>       $ def
+>     )
+>     [def]
+>     [fmap r2 (take 10 xys)]
+>   where
+>     labels = (fmap Text.pack <$> take 10 $ (:[]) <$> ['a'..])
+>
 > main :: IO ()
 > main = do
- 
+
 See develop section below for my workflow.
 
->   padsvg $ scatterM def [scatterColor .~ Color 0.333 0.333 0.333 0.5 $ def] [dGrid]
->   padpng $
->       (lineM def lc1) l1
->   fileSvg "other/line.svg" (200,200) lchart
->   filePng "other/line.png" (200,200) lchart
->   fileSvg "other/lines.svg" (200,200) $
->     lineM def (cycle lc1) $
->     zip (fromIntegral <$> [0..] :: [Double]) <$> yss (1000, 10)
->   filePng "other/lines.png" (200,200) $
->     lineM def (cycle lc1) $
->     zip (fromIntegral <$> [0..] :: [Double]) <$> yss (1000, 10)
->   fileSvg "other/dots.svg" (200,200) $
->     scatter def xys
->   filePng "other/dots.png" (200,200) $
->     scatter def xys
->   fileSvg "other/scatter.svg" (200,200) $
->     scatterM def [def] [xys]
->   filePng "other/scatter.png" (200,200) $
->     scatterM def [def] [xys]
->   fileSvg "other/scatters.svg" (200,200) $
->     scatterM def sc1 $ [take 200 $ xys, take 20 $ drop 200 $ xys]
->   fileSvg "other/bar.svg" (200,200) $
->     barDLabelled def def (unsafeInlineIO $ ys 10) (fmap Text.pack <$> take 10 $ (:[]) <$> ['a'..])
->   filePng "other/bar.png" (200,200) $
->     barDLabelled def def (unsafeInlineIO $ ys 10) (fmap Text.pack <$> take 10 $ (:[]) <$> ['a'..])
->   fileSvg "other/hist.svg" (200,200) $
->     barD def def (snd <$> xysHist)
->   filePng "other/hist.png" (200,200) $
->     barD def def (snd <$> xysHist)
+>   padsvg $ grid
+>   padpng $ grid
+>   fileSvg "other/line.svg" (200,200) linedef
+>   filePng "other/line.png" (200,200) linedef
+>   fileSvg "other/lines.svg" (200,200) linesdef
+>   filePng "other/lines.png" (200,200) linesdef
+>   fileSvg "other/dots.svg" (200,200) dotsdef
+>   filePng "other/dots.png" (200,200) dotsdef
+>   fileSvg "other/scatter.svg" (200,200) scatterdef
+>   filePng "other/scatter.png" (200,200) scatterdef
+>   fileSvg "other/scatters.svg" (200,200) scattersdef
+>   fileSvg "other/bar.svg" (200,200) bardef
+>   filePng "other/bar.png" (200,200) bardef
+>   fileSvg "other/hist.svg" (200,200) histdef
+>   filePng "other/hist.png" (200,200) histdef
 
 diagrams development recipe
 ---
@@ -262,4 +281,3 @@ stack install && readme && pandoc -f markdown+lhs -t html -i readme.lhs -o index
 chartM'' cc chart ms = L.fold (L.Fold step mempty identity) $ chartM' cc chart ms
   where
     step acc a = beside (r2 (0,-1)) acc a
-

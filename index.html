@@ -111,8 +111,6 @@ rXYs n c <span class="fu">=</span> unsafeInlineIO <span class="fu">$</span> <spa
   pure <span class="fu">$</span> zip s0 s1&#39;
 
 xys <span class="fu">=</span> rXYs <span class="dv">1000</span> <span class="fl">0.8</span></code></pre></div>
-<p>XY random walk</p>
-<div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell">rwxy <span class="fu">=</span> L.scan (<span class="dt">L.Fold</span> (\(x,y) (x&#39;,y&#39;) <span class="ot">-&gt;</span> (x<span class="fu">+</span>x&#39;,y<span class="fu">+</span>y&#39;)) (<span class="fl">0.0</span>,<span class="fl">0.0</span>) identity) (take <span class="dv">100</span> xys)</code></pre></div>
 <p>xysHist is a histogram of 10000 one-dim random normals.</p>
 <p>The data out is a (X,Y) pair list, with mid-point of the bucket as X, and bucket count as Y.</p>
 <div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell"><span class="ot">xysHist ::</span> [(<span class="dt">Double</span>,<span class="dt">Double</span>)]
@@ -139,57 +137,80 @@ xysHist <span class="fu">=</span> unsafeInlineIO <span class="fu">$</span> <span
 
 </div>
 <p>This chart will look the same on a data scale change, except for tick magnitudes.</p>
-<h2 id="chartxy">chartXY</h2>
+<h2 id="chart">chart</h2>
 <p>todo: this should be easy to abstract to something like:</p>
 <p>chartXY takes data, data representation, axes and configuration and collapses into a concrete Chart.</p>
 <p>data ChartData = ChartData { _data :: , _axes :: , _cfg :: }</p>
 <p>chartXY :: [ChartData] -&gt; ChartSvg</p>
 <h2 id="main">main</h2>
-<div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell">l1 <span class="fu">=</span> [[(<span class="fl">0.0</span>, <span class="fl">0.0</span>),(<span class="fl">1.0</span>,<span class="fl">1.0</span>),(<span class="fl">2.0</span>,<span class="fl">10.0</span>)], [(<span class="fl">0.0</span>,<span class="fl">1.0</span>),(<span class="fl">1.0</span>,<span class="fl">2.0</span>)], [(<span class="fl">0.0</span>,<span class="fl">5.0</span>),(<span class="fl">3.0</span>,<span class="fl">5.0</span>)]]
-<span class="ot">dGrid ::</span> [(<span class="dt">Double</span>,<span class="dt">Double</span>)]
+<p>A few values pulled out of main, on their way to abstraction</p>
+<div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell"><span class="ot">dGrid ::</span> [(<span class="dt">Double</span>,<span class="dt">Double</span>)]
 dGrid <span class="fu">=</span> (,) <span class="fu">&lt;$&gt;</span> [<span class="dv">0</span><span class="fu">..</span><span class="dv">10</span>] <span class="fu">&lt;*&gt;</span> [<span class="dv">0</span><span class="fu">..</span><span class="dv">10</span>]
+
 lc1 <span class="fu">=</span> zipWith <span class="dt">LineConfig</span> [<span class="fl">0.01</span>,<span class="fl">0.02</span>,<span class="fl">0.03</span>] <span class="fu">$</span> opac <span class="fl">0.5</span> palette1
 sc1 <span class="fu">=</span> zipWith <span class="dt">ScatterConfig</span> [<span class="fl">0.02</span>,<span class="fl">0.05</span>,<span class="fl">0.1</span>] <span class="fu">$</span> opac <span class="fl">0.1</span> palette1
 swish <span class="fu">=</span> [(<span class="fl">0.0</span>,<span class="fl">1.0</span>),(<span class="fl">1.0</span>,<span class="fl">1.0</span>),(<span class="fl">2.0</span>,<span class="fl">5.0</span>)]
 swish2 <span class="fu">=</span> [(<span class="fl">0.0</span>,<span class="fl">0.0</span>),(<span class="fl">3.0</span>,<span class="fl">3.0</span>)]
 
-r1 <span class="fu">=</span> <span class="dt">RangeXY</span> (<span class="dt">Range</span> <span class="dv">0</span> <span class="dv">2</span>) (<span class="dt">Range</span> <span class="dv">0</span> <span class="dv">6</span>)
+<span class="ot">linedef ::</span> <span class="dt">Chart</span> a
+linedef <span class="fu">=</span> line def lc1 (fmap r2 <span class="fu">&lt;$&gt;</span> [swish,swish2])
 
-<span class="ot">lchart ::</span> <span class="dt">Chart</span> a
-lchart <span class="fu">=</span> lineM def lc1 [swish,swish2]
+<span class="ot">linesdef ::</span> <span class="dt">Chart</span> a
+linesdef <span class="fu">=</span> line def (cycle lc1) <span class="fu">$</span> (fmap r2) <span class="fu">&lt;$&gt;</span>
+    zip (fromIntegral <span class="fu">&lt;$&gt;</span> [<span class="dv">0</span><span class="fu">..</span>]<span class="ot"> ::</span> [<span class="dt">Double</span>]) <span class="fu">&lt;$&gt;</span> yss (<span class="dv">1000</span>, <span class="dv">10</span>)
+
+<span class="ot">dotsdef ::</span> <span class="dt">Chart</span> a
+dotsdef <span class="fu">=</span> scatter1 def <span class="fu">$</span> fmap r2 xys
+
+<span class="ot">scatterdef ::</span> <span class="dt">Chart</span> a
+scatterdef <span class="fu">=</span> scatter def [def] <span class="fu">$</span> (fmap r2) <span class="fu">&lt;$&gt;</span> [xys]
+
+<span class="ot">scattersdef ::</span> <span class="dt">Chart</span> a
+scattersdef <span class="fu">=</span> scatter def sc1 <span class="fu">$</span> (fmap r2) <span class="fu">&lt;$&gt;</span>
+    [take <span class="dv">200</span> <span class="fu">$</span> xys, take <span class="dv">20</span> <span class="fu">$</span> drop <span class="dv">200</span> <span class="fu">$</span> xys]
+
+
+<span class="ot">histdef ::</span> <span class="dt">Chart</span> a
+histdef <span class="fu">=</span> bar
+    (chartAxes <span class="fu">.~</span> [def] <span class="fu">$</span> def)
+    [def] (fmap r2 <span class="fu">&lt;$&gt;</span> [xysHist])
+
+<span class="ot">grid ::</span> <span class="dt">Chart</span> a
+grid <span class="fu">=</span> (scatter def [def]) ([r2 <span class="fu">&lt;$&gt;</span> dGrid])
+
+<span class="ot">bardef ::</span> <span class="dt">Chart</span> a
+bardef <span class="fu">=</span> bar
+    ( chartAxes <span class="fu">.~</span>
+      [ axisTickStyle <span class="fu">.~</span>
+        <span class="dt">TickLabels</span> labels <span class="fu">$</span> def
+      , axisOrientation <span class="fu">.~</span> <span class="dt">Y</span> <span class="fu">$</span>
+        axisPlacement <span class="fu">.~</span> <span class="dt">AxisRight</span> <span class="fu">$</span> def
+      ]
+      <span class="fu">$</span> def
+    )
+    [def]
+    [fmap r2 (take <span class="dv">10</span> xys)]
+  <span class="kw">where</span>
+    labels <span class="fu">=</span> (fmap Text.pack <span class="fu">&lt;$&gt;</span> take <span class="dv">10</span> <span class="fu">$</span> (<span class="fu">:</span>[]) <span class="fu">&lt;$&gt;</span> [<span class="ch">&#39;a&#39;</span><span class="fu">..</span>])
 
 <span class="ot">main ::</span> <span class="dt">IO</span> ()
 main <span class="fu">=</span> <span class="kw">do</span></code></pre></div>
 <p>See develop section below for my workflow.</p>
-<div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell">  padsvg <span class="fu">$</span> scatterM def [scatterColor <span class="fu">.~</span> <span class="dt">Color</span> <span class="fl">0.333</span> <span class="fl">0.333</span> <span class="fl">0.333</span> <span class="fl">0.5</span> <span class="fu">$</span> def] [dGrid]
-  padpng <span class="fu">$</span>
-      (lineM def lc1) l1
-  fileSvg <span class="st">&quot;other/line.svg&quot;</span> (<span class="dv">200</span>,<span class="dv">200</span>) lchart
-  filePng <span class="st">&quot;other/line.png&quot;</span> (<span class="dv">200</span>,<span class="dv">200</span>) lchart
-  fileSvg <span class="st">&quot;other/lines.svg&quot;</span> (<span class="dv">200</span>,<span class="dv">200</span>) <span class="fu">$</span>
-    lineM def (cycle lc1) <span class="fu">$</span>
-    zip (fromIntegral <span class="fu">&lt;$&gt;</span> [<span class="dv">0</span><span class="fu">..</span>]<span class="ot"> ::</span> [<span class="dt">Double</span>]) <span class="fu">&lt;$&gt;</span> yss (<span class="dv">1000</span>, <span class="dv">10</span>)
-  filePng <span class="st">&quot;other/lines.png&quot;</span> (<span class="dv">200</span>,<span class="dv">200</span>) <span class="fu">$</span>
-    lineM def (cycle lc1) <span class="fu">$</span>
-    zip (fromIntegral <span class="fu">&lt;$&gt;</span> [<span class="dv">0</span><span class="fu">..</span>]<span class="ot"> ::</span> [<span class="dt">Double</span>]) <span class="fu">&lt;$&gt;</span> yss (<span class="dv">1000</span>, <span class="dv">10</span>)
-  fileSvg <span class="st">&quot;other/dots.svg&quot;</span> (<span class="dv">200</span>,<span class="dv">200</span>) <span class="fu">$</span>
-    scatter def xys
-  filePng <span class="st">&quot;other/dots.png&quot;</span> (<span class="dv">200</span>,<span class="dv">200</span>) <span class="fu">$</span>
-    scatter def xys
-  fileSvg <span class="st">&quot;other/scatter.svg&quot;</span> (<span class="dv">200</span>,<span class="dv">200</span>) <span class="fu">$</span>
-    scatterM def [def] [xys]
-  filePng <span class="st">&quot;other/scatter.png&quot;</span> (<span class="dv">200</span>,<span class="dv">200</span>) <span class="fu">$</span>
-    scatterM def [def] [xys]
-  fileSvg <span class="st">&quot;other/scatters.svg&quot;</span> (<span class="dv">200</span>,<span class="dv">200</span>) <span class="fu">$</span>
-    scatterM def sc1 <span class="fu">$</span> [take <span class="dv">200</span> <span class="fu">$</span> xys, take <span class="dv">20</span> <span class="fu">$</span> drop <span class="dv">200</span> <span class="fu">$</span> xys]
-  fileSvg <span class="st">&quot;other/bar.svg&quot;</span> (<span class="dv">200</span>,<span class="dv">200</span>) <span class="fu">$</span>
-    barDLabelled def def (unsafeInlineIO <span class="fu">$</span> ys <span class="dv">10</span>) (fmap Text.pack <span class="fu">&lt;$&gt;</span> take <span class="dv">10</span> <span class="fu">$</span> (<span class="fu">:</span>[]) <span class="fu">&lt;$&gt;</span> [<span class="ch">&#39;a&#39;</span><span class="fu">..</span>])
-  filePng <span class="st">&quot;other/bar.png&quot;</span> (<span class="dv">200</span>,<span class="dv">200</span>) <span class="fu">$</span>
-    barDLabelled def def (unsafeInlineIO <span class="fu">$</span> ys <span class="dv">10</span>) (fmap Text.pack <span class="fu">&lt;$&gt;</span> take <span class="dv">10</span> <span class="fu">$</span> (<span class="fu">:</span>[]) <span class="fu">&lt;$&gt;</span> [<span class="ch">&#39;a&#39;</span><span class="fu">..</span>])
-  fileSvg <span class="st">&quot;other/hist.svg&quot;</span> (<span class="dv">200</span>,<span class="dv">200</span>) <span class="fu">$</span>
-    barD def def (snd <span class="fu">&lt;$&gt;</span> xysHist)
-  filePng <span class="st">&quot;other/hist.png&quot;</span> (<span class="dv">200</span>,<span class="dv">200</span>) <span class="fu">$</span>
-    barD def def (snd <span class="fu">&lt;$&gt;</span> xysHist)</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell">  padsvg <span class="fu">$</span> grid
+  padpng <span class="fu">$</span> grid
+  fileSvg <span class="st">&quot;other/line.svg&quot;</span> (<span class="dv">200</span>,<span class="dv">200</span>) linedef
+  filePng <span class="st">&quot;other/line.png&quot;</span> (<span class="dv">200</span>,<span class="dv">200</span>) linedef
+  fileSvg <span class="st">&quot;other/lines.svg&quot;</span> (<span class="dv">200</span>,<span class="dv">200</span>) linesdef
+  filePng <span class="st">&quot;other/lines.png&quot;</span> (<span class="dv">200</span>,<span class="dv">200</span>) linesdef
+  fileSvg <span class="st">&quot;other/dots.svg&quot;</span> (<span class="dv">200</span>,<span class="dv">200</span>) dotsdef
+  filePng <span class="st">&quot;other/dots.png&quot;</span> (<span class="dv">200</span>,<span class="dv">200</span>) dotsdef
+  fileSvg <span class="st">&quot;other/scatter.svg&quot;</span> (<span class="dv">200</span>,<span class="dv">200</span>) scatterdef
+  filePng <span class="st">&quot;other/scatter.png&quot;</span> (<span class="dv">200</span>,<span class="dv">200</span>) scatterdef
+  fileSvg <span class="st">&quot;other/scatters.svg&quot;</span> (<span class="dv">200</span>,<span class="dv">200</span>) scattersdef
+  fileSvg <span class="st">&quot;other/bar.svg&quot;</span> (<span class="dv">200</span>,<span class="dv">200</span>) bardef
+  filePng <span class="st">&quot;other/bar.png&quot;</span> (<span class="dv">200</span>,<span class="dv">200</span>) bardef
+  fileSvg <span class="st">&quot;other/hist.svg&quot;</span> (<span class="dv">200</span>,<span class="dv">200</span>) histdef
+  filePng <span class="st">&quot;other/hist.png&quot;</span> (<span class="dv">200</span>,<span class="dv">200</span>) histdef</code></pre></div>
 <h2 id="diagrams-development-recipe">diagrams development recipe</h2>
 <p>In constructing new <code>units</code>:</p>
 <ul class="incremental">
