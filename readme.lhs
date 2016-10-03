@@ -8,8 +8,6 @@ other/header.md
 scratchpad
 ---
 
-My newest chart `padsvg $ linesXY def [[(0,0),(1,1)],[(0,0),(1,2)]]`
-
 ![](other/scratchpad.svg)
 
 This slowly growing collection of charts:
@@ -26,6 +24,10 @@ charts
 Scatter
 
 ![](other/scatter.svg)
+
+Scatter * 2
+
+![](other/scatters.svg)
 
 Histogram
 
@@ -80,6 +82,9 @@ Labelled Bar Chart
 > import qualified Data.Text as Text
 >
 > import Chart.Unit
+> import Chart.Types
+> import Diagrams.Backend.SVG (SVG)
+> import Diagrams.Backend.Rasterific (Rasterific)
 
 some test data
 ---
@@ -123,9 +128,10 @@ The data out is a (X,Y) pair list, with mid-point of the bucket as X, and bucket
 > xysHist :: [(Double,Double)]
 > xysHist = unsafeInlineIO $ do
 >   ys' <- replicateM 10000 $ R.runRVar R.stdNormal R.StdRandom :: IO [Double]
->   let (f,s,n) = mkTicks' (range1D ys') 100
->   let cuts = (\x -> f+s*fromIntegral x) <$> [0..n]
->   let mids = (+(s/2)) <$> cuts
+>   let n = 10
+>   let r@(Range l u) = rangeD ys'
+>   let cuts = mkTicksExact r n
+>   let mids = (\x -> x+(u-l)/fromIntegral n) <$> cuts
 >   let count = L.Fold (\x a -> Map.insertWith (+) a 1 x) Map.empty identity
 >   let countBool = L.Fold (\x a -> x + if a then 1 else 0) 0 identity
 >   let histMap = L.fold count $ (\x -> L.fold countBool (fmap (x >) cuts)) <$> ys'
@@ -146,41 +152,68 @@ Axes break this scale invariance. Ticks and tick labels can hide this to some ex
 
 This chart will look the same on a data scale change, except for tick magnitudes.
 
+chartXY
+---
+
+todo: this should be easy to abstract to something like:
+
+chartXY takes data, data representation, axes and configuration and collapses into a concrete Chart.
+
+data ChartData = ChartData { _data :: , _axes :: , _cfg :: }
+
+chartXY :: [ChartData] -> ChartSvg
+
+
 main
 ---
 
+> l1 = [[(0.0, 0.0),(1.0,1.0),(2.0,10.0)], [(0.0,1.0),(1.0,2.0)], [(0.0,5.0),(3.0,5.0)]]
+> dGrid :: [(Double,Double)]
+> dGrid = (,) <$> [0..10] <*> [0..10]
+> lc1 = zipWith LineConfig [0.01,0.02,0.03] $ opac 0.5 palette1
+> sc1 = zipWith ScatterConfig [0.02,0.05,0.1] $ opac 0.1 palette1
+> swish = [(0.0,1.0),(1.0,1.0),(2.0,5.0)]
+> swish2 = [(0.0,0.0),(3.0,3.0)]
 >
+> r1 = RangeXY (Range 0 2) (Range 0 6)
+>
+> lchart :: Chart a
+> lchart = lineM def lc1 [swish,swish2]
+> 
 > main :: IO ()
 > main = do
  
 See develop section below for my workflow.
 
->   padsvg $
->       linesXY def [[(0,0),(1,1)],[(0,0),(1,2)]]
->   fileSvg "other/line.svg" (200,200) $
->     (lineXY def rwxy)
->   filePng "other/line.png" (200,200) $
->     (lineXY def rwxy)
+>   padsvg $ scatterM def [scatterColor .~ Color 0.333 0.333 0.333 0.5 $ def] [dGrid]
+>   padpng $
+>       (lineM def lc1) l1
+>   fileSvg "other/line.svg" (200,200) lchart
+>   filePng "other/line.png" (200,200) lchart
 >   fileSvg "other/lines.svg" (200,200) $
->     (linesXY def $ zip [0..] <$> yss (1000, 10))
+>     lineM def (cycle lc1) $
+>     zip (fromIntegral <$> [0..] :: [Double]) <$> yss (1000, 10)
 >   filePng "other/lines.png" (200,200) $
->     (linesXY def $ zip [0..] <$> yss (1000, 10))
+>     lineM def (cycle lc1) $
+>     zip (fromIntegral <$> [0..] :: [Double]) <$> yss (1000, 10)
 >   fileSvg "other/dots.svg" (200,200) $
->     (scatter def xys)
+>     scatter def xys
 >   filePng "other/dots.png" (200,200) $
->     (scatter def xys)
+>     scatter def xys
 >   fileSvg "other/scatter.svg" (200,200) $
->     (scatterXY def xys)
+>     scatterM def [def] [xys]
 >   filePng "other/scatter.png" (200,200) $
->     (scatterXY def xys)
+>     scatterM def [def] [xys]
+>   fileSvg "other/scatters.svg" (200,200) $
+>     scatterM def sc1 $ [take 200 $ xys, take 20 $ drop 200 $ xys]
 >   fileSvg "other/bar.svg" (200,200) $
->     barLabelled def (unsafeInlineIO $ ys 10) (fmap Text.pack <$> take 10 $ (:[]) <$> ['a'..])
+>     barDLabelled def def (unsafeInlineIO $ ys 10) (fmap Text.pack <$> take 10 $ (:[]) <$> ['a'..])
 >   filePng "other/bar.png" (200,200) $
->     barLabelled def (unsafeInlineIO $ ys 10) (fmap Text.pack <$> take 10 $ (:[]) <$> ['a'..])
+>     barDLabelled def def (unsafeInlineIO $ ys 10) (fmap Text.pack <$> take 10 $ (:[]) <$> ['a'..])
 >   fileSvg "other/hist.svg" (200,200) $
->     barRange def xysHist
+>     barD def def (snd <$> xysHist)
 >   filePng "other/hist.png" (200,200) $
->     barRange def xysHist
+>     barD def def (snd <$> xysHist)
 
 diagrams development recipe
 ---
@@ -196,16 +229,16 @@ In constructing new `units`:
 
 You can slide up and down the various diagrams abstraction levels creating transformations at each level.  For example, here's something I use to work at the point level:
 
-> unitp f = unitSquare # f # fromVertices # closeTrail # strokeTrail
+    unitp f = unitSquare # f # fromVertices # closeTrail # strokeTrail
 
 workflow
 ---
 
-> padsvg :: ChartSvg -> IO ()
+> padsvg :: Chart SVG -> IO ()
 > padsvg t =
 >   fileSvg "other/scratchpad.svg" (400,400) t
 >
-> padpng :: ChartPng -> IO ()
+> padpng :: Chart Rasterific -> IO ()
 > padpng t =
 >   filePng "other/scratchpad.png" (400,400) t
 >
@@ -223,4 +256,10 @@ or go for a compilation loop like:
 ~~~
 stack install && readme && pandoc -f markdown+lhs -t html -i readme.lhs -o index.html --mathjax --filter pandoc-include && pandoc -f markdown+lhs -t markdown -i readme.lhs -o readme.md --mathjax --filter pandoc-include
 ~~~
+
+
+
+chartM'' cc chart ms = L.fold (L.Fold step mempty identity) $ chartM' cc chart ms
+  where
+    step acc a = beside (r2 (0,-1)) acc a
 
