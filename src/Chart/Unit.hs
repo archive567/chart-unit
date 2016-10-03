@@ -158,13 +158,34 @@ barD (BarConfig s c) ys =
     # if y==0 then scaleY epsilon else scaleY y)
     <$> ys
   )
-  # blob c
-    -- # centerXY
   # scaleX (1/fromIntegral (length ys))
   # scaleY (1/(u - l))
+  # blob c
   where
     (Range l u) = rangeD ys
     epsilon = 1e-8
+
+barD' _ [] = mempty
+barD' (BarConfig s c) ys =
+    blob c $
+    scaleY (1/(u - l)) $
+    scaleX (1/fromIntegral (length ys)) $ 
+    cat' (r2 (1,0)) (with Diagrams.Prelude.& sep .~ s)
+    ((\y ->
+        unitSquare
+       # moveOriginTo (p2 (-0.5,-0.5))
+       # if y==0 then scaleY epsilon else scaleY y) <$> ys)
+  where
+    (Range l u) = rangeD ys
+    vscale' = if
+        | l > 0 -> if l==u then 0 else 1/u
+        | u < 0 -> if l==u then 0 else 1/l
+        | otherwise -> if l==u then 0 else 1/(u-l)
+    epsilon = 1e-8
+
+{-
+blob ((Color 0.5 0.5 0.3 0.8)) $ scaleY (1/(2853.0)) $ scaleX (1/fromIntegral (length xysHist)) $ cat' (r2 (1,0)) (with Diagrams.Prelude.& sep .~ 0.01) $ (\y -> unitSquare # moveOriginTo (p2 (-0.5,-0.5)) # scaleY y) <$> (snd <$> xysHist)
+-}
 
 bar :: ChartConfig -> [BarConfig] -> Q2 -> Chart a
 bar cc cfgs ms =
@@ -175,6 +196,38 @@ bar cc cfgs ms =
         (\c ps -> barD c ((view _y) <$> ps))
         cfgs))
     ms
+
+bar' :: ChartConfig -> [BarConfig] -> Q2 -> Chart a
+bar' cc cfgs ms =
+    chart
+    cc
+    (centerXY . mconcat .
+      (zipWith
+        (\c ps -> barD' c ((view _y) <$> ps))
+        cfgs))
+    ms
+
+
+{-
+-- bar
+bars :: BarConfig -> [Double] -> QDiagram SVG V2 Double Any
+bars cfg ys =
+  cat' (r2 (1,0)) (with Diagrams.Prelude.& sep .~ cfg ^. barSep)
+  ((\y ->
+    unitSquare
+    # moveOriginTo (p2 (-0.5,-0.5))
+    # if y==0 then scaleY epsilon else scaleY y) <$> ys)
+    # unitRect (cfg ^. barChart ^. chartColor)
+    # centerXY
+    # scaleX (1/fromIntegral (length ys)) # scaleY (1/(max-min))
+  where
+    (min,max) = range1D ys
+    epsilon = 1e-8
+
+barRange :: BarConfig -> [(Double, Double)] -> QDiagram SVG V2 Double Any
+barRange cfg xys = chartXY (cfg ^. barChart) (\x -> bars cfg (snd <$> x)) xys
+
+-}
 
 mkTicksRound :: Range -> Int -> [Double]
 mkTicksRound (Range l u) n = (first' +) . (step *) . fromIntegral <$> [0..n']

@@ -209,7 +209,7 @@ scattersdef = scatter def sc1 $ (fmap r2) <$>
 
 histdef :: Chart a
 histdef = bar
-    (chartAxes .~ [def] $ def)
+    def
     [def] (fmap r2 <$> [xysHist])
 
 grid :: Chart a
@@ -221,7 +221,7 @@ bardef = bar
       [ axisTickStyle .~
         TickLabels labels $ def
       , axisOrientation .~ Y $
-        axisPlacement .~ AxisRight $ def
+        axisPlacement .~ AxisLeft $ def
       ]
       $ def
     )

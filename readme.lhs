@@ -192,7 +192,7 @@ A few values pulled out of main, on their way to abstraction
 >
 > histdef :: Chart a
 > histdef = bar
->     (chartAxes .~ [def] $ def)
+>     def
 >     [def] (fmap r2 <$> [xysHist])
 >
 > grid :: Chart a
@@ -204,7 +204,7 @@ A few values pulled out of main, on their way to abstraction
 >       [ axisTickStyle .~
 >         TickLabels labels $ def
 >       , axisOrientation .~ Y $
->         axisPlacement .~ AxisRight $ def
+>         axisPlacement .~ AxisLeft $ def
 >       ]
 >       $ def
 >     )
@@ -218,7 +218,7 @@ A few values pulled out of main, on their way to abstraction
 
 See develop section below for my workflow.
 
->   padsvg $ grid
+>   padsvg $ bar' def [def] (fmap r2 <$> [xysHist])
 >   padpng $ grid
 >   fileSvg "other/line.svg" (200,200) linedef
 >   filePng "other/line.png" (200,200) linedef

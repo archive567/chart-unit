@@ -172,7 +172,7 @@ scattersdef <span class="fu">=</span> scatter def sc1 <span class="fu">$</span> 
 
 <span class="ot">histdef ::</span> <span class="dt">Chart</span> a
 histdef <span class="fu">=</span> bar
-    (chartAxes <span class="fu">.~</span> [def] <span class="fu">$</span> def)
+    def
     [def] (fmap r2 <span class="fu">&lt;$&gt;</span> [xysHist])
 
 <span class="ot">grid ::</span> <span class="dt">Chart</span> a
@@ -184,7 +184,7 @@ bardef <span class="fu">=</span> bar
       [ axisTickStyle <span class="fu">.~</span>
         <span class="dt">TickLabels</span> labels <span class="fu">$</span> def
       , axisOrientation <span class="fu">.~</span> <span class="dt">Y</span> <span class="fu">$</span>
-        axisPlacement <span class="fu">.~</span> <span class="dt">AxisRight</span> <span class="fu">$</span> def
+        axisPlacement <span class="fu">.~</span> <span class="dt">AxisLeft</span> <span class="fu">$</span> def
       ]
       <span class="fu">$</span> def
     )
