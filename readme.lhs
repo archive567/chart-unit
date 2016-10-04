@@ -1,4 +1,3 @@
-```include
 other/header.md
 ```
 
@@ -176,19 +175,18 @@ A few values pulled out of main, on their way to abstraction
 > linedef = line def lc1 (fmap r2 <$> [swish,swish2])
 >
 > linesdef :: Chart a
-> linesdef = line def (cycle lc1) $ (fmap r2) <$>
+> linesdef = line def (cycle lc1) $ fmap r2 .
 >     zip (fromIntegral <$> [0..] :: [Double]) <$> yss (1000, 10)
 >
 > dotsdef :: Chart a
 > dotsdef = scatter1 def $ fmap r2 xys
 >
 > scatterdef :: Chart a
-> scatterdef = scatter def [def] $ (fmap r2) <$> [xys]
+> scatterdef = scatter def [def] $ fmap r2 <$> [xys]
 >
 > scattersdef :: Chart a
-> scattersdef = scatter def sc1 $ (fmap r2) <$>
->     [take 200 $ xys, take 20 $ drop 200 $ xys]
->
+> scattersdef = scatter def sc1 $ fmap r2 <$>
+>     [take 200 xys, take 20 $ drop 200 xys]
 >
 > histdef :: Chart a
 > histdef = bar
@@ -196,7 +194,7 @@ A few values pulled out of main, on their way to abstraction
 >     [def] (fmap r2 <$> [xysHist])
 >
 > grid :: Chart a
-> grid = (scatter def [def]) ([r2 <$> dGrid])
+> grid = scatter def [def] [r2 <$> dGrid]
 >
 > bardef :: Chart a
 > bardef = bar
@@ -211,15 +209,15 @@ A few values pulled out of main, on their way to abstraction
 >     [def]
 >     [fmap r2 (take 10 xys)]
 >   where
->     labels = (fmap Text.pack <$> take 10 $ (:[]) <$> ['a'..])
+>     labels = fmap Text.pack <$> take 10 $ (:[]) <$> ['a'..]
 >
 > main :: IO ()
 > main = do
 
 See develop section below for my workflow.
 
->   padsvg $ bar' def [def] (fmap r2 <$> [xysHist])
->   padpng $ grid
+>   scratchSvg grid -- $ bar' def [def] (fmap r2 <$> [xysHist])
+>   scratchPng grid
 >   fileSvg "other/line.svg" (200,200) linedef
 >   filePng "other/line.png" (200,200) linedef
 >   fileSvg "other/lines.svg" (200,200) linesdef
@@ -253,14 +251,10 @@ You can slide up and down the various diagrams abstraction levels creating trans
 workflow
 ---
 
-> padsvg :: Chart SVG -> IO ()
-> padsvg t =
->   fileSvg "other/scratchpad.svg" (400,400) t
->
-> padpng :: Chart Rasterific -> IO ()
-> padpng t =
->   filePng "other/scratchpad.png" (400,400) t
->
+> scratchSvg :: Chart SVG -> IO ()
+> scratchSvg = fileSvg "other/scratchpad.svg" (400,400)
+> scratchPng :: Chart Rasterific -> IO ()
+> scratchPng = filePng "other/scratchpad.png" (400,400)
 
 Create a markdown version of readme.lhs:
 
