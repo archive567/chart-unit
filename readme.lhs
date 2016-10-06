@@ -7,6 +7,10 @@ other/header.md
 scratchpad
 ---
 
+Latest bug: barD not right
+
+scratchSvg $ mconcat [barD (barColor .~ Color 0.7 0.4 0.3 0.2 $ def) $ (view _y) <$> zipWith V2 (fromIntegral <$> [0..10]) (fromIntegral <$> [0..10]), barD (barColor .~ Color 0.3 0.6 0.7 0.2 $ def) $ (view _y) <$> zipWith V2 (fromIntegral <$> [0..10]) (reverse $ fromIntegral <$> [2..10])]
+
 ![](other/scratchpad.svg)
 
 This slowly growing collection of charts:
@@ -216,7 +220,7 @@ A few values pulled out of main, on their way to abstraction
 
 See develop section below for my workflow.
 
->   scratchSvg grid -- $ bar' def [def] (fmap r2 <$> [xysHist])
+>   scratchSvg $ bar' def [def] (RangeXY (Range 0 1) (Range 0 1)) (fmap r2 <$> [xysHist])
 >   scratchPng grid
 >   fileSvg "other/line.svg" (200,200) linedef
 >   filePng "other/line.png" (200,200) linedef

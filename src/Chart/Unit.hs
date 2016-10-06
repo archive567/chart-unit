@@ -7,7 +7,8 @@ import Chart.Types
 import qualified Control.Foldl as L
 import Control.Lens hiding (beside, none, (#), at)
 import qualified Data.Text as Text
-import Diagrams.Prelude hiding (unit, D, Color) 
+import Diagrams.Prelude hiding (unit, D, Color, scale)
+import qualified Diagrams.Prelude as Diagrams
 import Protolude hiding (min,max,from,to)
 import Text.Printf
 import Diagrams.Backend.SVG (SVG, renderSVG)
@@ -36,6 +37,11 @@ scaleD :: Range -> [Double] -> [Double]
 scaleD (Range l u) xs =
   (\x -> (x-l)/(u-l) - 0.5) <$> xs
 
+scale :: RangeXY -> Q2 -> Q2
+scale (RangeXY rx ry) qs = s <$> qs
+  where
+    s ps = zipWith V2 (scaleD rx $ (view _x) <$> ps) (scaleD ry $ (view _y) <$> ps)
+
 -- unit scales and translates to a [-0.5,0.5] range
 unitD :: [Double] -> [Double]
 unitD xs =
@@ -47,10 +53,7 @@ unitD xs =
         | otherwise -> (\x -> (x-l)/(u-l) - 0.5)
 
 unit :: Q2 -> Q2
-unit ms = s <$> ms
-  where
-    (RangeXY rx ry) = range ms
-    s ps = zipWith V2 (scaleD rx $ (view _x) <$> ps) (scaleD ry $ (view _y) <$> ps)
+unit qs = scale (range qs) qs
 
 -- axis rendering
 axisXY :: AxisConfig -> Range -> Chart a
@@ -101,13 +104,14 @@ axisXY cfg r = pad (cfg ^. axisPad) $ strut' $ centerXY $
           unitSquare
 
 -- chart rendering
-chart ::
+chartWith ::
     ChartConfig
     -> (Q2 -> Chart a)
+    -> RangeXY
     -> Q2
     -> Chart a
-chart (ChartConfig p axes) renderer ms =
-  L.fold (L.Fold step (renderer (unit ms)) (pad p)) axes
+chartWith (ChartConfig p axes) renderer rangeXY ms =
+  L.fold (L.Fold step (renderer (scale rangeXY ms)) (pad p)) axes
   where
     step x cfg = beside dir x (axisXY cfg r)
       where
@@ -121,6 +125,13 @@ chart (ChartConfig p axes) renderer ms =
           AxisRight -> r2 (1,0)
     (RangeXY rx ry) = range ms
 
+-- chart rendering
+chart ::
+    ChartConfig
+    -> (Q2 -> Chart a)
+    -> Q2
+    -> Chart a
+chart cc renderer ms = chartWith cc renderer (range ms) ms
 
 -- a line is just a scatter chart rendered with a line (and with a usually stable x-value series)
 line1 ∷ LineConfig → Q1 → Chart a
@@ -191,22 +202,22 @@ bar :: ChartConfig -> [BarConfig] -> Q2 -> Chart a
 bar cc cfgs ms =
     chart
     cc
-    (centerXY . mconcat .
+    (mconcat .
       (zipWith
         (\c ps -> barD c ((view _y) <$> ps))
         cfgs))
     ms
 
-bar' :: ChartConfig -> [BarConfig] -> Q2 -> Chart a
-bar' cc cfgs ms =
-    chart
+bar' :: ChartConfig -> [BarConfig] -> RangeXY -> Q2 -> Chart a
+bar' cc cfgs r ms =
+    chartWith
     cc
     (centerXY . mconcat .
       (zipWith
         (\c ps -> barD' c ((view _y) <$> ps))
         cfgs))
+    r
     ms
-
 
 {-
 -- bar
@@ -260,7 +271,7 @@ mkLabel label cfg =
     (cfg ^. axisAlignedTextRight)
     (cfg ^. axisAlignedTextBottom)
     (Text.unpack label) #
-  scale (cfg ^. axisTextSize) #
+  Diagrams.scale (cfg ^. axisTextSize) #
   fcA (color $ cfg ^.axisTextColor))
   where
     dir = case cfg ^. axisOrientation of

@@ -1,9 +1,8 @@
-<meta charset="utf-8"> <link rel="stylesheet" href="other/lhs.css">
-<script type="text/javascript" async
-  src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-MML-AM_CHTML">
-</script>
+<p>other/header.md ```</p>
 <h1 id="chart-unit-build-status"><a href="https://tonyday567.github.io/chart-unit.html">chart-unit</a> <a href="https://travis-ci.org/tonyday567/chart-unit"><img src="https://travis-ci.org/tonyday567/chart-unit.png" alt="Build Status" /></a></h1>
 <h2 id="scratchpad">scratchpad</h2>
+<p>Latest bug: barD not right</p>
+<p>scratchSvg $ mconcat [barD (barColor .~ Color 0.7 0.4 0.3 0.2 $ def) $ (view _y) &lt;<span class="math inline">\(&gt; zipWith V2 (fromIntegral &lt;\)</span>&gt; [0..10]) (fromIntegral &lt;$&gt; [0..10]), barD (barColor .~ Color 0.3 0.6 0.7 0.2 $ def) $ (view _y) &lt;<span class="math inline">\(&gt; zipWith V2 (fromIntegral &lt;\)</span>&gt; [0..10]) (reverse $ fromIntegral &lt;$&gt; [2..10])]</p>
 <div class="figure">
 <img src="other/scratchpad.svg" />
 
@@ -156,19 +155,18 @@ swish2 <span class="fu">=</span> [(<span class="fl">0.0</span>,<span class="fl">
 linedef <span class="fu">=</span> line def lc1 (fmap r2 <span class="fu">&lt;$&gt;</span> [swish,swish2])
 
 <span class="ot">linesdef ::</span> <span class="dt">Chart</span> a
-linesdef <span class="fu">=</span> line def (cycle lc1) <span class="fu">$</span> (fmap r2) <span class="fu">&lt;$&gt;</span>
+linesdef <span class="fu">=</span> line def (cycle lc1) <span class="fu">$</span> fmap r2 <span class="fu">.</span>
     zip (fromIntegral <span class="fu">&lt;$&gt;</span> [<span class="dv">0</span><span class="fu">..</span>]<span class="ot"> ::</span> [<span class="dt">Double</span>]) <span class="fu">&lt;$&gt;</span> yss (<span class="dv">1000</span>, <span class="dv">10</span>)
 
 <span class="ot">dotsdef ::</span> <span class="dt">Chart</span> a
 dotsdef <span class="fu">=</span> scatter1 def <span class="fu">$</span> fmap r2 xys
 
 <span class="ot">scatterdef ::</span> <span class="dt">Chart</span> a
-scatterdef <span class="fu">=</span> scatter def [def] <span class="fu">$</span> (fmap r2) <span class="fu">&lt;$&gt;</span> [xys]
+scatterdef <span class="fu">=</span> scatter def [def] <span class="fu">$</span> fmap r2 <span class="fu">&lt;$&gt;</span> [xys]
 
 <span class="ot">scattersdef ::</span> <span class="dt">Chart</span> a
-scattersdef <span class="fu">=</span> scatter def sc1 <span class="fu">$</span> (fmap r2) <span class="fu">&lt;$&gt;</span>
-    [take <span class="dv">200</span> <span class="fu">$</span> xys, take <span class="dv">20</span> <span class="fu">$</span> drop <span class="dv">200</span> <span class="fu">$</span> xys]
-
+scattersdef <span class="fu">=</span> scatter def sc1 <span class="fu">$</span> fmap r2 <span class="fu">&lt;$&gt;</span>
+    [take <span class="dv">200</span> xys, take <span class="dv">20</span> <span class="fu">$</span> drop <span class="dv">200</span> xys]
 
 <span class="ot">histdef ::</span> <span class="dt">Chart</span> a
 histdef <span class="fu">=</span> bar
@@ -176,7 +174,7 @@ histdef <span class="fu">=</span> bar
     [def] (fmap r2 <span class="fu">&lt;$&gt;</span> [xysHist])
 
 <span class="ot">grid ::</span> <span class="dt">Chart</span> a
-grid <span class="fu">=</span> (scatter def [def]) ([r2 <span class="fu">&lt;$&gt;</span> dGrid])
+grid <span class="fu">=</span> scatter def [def] [r2 <span class="fu">&lt;$&gt;</span> dGrid]
 
 <span class="ot">bardef ::</span> <span class="dt">Chart</span> a
 bardef <span class="fu">=</span> bar
@@ -191,13 +189,13 @@ bardef <span class="fu">=</span> bar
     [def]
     [fmap r2 (take <span class="dv">10</span> xys)]
   <span class="kw">where</span>
-    labels <span class="fu">=</span> (fmap Text.pack <span class="fu">&lt;$&gt;</span> take <span class="dv">10</span> <span class="fu">$</span> (<span class="fu">:</span>[]) <span class="fu">&lt;$&gt;</span> [<span class="ch">&#39;a&#39;</span><span class="fu">..</span>])
+    labels <span class="fu">=</span> fmap Text.pack <span class="fu">&lt;$&gt;</span> take <span class="dv">10</span> <span class="fu">$</span> (<span class="fu">:</span>[]) <span class="fu">&lt;$&gt;</span> [<span class="ch">&#39;a&#39;</span><span class="fu">..</span>]
 
 <span class="ot">main ::</span> <span class="dt">IO</span> ()
 main <span class="fu">=</span> <span class="kw">do</span></code></pre></div>
 <p>See develop section below for my workflow.</p>
-<div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell">  padsvg <span class="fu">$</span> grid
-  padpng <span class="fu">$</span> grid
+<div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell">  scratchSvg <span class="fu">$</span> bar&#39; def [def] (<span class="dt">RangeXY</span> (<span class="dt">Range</span> <span class="dv">0</span> <span class="dv">1</span>) (<span class="dt">Range</span> <span class="dv">0</span> <span class="dv">1</span>)) (fmap r2 <span class="fu">&lt;$&gt;</span> [xysHist])
+  scratchPng grid
   fileSvg <span class="st">&quot;other/line.svg&quot;</span> (<span class="dv">200</span>,<span class="dv">200</span>) linedef
   filePng <span class="st">&quot;other/line.png&quot;</span> (<span class="dv">200</span>,<span class="dv">200</span>) linedef
   fileSvg <span class="st">&quot;other/lines.svg&quot;</span> (<span class="dv">200</span>,<span class="dv">200</span>) linesdef
@@ -224,13 +222,10 @@ main <span class="fu">=</span> <span class="kw">do</span></code></pre></div>
 <p>You can slide up and down the various diagrams abstraction levels creating transformations at each level. For example, here's something I use to work at the point level:</p>
 <pre><code>unitp f = unitSquare # f # fromVertices # closeTrail # strokeTrail</code></pre>
 <h2 id="workflow">workflow</h2>
-<div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell"><span class="ot">padsvg ::</span> <span class="dt">Chart</span> <span class="dt">SVG</span> <span class="ot">-&gt;</span> <span class="dt">IO</span> ()
-padsvg t <span class="fu">=</span>
-  fileSvg <span class="st">&quot;other/scratchpad.svg&quot;</span> (<span class="dv">400</span>,<span class="dv">400</span>) t
-
-<span class="ot">padpng ::</span> <span class="dt">Chart</span> <span class="dt">Rasterific</span> <span class="ot">-&gt;</span> <span class="dt">IO</span> ()
-padpng t <span class="fu">=</span>
-  filePng <span class="st">&quot;other/scratchpad.png&quot;</span> (<span class="dv">400</span>,<span class="dv">400</span>) t</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell"><span class="ot">scratchSvg ::</span> <span class="dt">Chart</span> <span class="dt">SVG</span> <span class="ot">-&gt;</span> <span class="dt">IO</span> ()
+scratchSvg <span class="fu">=</span> fileSvg <span class="st">&quot;other/scratchpad.svg&quot;</span> (<span class="dv">400</span>,<span class="dv">400</span>)
+<span class="ot">scratchPng ::</span> <span class="dt">Chart</span> <span class="dt">Rasterific</span> <span class="ot">-&gt;</span> <span class="dt">IO</span> ()
+scratchPng <span class="fu">=</span> filePng <span class="st">&quot;other/scratchpad.png&quot;</span> (<span class="dv">400</span>,<span class="dv">400</span>)</code></pre></div>
 <p>Create a markdown version of readme.lhs:</p>
 <pre><code>pandoc -f markdown+lhs -t html -i readme.lhs -o index.html</code></pre>
 <p>Then fire up an intero session, and use padq to display coding results on-the-fly, mashing the refresh button on a browser pointed to readme.html.</p>
