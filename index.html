@@ -1,5 +1,26 @@
-<p>other/header.md ```</p>
+<meta charset="utf-8"> <link rel="stylesheet" href="other/lhs.css">
+<script type="text/javascript" async
+  src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-MML-AM_CHTML">
+</script>
 <h1 id="chart-unit-build-status"><a href="https://tonyday567.github.io/chart-unit.html">chart-unit</a> <a href="https://travis-ci.org/tonyday567/chart-unit"><img src="https://travis-ci.org/tonyday567/chart-unit.png" alt="Build Status" /></a></h1>
+<h2 id="latest-changes">Latest changes:</h2>
+<p>I tightened the api right up and have gone to:</p>
+<p>Data types I called <code>Q1</code> and <code>Q2</code> for no good reason other than it gets fed into a chart configuration and makes a QDiagram.</p>
+<p>type Q2 = [[V2 Double]] type Q1 = [V2 Double]</p>
+<p>I mostly think of a chart as multiple data sets that share common-ranged dimensions in an XY plane. If they don't share ranges, then representing them on a single XY plane is almost the same thing. Regardless, in diagrams, combining two lines with different scales is an easy mappend.</p>
+<p>In practice, I'm finding that most charts are multiple data sets and Q2 is the better api choice.</p>
+<p>chartWith :: ChartConfig -&gt; (Q2 -&gt; Chart a) -&gt; RangeXY -&gt; Q2 -&gt; Chart a</p>
+<p>The main rendering loop now takes:</p>
+<ul class="incremental">
+<li>A function that takes a Q2 (double list of points on the XY plane) and produces a visual representation with the same scale as the data.</li>
+<li>An XY range to provide a UI component to help the user identify the visual represention of the core chart. Others may call it axes, gridlines, headings and legends.</li>
+<li>the data</li>
+</ul>
+<p>and produces a diagrams object ready for rendering, or available for further composition.</p>
+<h2 id="development-path">Development path</h2>
+<p>My bar chart is defective, and needs a better algorithm.</p>
+<p>It should be very easy to combine charts. I'd like to take the scatter chart and show histograms (of the same data) along the x and y axis. That should be a one liner.</p>
+<p>The next major chart type I wanted to implement is an area chart (aka pixels on a screen). This is where one needs a [[V3 Double]] data type; 2 dimensions for where on the XY plane and one about what to do when you're there (colour a rectangle, size a dot, draw a contour line etc). What ggplot calls aesthetics.</p>
 <h2 id="scratchpad">scratchpad</h2>
 <p>Latest bug: barD not right</p>
 <p>scratchSvg $ mconcat [barD (barColor .~ Color 0.7 0.4 0.3 0.2 $ def) $ (view _y) &lt;<span class="math inline">\(&gt; zipWith V2 (fromIntegral &lt;\)</span>&gt; [0..10]) (fromIntegral &lt;$&gt; [0..10]), barD (barColor .~ Color 0.3 0.6 0.7 0.2 $ def) $ (view _y) &lt;<span class="math inline">\(&gt; zipWith V2 (fromIntegral &lt;\)</span>&gt; [0..10]) (reverse $ fromIntegral &lt;$&gt; [2..10])]</p>
@@ -136,11 +157,6 @@ xysHist <span class="fu">=</span> unsafeInlineIO <span class="fu">$</span> <span
 
 </div>
 <p>This chart will look the same on a data scale change, except for tick magnitudes.</p>
-<h2 id="chart">chart</h2>
-<p>todo: this should be easy to abstract to something like:</p>
-<p>chartXY takes data, data representation, axes and configuration and collapses into a concrete Chart.</p>
-<p>data ChartData = ChartData { _data :: , _axes :: , _cfg :: }</p>
-<p>chartXY :: [ChartData] -&gt; ChartSvg</p>
 <h2 id="main">main</h2>
 <p>A few values pulled out of main, on their way to abstraction</p>
 <div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell"><span class="ot">dGrid ::</span> [(<span class="dt">Double</span>,<span class="dt">Double</span>)]
@@ -231,4 +247,3 @@ scratchPng <span class="fu">=</span> filePng <span class="st">&quot;other/scratc
 <p>Then fire up an intero session, and use padq to display coding results on-the-fly, mashing the refresh button on a browser pointed to readme.html.</p>
 <p>or go for a compilation loop like:</p>
 <pre><code>stack install &amp;&amp; readme &amp;&amp; pandoc -f markdown+lhs -t html -i readme.lhs -o index.html --mathjax --filter pandoc-include &amp;&amp; pandoc -f markdown+lhs -t markdown -i readme.lhs -o readme.md --mathjax --filter pandoc-include</code></pre>
-<p>chartM'' cc chart ms = L.fold (L.Fold step mempty identity) $ chartM' cc chart ms where step acc a = beside (r2 (0,-1)) acc a</p>

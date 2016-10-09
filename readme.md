@@ -1,7 +1,58 @@
-other/header.md \`\`\`
-
+<meta charset="utf-8"> <link rel="stylesheet" href="other/lhs.css">
+<script type="text/javascript" async
+  src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-MML-AM_CHTML">
+</script>
 [chart-unit](https://tonyday567.github.io/chart-unit.html) [![Build Status](https://travis-ci.org/tonyday567/chart-unit.png)](https://travis-ci.org/tonyday567/chart-unit)
 ==========================================================================================================================================================================
+
+Latest changes:
+---------------
+
+I tightened the api right up and have gone to:
+
+Data types I called `Q1` and `Q2` for no good reason other than it gets
+fed into a chart configuration and makes a QDiagram.
+
+type Q2 = \[\[V2 Double\]\] type Q1 = \[V2 Double\]
+
+I mostly think of a chart as multiple data sets that share common-ranged
+dimensions in an XY plane. If they don't share ranges, then representing
+them on a single XY plane is almost the same thing. Regardless, in
+diagrams, combining two lines with different scales is an easy mappend.
+
+In practice, I'm finding that most charts are multiple data sets and Q2
+is the better api choice.
+
+chartWith :: ChartConfig -&gt; (Q2 -&gt; Chart a) -&gt; RangeXY -&gt; Q2
+-&gt; Chart a
+
+The main rendering loop now takes:
+
+-   A function that takes a Q2 (double list of points on the XY plane)
+    and produces a visual representation with the same scale as
+    the data.
+-   An XY range to provide a UI component to help the user identify the
+    visual represention of the core chart. Others may call it axes,
+    gridlines, headings and legends.
+-   the data
+
+and produces a diagrams object ready for rendering, or available for
+further composition.
+
+Development path
+----------------
+
+My bar chart is defective, and needs a better algorithm.
+
+It should be very easy to combine charts. I'd like to take the scatter
+chart and show histograms (of the same data) along the x and y axis.
+That should be a one liner.
+
+The next major chart type I wanted to implement is an area chart (aka
+pixels on a screen). This is where one needs a \[\[V3 Double\]\] data
+type; 2 dimensions for where on the XY plane and one about what to do
+when you're there (colour a rectangle, size a dot, draw a contour line
+etc). What ggplot calls aesthetics.
 
 scratchpad
 ----------
@@ -169,18 +220,6 @@ some extent and look almost the same across scales.
 This chart will look the same on a data scale change, except for tick
 magnitudes.
 
-chart
------
-
-todo: this should be easy to abstract to something like:
-
-chartXY takes data, data representation, axes and configuration and
-collapses into a concrete Chart.
-
-data ChartData = ChartData { \_data :: , \_axes :: , \_cfg :: }
-
-chartXY :: \[ChartData\] -&gt; ChartSvg
-
 main
 ----
 
@@ -298,6 +337,3 @@ readme.html.
 or go for a compilation loop like:
 
     stack install && readme && pandoc -f markdown+lhs -t html -i readme.lhs -o index.html --mathjax --filter pandoc-include && pandoc -f markdown+lhs -t markdown -i readme.lhs -o readme.md --mathjax --filter pandoc-include
-
-chartM'' cc chart ms = L.fold (L.Fold step mempty identity) \$ chartM'
-cc chart ms where step acc a = beside (r2 (0,-1)) acc a
