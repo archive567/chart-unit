@@ -226,7 +226,11 @@ axesdef <span class="fu">=</span> chartWith def
 
 <span class="ot">doubleHist ::</span> <span class="dt">Chart</span> a
 doubleHist <span class="fu">=</span> rect&#39; def
-    [ def, rectBorderColor <span class="fu">.~</span> <span class="dt">Color</span> <span class="dv">0</span> <span class="dv">0</span> <span class="dv">0</span> <span class="dv">0</span> <span class="fu">$</span> def]
+    [ def
+    , rectBorderColor <span class="fu">.~</span> <span class="dt">Color</span> <span class="dv">0</span> <span class="dv">0</span> <span class="dv">0</span> <span class="dv">0</span>
+      <span class="fu">$</span> rectColor <span class="fu">.~</span> <span class="dt">Color</span> <span class="fl">0.333</span> <span class="fl">0.333</span> <span class="fl">0.333</span> <span class="fl">0.4</span>
+      <span class="fu">$</span> def
+    ]
     [ hist <span class="dv">50</span> <span class="fu">$</span> (\(<span class="dt">V2</span> x y) <span class="ot">-&gt;</span> x<span class="fu">+</span>y) <span class="fu">&lt;$&gt;</span> xys <span class="dv">10000</span> <span class="fl">0.8</span>
     , hist <span class="dv">50</span> <span class="fu">$</span> (\(<span class="dt">V2</span> x y) <span class="ot">-&gt;</span> x<span class="fu">+</span>y) <span class="fu">&lt;$&gt;</span> xys <span class="dv">10000</span> <span class="dv">0</span>
     ]

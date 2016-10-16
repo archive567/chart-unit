@@ -289,7 +289,11 @@ axesdef = chartWith def
 
 doubleHist :: Chart a
 doubleHist = rect' def
-    [ def, rectBorderColor .~ Color 0 0 0 0 $ def]
+    [ def
+    , rectBorderColor .~ Color 0 0 0 0
+      $ rectColor .~ Color 0.333 0.333 0.333 0.4
+      $ def
+    ]
     [ hist 50 $ (\(V2 x y) -> x+y) <$> xys 10000 0.8
     , hist 50 $ (\(V2 x y) -> x+y) <$> xys 10000 0
     ]

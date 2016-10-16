@@ -146,7 +146,7 @@ data RectConfig = RectConfig
   }
 
 instance Default RectConfig where
-  def = RectConfig 1 (Color 0.333 0.333 0.333 1) (Color 0.365 0.647 0.855 0.5)
+  def = RectConfig 1 (Color 0.333 0.333 0.333 0.4) (Color 0.365 0.647 0.855 0.5)
 
 makeLenses ''RectConfig
 
