@@ -97,8 +97,8 @@ chartWith (ChartConfig p axes) renderer range&#39; scaler ms =</code></pre>
 <span class="kw">import </span><span class="dt">Diagrams.Backend.Rasterific</span> (<span class="dt">Rasterific</span>)</code></pre></div>
 <h2 id="some-test-data">some test data</h2>
 <p>Standard normal random variates in one dimension.</p>
-<div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell"><span class="ot">xs ::</span> <span class="dt">Int</span> <span class="ot">-&gt;</span> <span class="dt">IO</span> [<span class="dt">Double</span>]
-xs n <span class="fu">=</span>
+<div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell"><span class="ot">rvs ::</span> <span class="dt">Int</span> <span class="ot">-&gt;</span> <span class="dt">IO</span> [<span class="dt">Double</span>]
+rvs n <span class="fu">=</span>
   replicateM n <span class="fu">$</span> R.runRVar R.stdNormal <span class="dt">R.StdRandom</span></code></pre></div>
 <p>This generates n 2D random variate pairs where x and y are correlated.</p>
 <div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell"><span class="ot">xys ::</span> <span class="dt">Int</span> <span class="ot">-&gt;</span> <span class="dt">Double</span> <span class="ot">-&gt;</span> [<span class="dt">V2</span> <span class="dt">Double</span>]
@@ -121,6 +121,15 @@ h <span class="fu">=</span> unsafeInlineIO <span class="fu">$</span> <span class
   <span class="kw">let</span> histList <span class="fu">=</span> (\x <span class="ot">-&gt;</span> Map.findWithDefault <span class="dv">0</span> x histMap) <span class="fu">&lt;$&gt;</span> [<span class="dv">0</span><span class="fu">..</span>n]
   return (zipWith4 <span class="dt">V4</span> (init cuts) (replicate (n<span class="fu">+</span><span class="dv">1</span>) <span class="dv">0</span>) (drop <span class="dv">1</span> cuts) (fromIntegral <span class="fu">&lt;$&gt;</span> histList))
 </code></pre></div>
+<div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell"><span class="ot">hist ::</span> <span class="dt">Int</span> <span class="ot">-&gt;</span> [<span class="dt">Double</span>] <span class="ot">-&gt;</span> [<span class="dt">V4</span> <span class="dt">Double</span>]
+hist n xs <span class="fu">=</span> (zipWith4 <span class="dt">V4</span> (init cuts) (replicate (length xs<span class="fu">+</span><span class="dv">1</span>) <span class="dv">0</span>) (drop <span class="dv">1</span> cuts) (fromIntegral <span class="fu">&lt;$&gt;</span> histList))
+  <span class="kw">where</span>
+    r <span class="fu">=</span> range xs
+    cuts <span class="fu">=</span> mkTicksExact r n
+    count <span class="fu">=</span> <span class="dt">L.Fold</span> (\x a <span class="ot">-&gt;</span> Map.insertWith (<span class="fu">+</span>) a <span class="dv">1</span> x) Map.empty identity
+    countBool <span class="fu">=</span> <span class="dt">L.Fold</span> (\x a <span class="ot">-&gt;</span> x <span class="fu">+</span> <span class="kw">if</span> a <span class="kw">then</span> <span class="dv">1</span> <span class="kw">else</span> <span class="dv">0</span>) <span class="dv">0</span> identity
+    histMap <span class="fu">=</span> L.fold count <span class="fu">$</span> (\x <span class="ot">-&gt;</span> L.fold countBool (fmap (x <span class="fu">&gt;</span>) cuts)) <span class="fu">&lt;$&gt;</span> xs
+    histList <span class="fu">=</span> (\x <span class="ot">-&gt;</span> Map.findWithDefault <span class="dv">0</span> x histMap) <span class="fu">&lt;$&gt;</span> [<span class="dv">0</span><span class="fu">..</span>length xs]</code></pre></div>
 <h2 id="scale-robustness">Scale Robustness</h2>
 <p>Starting with the lowest level scatter chart:</p>
 <pre><code>scatter1 def (xys 1000 0.7)</code></pre>
@@ -169,7 +178,7 @@ linedef <span class="fu">=</span> line def lc1 (fmap r2 <span class="fu">&lt;$&g
 linesdef <span class="fu">=</span>
     line def (((\c <span class="ot">-&gt;</span> <span class="dt">LineConfig</span> <span class="fl">0.01</span> <span class="fu">$</span> opac <span class="fl">0.5</span> c) <span class="fu">&lt;$&gt;</span> palette1)) <span class="fu">$</span>
     ((\x <span class="ot">-&gt;</span> zipWith <span class="dt">V2</span> (fromIntegral <span class="fu">&lt;$&gt;</span> [<span class="dv">0</span><span class="fu">..</span>]<span class="ot"> ::</span> [<span class="dt">Double</span>]) x)) <span class="fu">&lt;$&gt;</span>
-    ((drop <span class="dv">1</span> <span class="fu">.</span> L.scan L.sum) <span class="fu">&lt;$&gt;</span> (unsafeInlineIO <span class="fu">$</span> replicateM <span class="dv">5</span> <span class="fu">$</span> xs <span class="dv">100</span>))
+    ((drop <span class="dv">1</span> <span class="fu">.</span> L.scan L.sum) <span class="fu">&lt;$&gt;</span> (unsafeInlineIO <span class="fu">$</span> replicateM <span class="dv">5</span> <span class="fu">$</span> rvs <span class="dv">100</span>))
 
 
 <span class="ot">predotsdef ::</span> <span class="dt">Chart</span> a
@@ -215,11 +224,18 @@ axesdef <span class="fu">=</span> chartWith def
   (const unitSquare)
   (<span class="dt">V2</span> (<span class="dt">Range</span> (<span class="dv">0</span>,<span class="dv">1</span>)) (<span class="dt">Range</span> (<span class="fu">-</span><span class="dv">1000</span>,<span class="dv">10000</span>))) scaleR2s ([[]]<span class="ot"> ::</span> [[<span class="dt">V2</span> <span class="dt">Double</span>]])
 
+<span class="ot">doubleHist ::</span> <span class="dt">Chart</span> a
+doubleHist <span class="fu">=</span> rect&#39; def
+    [ def, rectBorderColor <span class="fu">.~</span> <span class="dt">Color</span> <span class="dv">0</span> <span class="dv">0</span> <span class="dv">0</span> <span class="dv">0</span> <span class="fu">$</span> def]
+    [ hist <span class="dv">50</span> <span class="fu">$</span> (\(<span class="dt">V2</span> x y) <span class="ot">-&gt;</span> x<span class="fu">+</span>y) <span class="fu">&lt;$&gt;</span> xys <span class="dv">10000</span> <span class="fl">0.8</span>
+    , hist <span class="dv">50</span> <span class="fu">$</span> (\(<span class="dt">V2</span> x y) <span class="ot">-&gt;</span> x<span class="fu">+</span>y) <span class="fu">&lt;$&gt;</span> xys <span class="dv">10000</span> <span class="dv">0</span>
+    ]
+
 <span class="ot">main ::</span> <span class="dt">IO</span> ()
 main <span class="fu">=</span> <span class="kw">do</span></code></pre></div>
 <p>See develop section below for my workflow.</p>
-<div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell">  scratchSvg <span class="fu">$</span> rect&#39; def [def] [h]
-  scratchPng <span class="fu">$</span> rect&#39; def [def] [h]
+<div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell">  scratchSvg <span class="fu">$</span> doubleHist
+  scratchPng <span class="fu">$</span> doubleHist
   fileSvg <span class="st">&quot;other/line.svg&quot;</span> (<span class="dv">200</span>,<span class="dv">200</span>) linedef
   filePng <span class="st">&quot;other/line.png&quot;</span> (<span class="dv">200</span>,<span class="dv">200</span>) linedef
   fileSvg <span class="st">&quot;other/lines.svg&quot;</span> (<span class="dv">200</span>,<span class="dv">200</span>) linesdef

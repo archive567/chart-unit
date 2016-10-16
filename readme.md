@@ -134,8 +134,8 @@ some test data
 Standard normal random variates in one dimension.
 
 ``` {.sourceCode .literate .haskell}
-xs :: Int -> IO [Double]
-xs n =
+rvs :: Int -> IO [Double]
+rvs n =
   replicateM n $ R.runRVar R.stdNormal R.StdRandom
 ```
 
@@ -169,6 +169,18 @@ h = unsafeInlineIO $ do
   let histList = (\x -> Map.findWithDefault 0 x histMap) <$> [0..n]
   return (zipWith4 V4 (init cuts) (replicate (n+1) 0) (drop 1 cuts) (fromIntegral <$> histList))
 
+```
+
+``` {.sourceCode .literate .haskell}
+hist :: Int -> [Double] -> [V4 Double]
+hist n xs = (zipWith4 V4 (init cuts) (replicate (length xs+1) 0) (drop 1 cuts) (fromIntegral <$> histList))
+  where
+    r = range xs
+    cuts = mkTicksExact r n
+    count = L.Fold (\x a -> Map.insertWith (+) a 1 x) Map.empty identity
+    countBool = L.Fold (\x a -> x + if a then 1 else 0) 0 identity
+    histMap = L.fold count $ (\x -> L.fold countBool (fmap (x >) cuts)) <$> xs
+    histList = (\x -> Map.findWithDefault 0 x histMap) <$> [0..length xs]
 ```
 
 Scale Robustness
@@ -229,7 +241,7 @@ linesdef :: Chart a
 linesdef =
     line def (((\c -> LineConfig 0.01 $ opac 0.5 c) <$> palette1)) $
     ((\x -> zipWith V2 (fromIntegral <$> [0..] :: [Double]) x)) <$>
-    ((drop 1 . L.scan L.sum) <$> (unsafeInlineIO $ replicateM 5 $ xs 100))
+    ((drop 1 . L.scan L.sum) <$> (unsafeInlineIO $ replicateM 5 $ rvs 100))
 
 
 predotsdef :: Chart a
@@ -275,6 +287,13 @@ axesdef = chartWith def
   (const unitSquare)
   (V2 (Range (0,1)) (Range (-1000,10000))) scaleR2s ([[]] :: [[V2 Double]])
 
+doubleHist :: Chart a
+doubleHist = rect' def
+    [ def, rectBorderColor .~ Color 0 0 0 0 $ def]
+    [ hist 50 $ (\(V2 x y) -> x+y) <$> xys 10000 0.8
+    , hist 50 $ (\(V2 x y) -> x+y) <$> xys 10000 0
+    ]
+
 main :: IO ()
 main = do
 ```
@@ -282,8 +301,8 @@ main = do
 See develop section below for my workflow.
 
 ``` {.sourceCode .literate .haskell}
-  scratchSvg $ rect' def [def] [h]
-  scratchPng $ rect' def [def] [h]
+  scratchSvg $ doubleHist
+  scratchPng $ doubleHist
   fileSvg "other/line.svg" (200,200) linedef
   filePng "other/line.png" (200,200) linedef
   fileSvg "other/lines.svg" (200,200) linesdef
