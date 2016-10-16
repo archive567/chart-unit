@@ -9,19 +9,6 @@ import Data.List ((!!))
 import Diagrams.Prelude hiding (Color(..))
 import qualified Diagrams.TwoD.Text
 
-data Range = Range
-    { upper :: Double
-    , lower :: Double
-    } deriving (Show, Eq)
-
-data RangeXY = RangeXY
-    { rangeX :: Range
-    , rangeY :: Range
-    } deriving (Show, Eq)
-
-type Q2 = [[V2 Double]]
-type Q1 = [V2 Double]
-
 type Chart a =
     ( Renderable (Path V2 Double) a
     , Renderable (Diagrams.TwoD.Text.Text Double) a) =>
@@ -63,8 +50,11 @@ palette1 = [ Color 0.333 0.333 0.333 1.00 -- grey
            , Color 0.945 0.345 0.329 1.00 -- red
            ]
 
-opac :: Double -> [Color] -> [Color]
-opac t cs = (\(Color r g b o) -> Color r g b (o*t)) <$> cs
+opacs :: Double -> [Color] -> [Color]
+opacs t cs = (\(Color r g b o) -> Color r g b (o*t)) <$> cs
+
+opac :: Double -> Color -> Color
+opac t c = (\(Color r g b o) -> Color r g b (o*t)) c
 
 data AxisConfig = AxisConfig
   { _axisPad :: Double
@@ -149,7 +139,16 @@ data LineConfig = LineConfig
 instance Default LineConfig where
   def = LineConfig 0.02 colorLine
 
-makeLenses ''LineConfig
+data RectConfig = RectConfig
+  { _rectBorderWidth :: Double
+  , _rectBorderColor :: Color
+  , _rectColor :: Color
+  }
+
+instance Default RectConfig where
+  def = RectConfig 1 (Color 0.333 0.333 0.333 1) (Color 0.365 0.647 0.855 0.5)
+
+makeLenses ''RectConfig
 
 data ChartType =
     LineChart LineConfig |

@@ -45,10 +45,13 @@ library
     diagrams-svg,
     diagrams-rasterific,
     foldl,
+    formatting,
     lens,
+    linear,
     primitive,
     protolude,
-    text
+    text,
+    tower
   default-language:
     Haskell2010
   default-extensions:
@@ -109,10 +112,12 @@ executable readme
     diagrams-svg,
     foldl,
     lens,
+    linear,
     primitive,
     protolude,
     random-fu,
-    text
+    text,
+    tower
   default-extensions:
     NoImplicitPrelude,
     UnicodeSyntax,

@@ -5,52 +5,13 @@ other/header.md
 [chart-unit](https://tonyday567.github.io/chart-unit.html) [![Build Status](https://travis-ci.org/tonyday567/chart-unit.png)](https://travis-ci.org/tonyday567/chart-unit)
 ===
 
-Latest changes:
----
-
-I tightened the api right up and have gone to:
-
-Data types I called `Q1` and `Q2` for no good reason other than it gets fed into a chart configuration and makes a QDiagram.
-
-type Q2 = [[V2 Double]]
-type Q1 = [V2 Double]
-
-I mostly think of a chart as multiple data sets that share common-ranged dimensions in an XY plane.  If they don't share ranges, then representing them on a single XY plane is almost the same thing.  Regardless, in diagrams, combining two lines with different scales is an easy mappend.
-
-In practice, I'm finding that most charts are multiple data sets and Q2 is the better api choice.
-
-chartWith ::
-    ChartConfig
-    -> (Q2 -> Chart a)
-    -> RangeXY
-    -> Q2
-    -> Chart a
-
-The main rendering loop now takes:
-
-- A function that takes a Q2 (double list of points on the XY plane) and produces a visual representation with the same scale as the data.
-- An XY range to provide a UI component to help the user identify the visual represention of the core chart.  Others may call it axes, gridlines, headings and legends.
-- the data
-
-and produces a diagrams object ready for rendering, or available for further composition.
-
-Development path
----
-
-My bar chart is defective, and needs a better algorithm.
-
-It should be very easy to combine charts.  I'd like to take the scatter chart and show histograms (of the same data) along the x and y axis.  That should be a one liner.
-
-The next major chart type I wanted to implement is an area chart (aka pixels on a screen).  This is where one needs a [[V3 Double]] data type; 2 dimensions for where on the XY plane and one about what to do when you're there (colour a rectangle, size a dot, draw a contour line etc).  What ggplot calls aesthetics.
-
 scratchpad
 ---
 
-Latest bug: barD not right
-
-scratchSvg $ mconcat [barD (barColor .~ Color 0.7 0.4 0.3 0.2 $ def) $ (view _y) <$> zipWith V2 (fromIntegral <$> [0..10]) (fromIntegral <$> [0..10]), barD (barColor .~ Color 0.3 0.6 0.7 0.2 $ def) $ (view _y) <$> zipWith V2 (fromIntegral <$> [0..10]) (reverse $ fromIntegral <$> [2..10])]
-
 ![](other/scratchpad.svg)
+
+tl;dr
+---
 
 This slowly growing collection of charts:
 
@@ -60,8 +21,48 @@ This slowly growing collection of charts:
 - are unit shapes in the spirit of the [diagrams](http://projects.haskell.org/diagrams/doc/quickstart.html) design space.
 - can be quickly integrated into ad-hoc haskell data analytics, providing a visual feedback loop.
 
-charts
+latest changes
 ---
+
+The data api is pretty much the same as linear now.  I think there's enough room in that library for the extra dimensionality aspect of charting (what ggplot calls aesthetics, such as size, color and shape).
+
+The bar charts have all become rectangle charts, with 4 dimensions representing (x,y) (z,w) corners of the rectangle.
+
+Given any remotness to others using this library, it's also a testing ground for the tower project, hence the polymorph spagetti constraints.  You'll thanks me when you find rotating through a euclidean infinite dimension space a one liner.
+
+The charts themselves, with an attached `V2 Range a` and `[[R2 a]]` data are themselves very close to numbers, and scaling operations could already be directly applied to the chart.
+
+I mostly think of a chart as multiple data sets that share common-ranged dimensions in an XY plane.  If they don't share ranges, then representing them on a single XY plane is almost the same thing.  Regardless, in diagrams, combining two lines with different scales is an easy mappend.
+
+
+chartWith
+---
+
+~~~
+chartWith :: (Traversable f, Traversable g, R2 r) => 
+    ChartConfig
+    -> (g (f (r Double)) -> Chart b)
+    -> V2 (Range Double)
+    -> (V2 (Range Double) -> g (f (r Double)) -> g (f (r Double)))
+    -> g (f (r Double))
+    -> Chart b
+chartWith (ChartConfig p axes) renderer range' scaler ms =
+~~~
+
+Chart rendering now takes:
+
+- configuration
+- a render of double-containered R2 data (has an x and y plane) as a concrete pretty picture
+- range to render the data and axes on
+- a scaler containing a recipe to squish the data down into V2 space.
+- double-containered R2 data
+
+And produces a `Chart b` available to turn into an svg or for further combinings.
+
+charts
+===
+
+png's at the end for markdown viewers ...
 
 Scatter
 
@@ -87,30 +88,11 @@ Labelled Bar Chart
 
 ![](other/bar.svg)
 
-rasterific png renders
----
+Grid Overlay
 
-![](other/scratchpad.png)
+Note how the axis ticks line up exactly with middle of the dots.  I now think of the axes as a small subset of possible HUDs to help users interpret data.
 
-Scatter
-
-![](other/scatter.png)
-
-Histogram
-
-![](other/hist.png)
-
-Line
-
-![](other/line.png)
-
-Lines
-
-![](other/lines.png)
-
-Labelled Bar Chart
-
-![](other/bar.png)
+![](other/grid.svg)
 
 > {-# OPTIONS_GHC -Wall #-}
 > {-# OPTIONS_GHC -fno-warn-type-defaults #-}
@@ -122,7 +104,8 @@ Labelled Bar Chart
 > import qualified Data.Random as R
 > import qualified Data.Map.Strict as Map
 > import qualified Data.Text as Text
->
+> import Linear hiding (identity)
+> import Data.List
 > import Chart.Unit
 > import Chart.Types
 > import Diagrams.Backend.SVG (SVG)
@@ -131,74 +114,84 @@ Labelled Bar Chart
 some test data
 ---
 
-Standard normal random variates.  Called ys to distinguish from the horizontal axis of the chart (xs) which are often implicitly [0..]
+Standard normal random variates in one dimension.
 
-> ys :: Int -> IO [Double]
-> ys n =
+> xs :: Int -> IO [Double]
+> xs n =
 >   replicateM n $ R.runRVar R.stdNormal R.StdRandom
 >
 
-A bunch of ys, accumulated.
+This generates n 2D random variate pairs where x and y are correlated.
 
-> yss :: (Int, Int) -> [[Double]]
-> yss (n,m) = unsafeInlineIO $ do
->   yss' <- replicateM m $ ys n
->   pure $ (drop 1 . L.scan L.sum) <$> yss'
->
-
-xys is a list of X,Y pairs, correlated normal random variates to add some shape to chart examples.
-
-> rXYs :: Int -> Double -> [(Double,Double)]
-> rXYs n c = unsafeInlineIO $ do
+> xys :: Int -> Double -> [V2 Double]
+> xys n c = unsafeInlineIO $ do
 >   s0 <- replicateM n $ R.runRVar R.stdNormal R.StdRandom
 >   s1 <- replicateM n $ R.runRVar R.stdNormal R.StdRandom
 >   let s1' = zipWith (\x y -> c * x + sqrt (1 - c * c) * y) s0 s1
->   pure $ zip s0 s1'
->
-> xys = rXYs 1000 0.8
+>   pure $ zipWith V2 s0 s1'
 >
 
-xysHist is a histogram of 10000 one-dim random normals.
+h is a histogram of 10000 one-dim random normals.
 
-The data out is a (X,Y) pair list, with mid-point of the bucket as X, and bucket count as Y.
+The data out is a V4 with xz as the bucket range, and yw as 0 and the bucket count. For a rectangle chart this translates to (x,y) as the bottom left point and (z,w) as the upper right point of the rectangle.
 
-> xysHist :: [(Double,Double)]
-> xysHist = unsafeInlineIO $ do
+> h :: [V4 Double]
+> h = unsafeInlineIO $ do
 >   ys' <- replicateM 10000 $ R.runRVar R.stdNormal R.StdRandom :: IO [Double]
 >   let n = 10
->   let r@(Range l u) = rangeD ys'
+>   let r = range ys'
 >   let cuts = mkTicksExact r n
->   let mids = (\x -> x+(u-l)/fromIntegral n) <$> cuts
 >   let count = L.Fold (\x a -> Map.insertWith (+) a 1 x) Map.empty identity
 >   let countBool = L.Fold (\x a -> x + if a then 1 else 0) 0 identity
 >   let histMap = L.fold count $ (\x -> L.fold countBool (fmap (x >) cuts)) <$> ys'
 >   let histList = (\x -> Map.findWithDefault 0 x histMap) <$> [0..n]
->   return (zip mids (fromIntegral <$> histList))
+>   return (zipWith4 V4 (init cuts) (replicate (n+1) 0) (drop 1 cuts) (fromIntegral <$> histList))
 >
+> 
 
 Scale Robustness
 ---
 
-xys rendered on the XY plane as dots - a scatter chart with no axes - is invariant to scale.  The data could be multiplied by any scalar, and look exactly the same.
+Starting with the lowest level scatter chart:
+
+    scatter1 def (xys 1000 0.7)
+
+![](other/predots.svg)
+
+The size of the dots scale with the data, so to bring it back, we run the data through a scaling routine, which normalises the data according to the diagrams unit, which is `V2 (-0.5,0.5) (-0.5,0.5)`:
+
+    scatter1 def ((\x -> scaleR2 (rangeR2 x) x) (xys 1000 0.7))
 
 ![](other/dots.svg)
 
-Axes break this scale invariance. Ticks and tick labels can hide this to some extent and look almost the same across scales.
+This scaling ensures that axes absolute configuration has the same look and feel. Hiding the scaling in a more general function:
+
+    scatter def [def] [xys 1000 0.7]
 
 ![](other/scatter.svg)
 
-This chart will look the same on a data scale change, except for tick magnitudes.
+The chart is then robust to a wide range of magnitudes:
+
+    scatter def [def] $ fmap (1e-8 *) <$> [xys 1000 0.7]
+
+![](other/scale.svg)
+
+The concrete manifestation of data on a page (the chart), and the heads-up-display (the hud) are then trivially separated:
+
+    chartWith def (const unitSquare) (V2 (Range (0,1), Range(-1000,10000))) scaleR2s [[]]
+
+![](other/axes.svg)
 
 main
----
+===
 
 A few values pulled out of main, on their way to abstraction
 
 > dGrid :: [(Double,Double)]
 > dGrid = (,) <$> [0..10] <*> [0..10]
 >
-> lc1 = zipWith LineConfig [0.01,0.02,0.03] $ opac 0.5 palette1
-> sc1 = zipWith ScatterConfig [0.02,0.05,0.1] $ opac 0.1 palette1
+> lc1 = zipWith LineConfig [0.01,0.02,0.03] $ opacs 0.5 palette1
+> sc1 = zipWith ScatterConfig [0.02,0.05,0.1] $ opacs 0.1 palette1
 > swish = [(0.0,1.0),(1.0,1.0),(2.0,5.0)]
 > swish2 = [(0.0,0.0),(3.0,3.0)]
 >
@@ -206,62 +199,84 @@ A few values pulled out of main, on their way to abstraction
 > linedef = line def lc1 (fmap r2 <$> [swish,swish2])
 >
 > linesdef :: Chart a
-> linesdef = line def (cycle lc1) $ fmap r2 .
->     zip (fromIntegral <$> [0..] :: [Double]) <$> yss (1000, 10)
+> linesdef =
+>     line def (((\c -> LineConfig 0.01 $ opac 0.5 c) <$> palette1)) $
+>     ((\x -> zipWith V2 (fromIntegral <$> [0..] :: [Double]) x)) <$>
+>     ((drop 1 . L.scan L.sum) <$> (unsafeInlineIO $ replicateM 5 $ xs 100))
+>
+>
+> predotsdef :: Chart a
+> predotsdef = scatter1 def (xys 1000 0.7)
 >
 > dotsdef :: Chart a
-> dotsdef = scatter1 def $ fmap r2 xys
+> dotsdef = scatter1 def ((\x -> scaleR2 (rangeR2 x) x) (xys 1000 0.7))
 >
 > scatterdef :: Chart a
-> scatterdef = scatter def [def] $ fmap r2 <$> [xys]
+> scatterdef = scatter def [def] [xys 1000 0.7]
 >
 > scattersdef :: Chart a
-> scattersdef = scatter def sc1 $ fmap r2 <$>
->     [take 200 xys, take 20 $ drop 200 xys]
+> scattersdef = scatter def sc1 [xys 1000 0.8, xys 1000 -0.5]
 >
+> scaledef :: Chart a
+> scaledef = scatter def [def] $ fmap (1e-8 *) <$> [xys 1000 0.7]
+> 
 > histdef :: Chart a
-> histdef = bar
->     def
->     [def] (fmap r2 <$> [xysHist])
+> histdef = rect' def [def] [h]
 >
 > grid :: Chart a
 > grid = scatter def [def] [r2 <$> dGrid]
 >
 > bardef :: Chart a
-> bardef = bar
+> bardef = rect'
 >     ( chartAxes .~
 >       [ axisTickStyle .~
 >         TickLabels labels $ def
->       , axisOrientation .~ Y $
->         axisPlacement .~ AxisLeft $ def
 >       ]
 >       $ def
 >     )
 >     [def]
->     [fmap r2 (take 10 xys)]
+>     [zipWith4 V4 [0..10] (replicate 11 0) [1..11] ((view _x) <$> xys 10 0.8)]
 >   where
 >     labels = fmap Text.pack <$> take 10 $ (:[]) <$> ['a'..]
+>
+>
+>
+> r1 = [V4 0 0 1 1, V4 1 0 1 2, V4 2 0 1 5]
+>
+> axesdef :: Chart a
+> axesdef = chartWith def
+>   (const unitSquare)
+>   (V2 (Range (0,1)) (Range (-1000,10000))) scaleR2s ([[]] :: [[V2 Double]])
 >
 > main :: IO ()
 > main = do
 
 See develop section below for my workflow.
 
->   scratchSvg $ bar' def [def] (RangeXY (Range 0 1) (Range 0 1)) (fmap r2 <$> [xysHist])
->   scratchPng grid
+>   scratchSvg $ rect' def [def] [h]
+>   scratchPng $ rect' def [def] [h]
 >   fileSvg "other/line.svg" (200,200) linedef
 >   filePng "other/line.png" (200,200) linedef
 >   fileSvg "other/lines.svg" (200,200) linesdef
 >   filePng "other/lines.png" (200,200) linesdef
+>   fileSvg "other/predots.svg" (200,200) predotsdef
+>   filePng "other/predots.png" (200,200) predotsdef
 >   fileSvg "other/dots.svg" (200,200) dotsdef
 >   filePng "other/dots.png" (200,200) dotsdef
 >   fileSvg "other/scatter.svg" (200,200) scatterdef
 >   filePng "other/scatter.png" (200,200) scatterdef
+>   fileSvg "other/scale.svg" (200,200) $ scaledef
+>   filePng "other/scale.png" (200,200) $ scaledef
 >   fileSvg "other/scatters.svg" (200,200) scattersdef
+>   filePng "other/scatters.png" (200,200) scattersdef
 >   fileSvg "other/bar.svg" (200,200) bardef
 >   filePng "other/bar.png" (200,200) bardef
 >   fileSvg "other/hist.svg" (200,200) histdef
 >   filePng "other/hist.png" (200,200) histdef
+>   fileSvg "other/grid.svg" (200,200) grid
+>   filePng "other/grid.png" (200,200) grid
+>   fileSvg "other/axes.svg" (200,200) axesdef
+>   filePng "other/axes.png" (200,200) axesdef
 
 diagrams development recipe
 ---
@@ -300,3 +315,32 @@ or go for a compilation loop like:
 ~~~
 stack install && readme && pandoc -f markdown+lhs -t html -i readme.lhs -o index.html --mathjax --filter pandoc-include && pandoc -f markdown+lhs -t markdown -i readme.lhs -o readme.md --mathjax --filter pandoc-include
 ~~~
+
+rasterific png renders
+===
+
+![](other/scratchpad.png)
+
+Scatter
+
+![](other/scatter.png)
+
+Histogram
+
+![](other/hist.png)
+
+Line
+
+![](other/line.png)
+
+Lines
+
+![](other/lines.png)
+
+Labelled Bar Chart
+
+![](other/bar.png)
+
+Grid Overlay
+
+![](other/grid.png)
