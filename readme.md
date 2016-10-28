@@ -122,10 +122,10 @@ import qualified Data.Map.Strict as Map
 import qualified Data.Text as Text
 import Linear hiding (identity)
 import Data.List
-import Chart.Unit
-import Chart.Types
 import Diagrams.Backend.SVG (SVG)
 import Diagrams.Backend.Rasterific (Rasterific)
+import Chart.Unit
+import Chart.Types
 ```
 
 some test data
@@ -163,7 +163,7 @@ h = unsafeInlineIO $ do
   let n = 10
   let r = range ys'
   let cuts = mkTicksExact r n
-  let count = L.Fold (\x a -> Map.insertWith (+) a 1 x) Map.empty identity
+  let count = L.Fold (\x a -> Map.insertWith (+) a (1::Integer) x) Map.empty identity
   let countBool = L.Fold (\x a -> x + if a then 1 else 0) 0 identity
   let histMap = L.fold count $ (\x -> L.fold countBool (fmap (x >) cuts)) <$> ys'
   let histList = (\x -> Map.findWithDefault 0 x histMap) <$> [0..n]
@@ -177,7 +177,7 @@ hist n xs = (zipWith4 V4 (init cuts) (replicate (length xs+1) 0) (drop 1 cuts) (
   where
     r = range xs
     cuts = mkTicksExact r n
-    count = L.Fold (\x a -> Map.insertWith (+) a 1 x) Map.empty identity
+    count = L.Fold (\x a -> Map.insertWith (+) a (1::Integer) x) Map.empty identity
     countBool = L.Fold (\x a -> x + if a then 1 else 0) 0 identity
     histMap = L.fold count $ (\x -> L.fold countBool (fmap (x >) cuts)) <$> xs
     histList = (\x -> Map.findWithDefault 0 x histMap) <$> [0..length xs]
@@ -257,7 +257,7 @@ scattersdef :: Chart a
 scattersdef = scatter def sc1 [xys 1000 0.8, xys 1000 -0.5]
 
 scaledef :: Chart a
-scaledef = scatter def [def] $ fmap (1e-8 *) <$> [xys 1000 0.7]
+scaledef = scatter def [def] $ fmap (\x -> x * 1e-8) <$> [xys 1000 0.7]
 
 histdef :: Chart a
 histdef = rect' def [def] [h]

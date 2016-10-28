@@ -91,10 +91,10 @@ chartWith (ChartConfig p axes) renderer range&#39; scaler ms =</code></pre>
 <span class="kw">import qualified</span> <span class="dt">Data.Text</span> <span class="kw">as</span> <span class="dt">Text</span>
 <span class="kw">import </span><span class="dt">Linear</span> <span class="kw">hiding</span> (identity)
 <span class="kw">import </span><span class="dt">Data.List</span>
-<span class="kw">import </span><span class="dt">Chart.Unit</span>
-<span class="kw">import </span><span class="dt">Chart.Types</span>
 <span class="kw">import </span><span class="dt">Diagrams.Backend.SVG</span> (<span class="dt">SVG</span>)
-<span class="kw">import </span><span class="dt">Diagrams.Backend.Rasterific</span> (<span class="dt">Rasterific</span>)</code></pre></div>
+<span class="kw">import </span><span class="dt">Diagrams.Backend.Rasterific</span> (<span class="dt">Rasterific</span>)
+<span class="kw">import </span><span class="dt">Chart.Unit</span>
+<span class="kw">import </span><span class="dt">Chart.Types</span></code></pre></div>
 <h2 id="some-test-data">some test data</h2>
 <p>Standard normal random variates in one dimension.</p>
 <div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell"><span class="ot">rvs ::</span> <span class="dt">Int</span> <span class="ot">-&gt;</span> <span class="dt">IO</span> [<span class="dt">Double</span>]
@@ -115,7 +115,7 @@ h <span class="fu">=</span> unsafeInlineIO <span class="fu">$</span> <span class
   <span class="kw">let</span> n <span class="fu">=</span> <span class="dv">10</span>
   <span class="kw">let</span> r <span class="fu">=</span> range ys&#39;
   <span class="kw">let</span> cuts <span class="fu">=</span> mkTicksExact r n
-  <span class="kw">let</span> count <span class="fu">=</span> <span class="dt">L.Fold</span> (\x a <span class="ot">-&gt;</span> Map.insertWith (<span class="fu">+</span>) a <span class="dv">1</span> x) Map.empty identity
+  <span class="kw">let</span> count <span class="fu">=</span> <span class="dt">L.Fold</span> (\x a <span class="ot">-&gt;</span> Map.insertWith (<span class="fu">+</span>) a (<span class="dv">1</span><span class="ot">::</span><span class="dt">Integer</span>) x) Map.empty identity
   <span class="kw">let</span> countBool <span class="fu">=</span> <span class="dt">L.Fold</span> (\x a <span class="ot">-&gt;</span> x <span class="fu">+</span> <span class="kw">if</span> a <span class="kw">then</span> <span class="dv">1</span> <span class="kw">else</span> <span class="dv">0</span>) <span class="dv">0</span> identity
   <span class="kw">let</span> histMap <span class="fu">=</span> L.fold count <span class="fu">$</span> (\x <span class="ot">-&gt;</span> L.fold countBool (fmap (x <span class="fu">&gt;</span>) cuts)) <span class="fu">&lt;$&gt;</span> ys&#39;
   <span class="kw">let</span> histList <span class="fu">=</span> (\x <span class="ot">-&gt;</span> Map.findWithDefault <span class="dv">0</span> x histMap) <span class="fu">&lt;$&gt;</span> [<span class="dv">0</span><span class="fu">..</span>n]
@@ -126,7 +126,7 @@ hist n xs <span class="fu">=</span> (zipWith4 <span class="dt">V4</span> (init c
   <span class="kw">where</span>
     r <span class="fu">=</span> range xs
     cuts <span class="fu">=</span> mkTicksExact r n
-    count <span class="fu">=</span> <span class="dt">L.Fold</span> (\x a <span class="ot">-&gt;</span> Map.insertWith (<span class="fu">+</span>) a <span class="dv">1</span> x) Map.empty identity
+    count <span class="fu">=</span> <span class="dt">L.Fold</span> (\x a <span class="ot">-&gt;</span> Map.insertWith (<span class="fu">+</span>) a (<span class="dv">1</span><span class="ot">::</span><span class="dt">Integer</span>) x) Map.empty identity
     countBool <span class="fu">=</span> <span class="dt">L.Fold</span> (\x a <span class="ot">-&gt;</span> x <span class="fu">+</span> <span class="kw">if</span> a <span class="kw">then</span> <span class="dv">1</span> <span class="kw">else</span> <span class="dv">0</span>) <span class="dv">0</span> identity
     histMap <span class="fu">=</span> L.fold count <span class="fu">$</span> (\x <span class="ot">-&gt;</span> L.fold countBool (fmap (x <span class="fu">&gt;</span>) cuts)) <span class="fu">&lt;$&gt;</span> xs
     histList <span class="fu">=</span> (\x <span class="ot">-&gt;</span> Map.findWithDefault <span class="dv">0</span> x histMap) <span class="fu">&lt;$&gt;</span> [<span class="dv">0</span><span class="fu">..</span>length xs]</code></pre></div>
@@ -194,7 +194,7 @@ scatterdef <span class="fu">=</span> scatter def [def] [xys <span class="dv">100
 scattersdef <span class="fu">=</span> scatter def sc1 [xys <span class="dv">1000</span> <span class="fl">0.8</span>, xys <span class="dv">1000</span> <span class="fu">-</span><span class="fl">0.5</span>]
 
 <span class="ot">scaledef ::</span> <span class="dt">Chart</span> a
-scaledef <span class="fu">=</span> scatter def [def] <span class="fu">$</span> fmap (1e<span class="fu">-</span><span class="dv">8</span> <span class="fu">*</span>) <span class="fu">&lt;$&gt;</span> [xys <span class="dv">1000</span> <span class="fl">0.7</span>]
+scaledef <span class="fu">=</span> scatter def [def] <span class="fu">$</span> fmap (\x <span class="ot">-&gt;</span> x <span class="fu">*</span> 1e<span class="fu">-</span><span class="dv">8</span>) <span class="fu">&lt;$&gt;</span> [xys <span class="dv">1000</span> <span class="fl">0.7</span>]
 
 <span class="ot">histdef ::</span> <span class="dt">Chart</span> a
 histdef <span class="fu">=</span> rect&#39; def [def] [h]

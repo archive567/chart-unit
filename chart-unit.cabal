@@ -50,8 +50,7 @@ library
     linear,
     primitive,
     protolude,
-    text,
-    tower
+    text
   default-language:
     Haskell2010
   default-extensions:
@@ -116,8 +115,7 @@ executable readme
     primitive,
     protolude,
     random-fu,
-    text,
-    tower
+    text
   default-extensions:
     NoImplicitPrelude,
     UnicodeSyntax,

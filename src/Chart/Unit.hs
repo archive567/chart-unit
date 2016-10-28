@@ -6,17 +6,17 @@
 module Chart.Unit where
 
 import Chart.Types
+import Protolude hiding (min,max,from,to)
 import qualified Control.Foldl as L
 import Control.Lens hiding (beside, none, (#), at)
 import qualified Data.Text as Text
 import Diagrams.Prelude hiding (unit, D, Color, scale, zero)
 import qualified Diagrams.Prelude as Diagrams
-import Tower.Prelude hiding (min,max,from,to)
 import Diagrams.Backend.SVG (SVG, renderSVG)
 import Diagrams.Backend.Rasterific (Rasterific, renderRasterific)
 import qualified Diagrams.TwoD.Text
 import Linear hiding (zero, identity)
-import Data.List
+import Data.List hiding (head)
 import Formatting
 
 newtype Range a = Range { unRange :: (a,a) } deriving (Show, Eq)
@@ -25,14 +25,11 @@ instance (Ord a) => Semigroup (Range a) where
     (Range (l,u)) <> (Range (l',u')) =
         Range (if l < l' then l else l',if u > u' then u else u')
 
-half :: (Field a) => a
-half = one/(one+one)
-
-unitRange :: (Field a) => Range a
-unitRange = Range (negate half,half)
+unitRange :: (Fractional a) => Range a
+unitRange = Range (-0.5, 0.5)
 
 -- range of a foldable
-range :: (Foldable f, Ord a, Field a) => f a -> Range a
+range :: (Fractional a, Foldable f, Ord a) => f a -> Range a
 range xs = L.fold (L.Fold step initial extract) xs
   where
     step Nothing x = Just (Range (x, x))
@@ -42,28 +39,28 @@ range xs = L.fold (L.Fold step initial extract) xs
         u' = if u > x then u else x
     initial = Nothing
     extract = fromMaybe unitRange
-
+ 
 -- R2 range
-rangeR2 :: (Traversable f, R2 r, Field a, Ord a) => f (r a) -> V2 (Range a)
+rangeR2 :: (Fractional a, Traversable f, R2 r, Ord a) => f (r a) -> V2 (Range a)
 rangeR2 qs = V2 xs ys
   where
     xs = range $ (view _x) <$> qs
     ys = range $ (view _y) <$> qs
 
 -- 2D range of multiple data
-rangeR2s :: (Traversable g, Traversable f, R2 r, Field a, Ord a) => g (f (r a)) -> V2 (Range a)
+rangeR2s :: (Fractional a, Traversable g, Traversable f, R2 r, Ord a) => g (f (r a)) -> V2 (Range a)
 rangeR2s qss = foldl1 (\(V2 x y) (V2 x' y') -> V2 (x<>x') (y<>y')) $ rangeR2 <$> qss
 
 -- scale by a range
-scale :: (Field a, Eq a) => Range a -> a -> a
+scale :: (Fractional a, Eq a) => Range a -> a -> a
 scale (Range (l, u)) a = if
     | l==u -> a
-    | otherwise -> (\x -> (x-l)/(u-l) - (one/(one+one))) a
+    | otherwise -> (\x -> (x-l)/(u-l) - 0.5) a
 
-scaleR2 :: (Functor f, Field a, Eq a, R2 r) => V2 (Range a) -> f (r a) -> f (r a)
+scaleR2 :: (Functor f, Eq a, Fractional a, R2 r) => V2 (Range a) -> f (r a) -> f (r a)
 scaleR2 (V2 rx ry) qs = (\q -> over _x (scale rx) $ over _y (scale ry) $ q) <$> qs
 
-scaleR2s :: (Functor g, Functor f, Field a, Eq a, R2 r) => V2 (Range a) -> g (f (r a)) -> g (f (r a))
+scaleR2s :: (Functor g, Functor f, Fractional a, Eq a, R2 r) => V2 (Range a) -> g (f (r a)) -> g (f (r a))
 scaleR2s r qss = scaleR2 r <$> qss
 
 -- it's seems a flaw in SVG that a line isn't a series of connected rectangles
@@ -91,7 +88,7 @@ axis cfg r = pad (cfg ^. axisPad) $ strut' $ centerXY $
       X -> strutX
       Y -> strutY
     t = case cfg ^. axisOrientation of
-      X -> \x -> p2 (x, zero)
+      X -> \x -> p2 (x, 0)
       Y -> \y -> p2 ((-(cfg ^. axisMarkSize)), y)
     tickLocations = case cfg ^. axisTickStyle of
       TickNone -> []
@@ -125,7 +122,7 @@ axis cfg r = pad (cfg ^. axisPad) $ strut' $ centerXY $
           scaleX h $
           unitSquare
 
-mkTicksRound :: (Ord a, Fractional a, ExpRing a, QuotientField a Int, Field a) => Range a -> Int -> [a]
+mkTicksRound :: (Floating a, RealFrac a) => Range a -> Int -> [a]
 mkTicksRound (Range (l, u)) n = (first' +) . (step *) . fromIntegral <$> [0..n']
   where
     span' = u - l
@@ -140,7 +137,7 @@ mkTicksRound (Range (l, u)) n = (first' +) . (step *) . fromIntegral <$> [0..n']
     last' = step * fromIntegral (floor (u/step) :: Int)
     n' = round ((last' - first')/step) :: Int
 
-mkTicksExact :: (Field a) => Range a -> Int -> [a]
+mkTicksExact :: (Fractional a) => Range a -> Int -> [a]
 mkTicksExact (Range (l, u)) n = (l +) . (step *) . fromIntegral <$> [0..n]
   where
     step = (u - l)/fromIntegral n
@@ -169,8 +166,7 @@ mkLabel label cfg =
       X -> strutY (cfg ^. axisLabelStrut)
       Y -> strutX (cfg ^. axisLabelStrut)
 
-chartWith :: (Traversable f, Traversable g, R2 r) => 
-    ChartConfig
+chartWith :: ChartConfig
     -> (g (f (r Double)) -> Chart b)
     -> V2 (Range Double)
     -> (V2 (Range Double) -> g (f (r Double)) -> g (f (r Double)))
@@ -198,7 +194,7 @@ chart cc renderer scaler ms = chartWith cc renderer (rangeR2s ms) scaler ms
 
 -- a line is just a scatter chart rendered with a line (and with a usually stable x-value series)
 line1 ∷ (Traversable f, R2 r) => LineConfig → f (r Double) → Chart b
-line1 (LineConfig s c) ps = case Tower.Prelude.head ps of
+line1 (LineConfig s c) ps = case head ps of
   Nothing -> mempty
   Just p0 -> (stroke $ trailFromVertices (toList $ (p2 . unr2) <$> view _xy <$> ps)
               `at`
@@ -236,17 +232,17 @@ rect1 cfg qs = mconcat $ toList $
         lw 1
        )) <$> qs
 
-rangeRect :: (Traversable f, Ord a, Field a) => f (V4 a) -> V2 (Range a)
+rangeRect :: (Fractional a, Traversable f, Ord a) => f (V4 a) -> V2 (Range a)
 rangeRect qs = V2 rx ry
   where
     rx = range $ (toList $ (view _x) <$> qs) <> (toList $ (view _z) <$> qs)
     ry = range $ (toList $ (view _y) <$> qs) <> (toList $ (view _w) <$> qs)
 
-rangeRects :: (Traversable g, Traversable f, Ord a, Field a) => g (f (V4 a)) -> V2 (Range a)
-rangeRects qss = over _y (<> Range (zero, zero)) $ foldl1 (\(V2 x y) (V2 x' y') -> V2 (x<>x') (y<>y')) $ rangeRect <$> qss
+rangeRects :: (Fractional a, Traversable g, Traversable f, Ord a) => g (f (V4 a)) -> V2 (Range a)
+rangeRects qss = over _y (<> Range (0, 0)) $ foldl1 (\(V2 x y) (V2 x' y') -> V2 (x<>x') (y<>y')) $ rangeRect <$> qss
 
 
-scaleRect :: (Field a, Eq a) => V2 (Range a) -> V4 a -> V4 a
+scaleRect :: (Fractional a, Eq a) => V2 (Range a) -> V4 a -> V4 a
 scaleRect (V2 rx ry) q =
     over _x (scale rx) $
     over _y (scale ry) $
@@ -254,10 +250,10 @@ scaleRect (V2 rx ry) q =
     over _w (scale ry) $
     q
 
-scaleRect1 :: (Traversable f, Ord a, Field a) => V2 (Range a) -> f (V4 a) -> f (V4 a)
+scaleRect1 :: (Traversable f, Fractional a, Ord a) => V2 (Range a) -> f (V4 a) -> f (V4 a)
 scaleRect1 r qs = scaleRect r <$> qs
 
-scaleRects :: (Traversable g, Traversable f, Ord a, Field a) => V2 (Range a) -> g (f (V4 a)) -> g (f (V4 a))
+scaleRects :: (Traversable g, Traversable f, Fractional a, Ord a) => V2 (Range a) -> g (f (V4 a)) -> g (f (V4 a))
 scaleRects r qss = scaleRect1 r <$> qss
 
 rect' :: (Traversable f) => ChartConfig -> [RectConfig] -> [(f (V4 Double))] -> Chart b
@@ -270,7 +266,7 @@ fileSvg f s = renderSVG f (mkSizeSpec (Just <$> r2 s))
 filePng ∷ FilePath → (Double,Double) → Chart Rasterific → IO ()
 filePng f s = renderRasterific f (mkSizeSpec (Just <$> r2 s))
 
-bubble ∷ ∀ a. (RealFloat (N a), Field (N a), Traced a, V a ~ V2) ⇒ [a] → Int → [(V a (N a))]
+bubble ∷ ∀ a. (RealFloat (N a), Traced a, V a ~ V2) ⇒ [a] → Int → [(V a (N a))]
 bubble chart' n = bubble'
   where
     bubble' = ps
