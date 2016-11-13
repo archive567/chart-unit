@@ -115,7 +115,11 @@ executable readme
     primitive,
     protolude,
     random-fu,
-    text
+    text,
+    ad,
+    ListLike,
+    reflection
+
   default-extensions:
     NoImplicitPrelude,
     UnicodeSyntax,

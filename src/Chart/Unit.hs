@@ -1,25 +1,23 @@
-{-# LANGUAGE GeneralizedNewtypeDeriving #-}
-{-# LANGUAGE ExistentialQuantification #-}
 {-# OPTIONS_GHC -Wall #-}
 {-# OPTIONS_GHC -fno-warn-type-defaults #-}
 
 module Chart.Unit where
 
 import Chart.Types
-import Protolude hiding (min,max,from,to)
 import qualified Control.Foldl as L
 import Control.Lens hiding (beside, none, (#), at)
-import qualified Data.Text as Text
-import Diagrams.Prelude hiding (unit, D, Color, scale, zero)
-import qualified Diagrams.Prelude as Diagrams
-import Diagrams.Backend.SVG (SVG, renderSVG)
-import Diagrams.Backend.Rasterific (Rasterific, renderRasterific)
-import qualified Diagrams.TwoD.Text
-import Linear hiding (zero, identity)
 import Data.List hiding (head)
+import Data.Ord (min)
+import qualified Data.Text as Text
+import Diagrams.Backend.Rasterific (Rasterific, renderRasterific)
+import Diagrams.Backend.SVG (SVG, renderSVG)
+import qualified Diagrams.Prelude as Diagrams
+import Diagrams.Prelude hiding (unit, D, Color, scale, zero)
 import Formatting
+import Linear hiding (zero, identity)
+import Protolude hiding (min,max,from,to, (&))
 
-newtype Range a = Range { unRange :: (a,a) } deriving (Show, Eq)
+newtype Range a = Range { unRange :: (a,a) } deriving (Show, Eq, Functor)
 
 instance (Ord a) => Semigroup (Range a) where
     (Range (l,u)) <> (Range (l',u')) =
@@ -30,7 +28,7 @@ unitRange = Range (-0.5, 0.5)
 
 -- range of a foldable
 range :: (Fractional a, Foldable f, Ord a) => f a -> Range a
-range xs = L.fold (L.Fold step initial extract) xs
+range = L.fold (L.Fold step initial extract)
   where
     step Nothing x = Just (Range (x, x))
     step (Just (Range (l, u))) x = Just $ Range (l', u')
@@ -39,16 +37,18 @@ range xs = L.fold (L.Fold step initial extract) xs
         u' = if u > x then u else x
     initial = Nothing
     extract = fromMaybe unitRange
- 
--- R2 range
+
+-- range specialized for an R2
 rangeR2 :: (Fractional a, Traversable f, R2 r, Ord a) => f (r a) -> V2 (Range a)
 rangeR2 qs = V2 xs ys
   where
-    xs = range $ (view _x) <$> qs
-    ys = range $ (view _y) <$> qs
+    xs = range $ view _x <$> qs
+    ys = range $ view _y <$> qs
 
 -- 2D range of multiple data
-rangeR2s :: (Fractional a, Traversable g, Traversable f, R2 r, Ord a) => g (f (r a)) -> V2 (Range a)
+rangeR2s :: (Fractional a, Traversable g, Traversable f, R2 r, Ord a) =>
+    g (f (r a)) ->
+    V2 (Range a)
 rangeR2s qss = foldl1 (\(V2 x y) (V2 x' y') -> V2 (x<>x') (y<>y')) $ rangeR2 <$> qss
 
 -- scale by a range
@@ -58,7 +58,7 @@ scale (Range (l, u)) a = if
     | otherwise -> (\x -> (x-l)/(u-l) - 0.5) a
 
 scaleR2 :: (Functor f, Eq a, Fractional a, R2 r) => V2 (Range a) -> f (r a) -> f (r a)
-scaleR2 (V2 rx ry) qs = (\q -> over _x (scale rx) $ over _y (scale ry) $ q) <$> qs
+scaleR2 (V2 rx ry) qs = (over _x (scale rx) . over _y (scale ry)) <$> qs
 
 scaleR2s :: (Functor g, Functor f, Fractional a, Eq a, R2 r) => V2 (Range a) -> g (f (r a)) -> g (f (r a))
 scaleR2s r qss = scaleR2 r <$> qss
@@ -69,11 +69,12 @@ blob ∷ (Floating (N a), Ord (N a), Typeable (N a), HasStyle a, V a ~ V2) ⇒
 blob c = fcA (color c) # lcA (withOpacity black 0) # lw none
 
 -- axis rendering
-axis :: AxisConfig -> Range Double -> Chart b
-axis cfg r = pad (cfg ^. axisPad) $ strut' $ centerXY $
+axis ::
+    AxisConfig -> Range Double -> Chart' b
+axis cfg r@(Range _) = pad (cfg ^. axisPad) $ strut' $ centerXY $
   atPoints
     (t <$> tickLocations)
-    ((\x -> mkLabel x cfg) <$> tickLabels)
+    ((`mkLabel` cfg) <$> tickLabels)
   `atop`
   (axisRect (cfg ^. axisHeight) (-0.5,0.5)
    # blob (cfg ^. axisColor))
@@ -89,7 +90,7 @@ axis cfg r = pad (cfg ^. axisPad) $ strut' $ centerXY $
       Y -> strutY
     t = case cfg ^. axisOrientation of
       X -> \x -> p2 (x, 0)
-      Y -> \y -> p2 ((-(cfg ^. axisMarkSize)), y)
+      Y -> \y -> p2 (-(cfg ^. axisMarkSize), y)
     tickLocations = case cfg ^. axisTickStyle of
       TickNone -> []
       {- To Do:
@@ -99,26 +100,26 @@ axis cfg r = pad (cfg ^. axisPad) $ strut' $ centerXY $
       -}
       TickRound n -> scale r <$> mkTicksRound r n
       TickExact n -> scale r <$> mkTicksExact r n
-      TickLabels ls -> scale r <$> (\x -> x - 0.5) <$> fromIntegral <$> [1..length ls]
+      TickLabels ls -> scale r . (\x -> x - 0.5) . fromIntegral <$> [1..length ls]
     tickLabels = case cfg ^. axisTickStyle of
       TickNone -> []
       TickRound n -> tickFormat <$> mkTicksRound r n
       TickExact n -> tickFormat <$> mkTicksExact r n
       TickLabels ls -> ls
-    tickFormat d = sformat (prec 2) d
-    axisRect h (min, max) = case cfg ^. axisOrientation of
-      X -> moveTo (p2 (max,0)) .
+    tickFormat = sformat (prec 2)
+    axisRect h (l, u) = case cfg ^. axisOrientation of
+      X -> moveTo (p2 (u,0)) .
           strokeTrail .
           closeTrail .
           fromVertices .
-          scaleX (max-min) .
+          scaleX (u-l) .
           scaleY h $
           unitSquare
-      Y -> moveTo (p2 (0,min)) .
+      Y -> moveTo (p2 (0,l)) .
           strokeTrail .
           closeTrail .
           fromVertices .
-          scaleY (max-min) .
+          scaleY (u-l) .
           scaleX h $
           unitSquare
 
@@ -142,7 +143,10 @@ mkTicksExact (Range (l, u)) n = (l +) . (step *) . fromIntegral <$> [0..n]
   where
     step = (u - l)/fromIntegral n
 
-mkLabel :: ((Renderable (Diagrams.TwoD.Text.Text Double) a), Renderable (Path V2 Double) a) => Text -> AxisConfig -> QDiagram a V2 Double Any
+mkLabel ::
+    Text ->
+    AxisConfig ->
+    Chart' b
 mkLabel label cfg =
   beside dir
   (beside dir
@@ -166,12 +170,13 @@ mkLabel label cfg =
       X -> strutY (cfg ^. axisLabelStrut)
       Y -> strutX (cfg ^. axisLabelStrut)
 
-chartWith :: ChartConfig
-    -> (g (f (r Double)) -> Chart b)
+chartWith ::
+    ChartConfig
+    -> (g (f (r Double)) -> Chart' b)
     -> V2 (Range Double)
     -> (V2 (Range Double) -> g (f (r Double)) -> g (f (r Double)))
     -> g (f (r Double))
-    -> Chart b
+    -> Chart' b
 chartWith (ChartConfig p axes) renderer range' scaler ms =
   L.fold (L.Fold step (renderer (scaler range' ms)) (pad p)) axes
   where
@@ -187,37 +192,123 @@ chartWith (ChartConfig p axes) renderer range' scaler ms =
           AxisRight -> r2 (1,0)
     (V2 rx ry) = range'
 
+chartWith' ::
+    ChartConfig
+    -> (g (f (r Double)) -> Chart' b)
+    -> V2 (Range Double)
+    -> (V2 (Range Double) -> g (f (r Double)) -> g (f (r Double)))
+    -> g (f (r Double))
+    -> Chart' b
+chartWith' (ChartConfig p axes) renderer range' scaler ms =
+  L.fold (L.Fold step (renderer (scaler range' ms)) (pad p)) axes
+  where
+    step x cfg = beside dir x (axis' cfg r)
+      where
+        r = case view axisOrientation cfg of
+              X -> rx
+              Y -> ry
+        dir = case view axisPlacement cfg of
+          AxisBottom -> r2 (0,-1)
+          AxisTop -> r2 (0,1)
+          AxisLeft -> r2 (-1,0)
+          AxisRight -> r2 (1,0)
+    (V2 rx ry) = range'
+
+-- axis rendering
+axis' ::
+    AxisConfig -> Range Double -> Chart' b
+axis' cfg r@(Range r') = pad (cfg ^. axisPad) $ strut' $ centerXY $
+  atPoints
+    (t <$> tickLocations)
+    ((`mkLabel` cfg) <$> tickLabels)
+  `atop`
+  (axisRect (cfg ^. axisHeight) r'
+   # blob (cfg ^. axisColor))
+  where
+    strut' x = beside dir x $ strut'' (cfg ^. axisInsideStrut)
+    dir = case cfg ^. axisPlacement of
+      AxisBottom -> r2 (0,1)
+      AxisTop -> r2 (0,-1)
+      AxisLeft -> r2 (1,0)
+      AxisRight -> r2 (-1,0)
+    strut'' = case cfg ^. axisOrientation of
+      X -> strutX
+      Y -> strutY
+    t = case cfg ^. axisOrientation of
+      X -> \x -> p2 (x, 0)
+      Y -> \y -> p2 (-(cfg ^. axisMarkSize), y)
+    tickLocations = case cfg ^. axisTickStyle of
+      TickNone -> []
+      {- To Do:
+        rounded ticks introduce the possibility of marks beyond the existing range.
+        if this happens, it should really be fed into the chart rendering as a new,
+        revised range.
+      -}
+      TickRound n -> mkTicksRound r n
+      TickExact n -> mkTicksExact r n
+      TickLabels ls -> (\x -> x - 0.5) . fromIntegral <$> [1..length ls]
+    tickLabels = case cfg ^. axisTickStyle of
+      TickNone -> []
+      TickRound n -> tickFormat <$> mkTicksRound r n
+      TickExact n -> tickFormat <$> mkTicksExact r n
+      TickLabels ls -> ls
+    tickFormat = sformat (prec 2)
+    axisRect h (l, u) = case cfg ^. axisOrientation of
+      X -> moveTo (p2 (u,0)) .
+          strokeTrail .
+          closeTrail .
+          fromVertices .
+          scaleX (u-l) .
+          scaleY h $
+          unitSquare
+      Y -> moveTo (p2 (0,l)) .
+          strokeTrail .
+          closeTrail .
+          fromVertices .
+          scaleY (u-l) .
+          scaleX h $
+          unitSquare
+
 -- render chart with same axes scale as data
-chart :: (a ~ g (f (r Double)), Traversable g, Traversable f, R2 r) =>
-    ChartConfig -> (a -> Chart b) -> (V2 (Range Double) -> a -> a) -> a -> Chart b
+chart ::
+    ( a ~ g (f (r Double))
+    , Traversable g
+    , Traversable f
+    , R2 r) =>
+    ChartConfig -> (a -> Chart' b) -> (V2 (Range Double) -> a -> a) -> a -> Chart' b
 chart cc renderer scaler ms = chartWith cc renderer (rangeR2s ms) scaler ms
 
--- a line is just a scatter chart rendered with a line (and with a usually stable x-value series)
+-- a line is just a scatter chart rendered with a line
+-- (and with a usually stable x-value series)
 line1 ∷ (Traversable f, R2 r) => LineConfig → f (r Double) → Chart b
 line1 (LineConfig s c) ps = case head ps of
   Nothing -> mempty
-  Just p0 -> (stroke $ trailFromVertices (toList $ (p2 . unr2) <$> view _xy <$> ps)
+  Just p0 -> stroke (trailFromVertices (toList $ (p2 . unr2) . view _xy <$> ps)
               `at`
-             (p2 $ unr2 (view _xy p0))) # lcA (color c) # lwN s
+              p2 (unr2 (view _xy p0))) # lcA (color c) # lwN s
 
 -- multiple lines with a common range for both x and y values
-line :: (Traversable f, R2 r) =>
-    ChartConfig -> [LineConfig] -> [f (r Double)] -> Chart b
-line cc cfgs ms = chart cc (centerXY . mconcat . (zipWith line1 cfgs)) scaleR2s ms
+unitLine ::
+    ( Traversable f
+    , R2 r) =>
+    ChartConfig -> [LineConfig] -> [f (r Double)] -> Chart' b
+unitLine cc cfgs = chart cc (centerXY . mconcat . zipWith line1 cfgs) scaleR2s
 
 -- dots on the XY plane
 scatter1 ∷ (Traversable f, R2 r) => ScatterConfig → f (r Double) → Chart b
 scatter1 (ScatterConfig s c) ps =
-  atPoints (toList $ (p2 . unr2) <$> view _xy <$> ps)
+  atPoints (toList $ (p2 . unr2) . view _xy <$> ps)
     (repeat $ circle s #
      blob c
     )
 
 -- scatter
-scatter :: (Traversable f, R2 r) => ChartConfig -> [ScatterConfig] -> [f (r Double)] -> Chart b
-scatter cc cfgs ms =
-  chart cc (centerXY . mconcat . (zipWith scatter1 cfgs)) scaleR2s ms
-
+unitScatter ::
+    ( Traversable f
+    , R2 r) =>
+    ChartConfig -> [ScatterConfig] -> [f (r Double)] -> Chart' b
+unitScatter cc cfgs =
+  chart cc (centerXY . mconcat . zipWith scatter1 cfgs) scaleR2s
 
 rect1 :: (Traversable f) => RectConfig -> f (V4 Double) -> Chart b
 rect1 cfg qs = mconcat $ toList $
@@ -235,11 +326,18 @@ rect1 cfg qs = mconcat $ toList $
 rangeRect :: (Fractional a, Traversable f, Ord a) => f (V4 a) -> V2 (Range a)
 rangeRect qs = V2 rx ry
   where
-    rx = range $ (toList $ (view _x) <$> qs) <> (toList $ (view _z) <$> qs)
-    ry = range $ (toList $ (view _y) <$> qs) <> (toList $ (view _w) <$> qs)
+    rx = range $ toList (view _x <$> qs) <> toList (view _z <$> qs)
+    ry = range $ toList (view _y <$> qs) <> toList (view _w <$> qs)
 
-rangeRects :: (Fractional a, Traversable g, Traversable f, Ord a) => g (f (V4 a)) -> V2 (Range a)
-rangeRects qss = over _y (<> Range (0, 0)) $ foldl1 (\(V2 x y) (V2 x' y') -> V2 (x<>x') (y<>y')) $ rangeRect <$> qss
+rangeRects ::
+    ( Fractional a
+    , Traversable g
+    , Traversable f
+    , Ord a) =>
+    g (f (V4 a)) -> V2 (Range a)
+rangeRects qss =
+    over _y (<> Range (0, 0)) $
+    foldl1 (\(V2 x y) (V2 x' y') -> V2 (x<>x') (y<>y')) $ rangeRect <$> qss
 
 
 scaleRect :: (Fractional a, Eq a) => V2 (Range a) -> V4 a -> V4 a
@@ -247,18 +345,98 @@ scaleRect (V2 rx ry) q =
     over _x (scale rx) $
     over _y (scale ry) $
     over _z (scale rx) $
-    over _w (scale ry) $
+    over _w (scale ry)
     q
 
 scaleRect1 :: (Traversable f, Fractional a, Ord a) => V2 (Range a) -> f (V4 a) -> f (V4 a)
 scaleRect1 r qs = scaleRect r <$> qs
 
-scaleRects :: (Traversable g, Traversable f, Fractional a, Ord a) => V2 (Range a) -> g (f (V4 a)) -> g (f (V4 a))
+scaleRects :: (Traversable g, Traversable f, Fractional a, Ord a) =>
+    V2 (Range a) -> g (f (V4 a)) -> g (f (V4 a))
 scaleRects r qss = scaleRect1 r <$> qss
 
-rect' :: (Traversable f) => ChartConfig -> [RectConfig] -> [(f (V4 Double))] -> Chart b
-rect' cc cfgs ms =
-  chartWith cc (centerXY . mconcat . (zipWith rect1 cfgs)) (rangeRects ms) scaleRects ms
+unitRect ::
+    ( Traversable f) =>
+    ChartConfig -> [RectConfig] -> [f (V4 Double)] -> Chart' b
+unitRect cc cfgs qss =
+  chartWith
+  cc
+  (centerXY . mconcat . zipWith rect1 cfgs)
+  (rangeRects qss)
+  scaleRects
+  qss
+
+arrowLength :: ArrowConfig -> Double
+arrowLength cfg =
+    (0.667 * view arrowHeadSize cfg) +
+    min
+    (view arrowStaffLength cfg + view arrowMinStaffLength cfg)
+    (view arrowMaxStaffLength cfg)
+
+arrow1 :: (Traversable f) => ArrowConfig -> f (V4 Double) -> Chart b
+arrow1 cfg qs =
+    fcA (color $ cfg ^. arrowColor) $ position $
+    zip
+    (p2 . (\(V4 x y _ _) -> (x,y)) <$> toList qs)
+    (arrowStyle cfg <$> toList qs)
+ 
+arrowStyle :: ArrowConfig -> V4 Double -> Chart b
+arrowStyle cfg (V4 x y z w) =
+    arrowAt' opts (p2 (x, y)) (sL *^ V2 z w) -- # alignTL
+  where
+    m = norm (V2 z w)
+    -- Head size is a function of the length of the vector
+    -- as are tail size and shaft length.
+    hs = (cfg ^. arrowMinHeadSize) + (cfg ^. arrowHeadSize) * m
+    sW = (cfg ^. arrowMinStaffWidth) + ((cfg ^. arrowStaffWidth) * m)
+    sL = min
+        ((cfg ^. arrowMinStaffLength) + ((cfg ^. arrowStaffLength) * m))
+        (cfg ^. arrowMaxStaffLength)
+    opts = with & arrowHead .~ tri &
+           headLength .~ global hs &
+           shaftStyle %~ lwG sW
+
+unitArrow ::
+    ( Traversable f) =>
+    ChartConfig -> [ArrowConfig] -> [f (V4 Double)] -> Chart' b
+unitArrow cc cfgs qss =
+  chartWith
+  cc
+  (centerXY . mconcat . zipWith arrow1 cfgs)
+  (rangeArrows cfgs qss)
+  (scaleArrows cfgs)
+  qss
+
+rangeArrow :: (Traversable f) => ArrowConfig -> f (V4 Double) -> V2 (Range Double)
+rangeArrow cfg qs = V2 rx ry
+  where
+    rx = range $
+        toList (view _x <$> qs) <>
+        toList ((\q -> view _x q + arrowLength cfg * view _z q) <$> qs)
+    ry = range $
+        toList (view _y <$> qs) <>
+        toList ((\q -> view _y q + arrowLength cfg * view _w q) <$> qs)
+
+rangeArrows :: (Traversable g, Traversable f) =>
+    [ArrowConfig] -> g (f (V4 Double)) -> V2 (Range Double)
+rangeArrows cfgs qss = foldl1 (\(V2 x y) (V2 x' y') -> V2 (x<>x') (y<>y')) $
+    zipWith rangeArrow cfgs (toList qss)
+
+scaleArrow :: ArrowConfig -> V2 (Range Double) -> V4 Double -> V4 Double
+scaleArrow cfg (V2 rx ry) q =
+    over _x (scale rx) $
+    over _y (scale ry) $
+    over _z (scale (fmap (* arrowLength cfg) rx)) $
+    over _w (scale (fmap (* arrowLength cfg) ry))
+    q
+
+scaleArrow1 :: (Traversable f) =>
+    ArrowConfig -> V2 (Range Double) -> f (V4 Double) -> f (V4 Double)
+scaleArrow1 cfg r qs = scaleArrow cfg r <$> qs
+
+scaleArrows :: (Traversable g, Traversable f) =>
+    [ArrowConfig] -> V2 (Range Double) -> g (f (V4 Double)) -> [f (V4 Double)]
+scaleArrows cfgs r qss = zipWith (\cfg qs -> scaleArrow1 cfg r qs) cfgs (toList qss)
 
 fileSvg ∷ FilePath → (Double, Double) → Chart SVG → IO ()
 fileSvg f s = renderSVG f (mkSizeSpec (Just <$> r2 s))
@@ -266,10 +444,12 @@ fileSvg f s = renderSVG f (mkSizeSpec (Just <$> r2 s))
 filePng ∷ FilePath → (Double,Double) → Chart Rasterific → IO ()
 filePng f s = renderRasterific f (mkSizeSpec (Just <$> r2 s))
 
-bubble ∷ ∀ a. (RealFloat (N a), Traced a, V a ~ V2) ⇒ [a] → Int → [(V a (N a))]
+-- outline of a chart
+bubble ∷ ∀ a. (RealFloat (N a), Traced a, V a ~ V2) ⇒ [a] → Int → [V a (N a)]
 bubble chart' n = bubble'
   where
     bubble' = ps
-    ps = catMaybes $ maxRayTraceV (p2 (0,0)) <$> ((\x -> view (Diagrams.Prelude.from r2PolarIso) (1, x @@ rad)) <$> (\x -> fromIntegral x/10.0) <$> [0..n]) <*> chart'
-
-
+    ps = catMaybes $ maxRayTraceV (p2 (0,0)) <$>
+        ((\x -> view (Diagrams.Prelude.from r2PolarIso) (1, x @@ rad)) .
+         (\x -> fromIntegral x/10.0) <$> [0..n]) <*>
+        chart'

@@ -1,7 +1,4 @@
-<meta charset="utf-8"> <link rel="stylesheet" href="other/lhs.css">
-<script type="text/javascript" async
-  src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-MML-AM_CHTML">
-</script>
+<p>other/header.md ```</p>
 <h1 id="chart-unit-build-status"><a href="https://tonyday567.github.io/chart-unit.html">chart-unit</a> <a href="https://travis-ci.org/tonyday567/chart-unit"><img src="https://travis-ci.org/tonyday567/chart-unit.png" alt="Build Status" /></a></h1>
 <h2 id="scratchpad">scratchpad</h2>
 <div class="figure">
@@ -58,6 +55,10 @@ chartWith (ChartConfig p axes) renderer range&#39; scaler ms =</code></pre>
 <img src="other/hist.svg" />
 
 </div>
+<div class="figure">
+<img src="other/dhist.svg" />
+
+</div>
 <p>Line</p>
 <div class="figure">
 <img src="other/line.svg" />
@@ -73,16 +74,14 @@ chartWith (ChartConfig p axes) renderer range&#39; scaler ms =</code></pre>
 <img src="other/bar.svg" />
 
 </div>
-<p>Grid Overlay</p>
-<p>Note how the axis ticks line up exactly with middle of the dots. I now think of the axes as a small subset of possible HUDs to help users interpret data.</p>
+<p>Vector Field Chart</p>
 <div class="figure">
-<img src="other/grid.svg" />
+<img src="other/arrows.svg" />
 
 </div>
 <div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell"><span class="ot">{-# OPTIONS_GHC -Wall #-}</span>
 <span class="ot">{-# OPTIONS_GHC -fno-warn-type-defaults #-}</span>
-<span class="ot">{-# OPTIONS_GHC -fno-warn-missing-signatures #-}</span>
-<span class="kw">import </span><span class="dt">Protolude</span>
+<span class="kw">import </span><span class="dt">Protolude</span> <span class="kw">hiding</span> ((&amp;))
 <span class="kw">import </span><span class="dt">Control.Monad.Primitive</span> (unsafeInlineIO)
 <span class="kw">import </span><span class="dt">Diagrams.Prelude</span> <span class="kw">hiding</span> ((&lt;&gt;))
 <span class="kw">import qualified</span> <span class="dt">Control.Foldl</span> <span class="kw">as</span> <span class="dt">L</span>
@@ -94,7 +93,11 @@ chartWith (ChartConfig p axes) renderer range&#39; scaler ms =</code></pre>
 <span class="kw">import </span><span class="dt">Diagrams.Backend.SVG</span> (<span class="dt">SVG</span>)
 <span class="kw">import </span><span class="dt">Diagrams.Backend.Rasterific</span> (<span class="dt">Rasterific</span>)
 <span class="kw">import </span><span class="dt">Chart.Unit</span>
-<span class="kw">import </span><span class="dt">Chart.Types</span></code></pre></div>
+<span class="kw">import </span><span class="dt">Chart.Types</span>
+<span class="kw">import </span><span class="dt">Numeric.AD</span>
+<span class="kw">import </span><span class="dt">Numeric.AD.Mode.Reverse</span>
+<span class="kw">import </span><span class="dt">Data.Reflection</span>
+<span class="kw">import </span><span class="dt">Numeric.AD.Internal.Reverse</span></code></pre></div>
 <h2 id="some-test-data">some test data</h2>
 <p>Standard normal random variates in one dimension.</p>
 <div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell"><span class="ot">rvs ::</span> <span class="dt">Int</span> <span class="ot">-&gt;</span> <span class="dt">IO</span> [<span class="dt">Double</span>]
@@ -122,7 +125,7 @@ h <span class="fu">=</span> unsafeInlineIO <span class="fu">$</span> <span class
   return (zipWith4 <span class="dt">V4</span> (init cuts) (replicate (n<span class="fu">+</span><span class="dv">1</span>) <span class="dv">0</span>) (drop <span class="dv">1</span> cuts) (fromIntegral <span class="fu">&lt;$&gt;</span> histList))
 </code></pre></div>
 <div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell"><span class="ot">hist ::</span> <span class="dt">Int</span> <span class="ot">-&gt;</span> [<span class="dt">Double</span>] <span class="ot">-&gt;</span> [<span class="dt">V4</span> <span class="dt">Double</span>]
-hist n xs <span class="fu">=</span> (zipWith4 <span class="dt">V4</span> (init cuts) (replicate (length xs<span class="fu">+</span><span class="dv">1</span>) <span class="dv">0</span>) (drop <span class="dv">1</span> cuts) (fromIntegral <span class="fu">&lt;$&gt;</span> histList))
+hist n xs <span class="fu">=</span> zipWith4 <span class="dt">V4</span> (init cuts) (replicate (length xs<span class="fu">+</span><span class="dv">1</span>) <span class="dv">0</span>) (drop <span class="dv">1</span> cuts) (fromIntegral <span class="fu">&lt;$&gt;</span> histList)
   <span class="kw">where</span>
     r <span class="fu">=</span> range xs
     cuts <span class="fu">=</span> mkTicksExact r n
@@ -161,25 +164,36 @@ hist n xs <span class="fu">=</span> (zipWith4 <span class="dt">V4</span> (init c
 <img src="other/axes.svg" />
 
 </div>
-<h1 id="main">main</h1>
-<p>A few values pulled out of main, on their way to abstraction</p>
+<p>Grid Overlay</p>
+<p>Note how the axis ticks line up exactly with middle of the dots. I now think of the axes as a small subset of possible HUDs to help users interpret data.</p>
+<div class="figure">
+<img src="other/grid.svg" />
+
+</div>
+<h1 id="examples">examples</h1>
 <div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell"><span class="ot">dGrid ::</span> [(<span class="dt">Double</span>,<span class="dt">Double</span>)]
 dGrid <span class="fu">=</span> (,) <span class="fu">&lt;$&gt;</span> [<span class="dv">0</span><span class="fu">..</span><span class="dv">10</span>] <span class="fu">&lt;*&gt;</span> [<span class="dv">0</span><span class="fu">..</span><span class="dv">10</span>]
 
+<span class="ot">lc1 ::</span> [<span class="dt">LineConfig</span>]
 lc1 <span class="fu">=</span> zipWith <span class="dt">LineConfig</span> [<span class="fl">0.01</span>,<span class="fl">0.02</span>,<span class="fl">0.03</span>] <span class="fu">$</span> opacs <span class="fl">0.5</span> palette1
+
+<span class="ot">sc1 ::</span> [<span class="dt">ScatterConfig</span>]
 sc1 <span class="fu">=</span> zipWith <span class="dt">ScatterConfig</span> [<span class="fl">0.02</span>,<span class="fl">0.05</span>,<span class="fl">0.1</span>] <span class="fu">$</span> opacs <span class="fl">0.1</span> palette1
+
+<span class="ot">swish ::</span> [(<span class="dt">Double</span>, <span class="dt">Double</span>)]
 swish <span class="fu">=</span> [(<span class="fl">0.0</span>,<span class="fl">1.0</span>),(<span class="fl">1.0</span>,<span class="fl">1.0</span>),(<span class="fl">2.0</span>,<span class="fl">5.0</span>)]
+
+<span class="ot">swish2 ::</span> [(<span class="dt">Double</span>, <span class="dt">Double</span>)]
 swish2 <span class="fu">=</span> [(<span class="fl">0.0</span>,<span class="fl">0.0</span>),(<span class="fl">3.0</span>,<span class="fl">3.0</span>)]
 
-<span class="ot">linedef ::</span> <span class="dt">Chart</span> a
-linedef <span class="fu">=</span> line def lc1 (fmap r2 <span class="fu">&lt;$&gt;</span> [swish,swish2])
+<span class="ot">linedef ::</span> <span class="dt">Chart&#39;</span> a
+linedef <span class="fu">=</span> unitLine def lc1 (fmap r2 <span class="fu">&lt;$&gt;</span> [swish,swish2])
 
-<span class="ot">linesdef ::</span> <span class="dt">Chart</span> a
+<span class="ot">linesdef ::</span> <span class="dt">Chart&#39;</span> a
 linesdef <span class="fu">=</span>
-    line def (((\c <span class="ot">-&gt;</span> <span class="dt">LineConfig</span> <span class="fl">0.01</span> <span class="fu">$</span> opac <span class="fl">0.5</span> c) <span class="fu">&lt;$&gt;</span> palette1)) <span class="fu">$</span>
-    ((\x <span class="ot">-&gt;</span> zipWith <span class="dt">V2</span> (fromIntegral <span class="fu">&lt;$&gt;</span> [<span class="dv">0</span><span class="fu">..</span>]<span class="ot"> ::</span> [<span class="dt">Double</span>]) x)) <span class="fu">&lt;$&gt;</span>
-    ((drop <span class="dv">1</span> <span class="fu">.</span> L.scan L.sum) <span class="fu">&lt;$&gt;</span> (unsafeInlineIO <span class="fu">$</span> replicateM <span class="dv">5</span> <span class="fu">$</span> rvs <span class="dv">100</span>))
-
+    unitLine def ((<span class="dt">LineConfig</span> <span class="fl">0.01</span> <span class="fu">.</span> opac <span class="fl">0.5</span>) <span class="fu">&lt;$&gt;</span> palette1) <span class="fu">$</span>
+    zipWith <span class="dt">V2</span> (fromIntegral <span class="fu">&lt;$&gt;</span> [<span class="dv">0</span><span class="fu">..</span>]<span class="ot"> ::</span> [<span class="dt">Double</span>]) <span class="fu">&lt;$&gt;</span>
+    ((drop <span class="dv">1</span> <span class="fu">.</span> L.scan L.sum) <span class="fu">&lt;$&gt;</span> unsafeInlineIO (replicateM <span class="dv">5</span> <span class="fu">$</span> rvs <span class="dv">100</span>))
 
 <span class="ot">predotsdef ::</span> <span class="dt">Chart</span> a
 predotsdef <span class="fu">=</span> scatter1 def (xys <span class="dv">1000</span> <span class="fl">0.7</span>)
@@ -187,23 +201,23 @@ predotsdef <span class="fu">=</span> scatter1 def (xys <span class="dv">1000</sp
 <span class="ot">dotsdef ::</span> <span class="dt">Chart</span> a
 dotsdef <span class="fu">=</span> scatter1 def ((\x <span class="ot">-&gt;</span> scaleR2 (rangeR2 x) x) (xys <span class="dv">1000</span> <span class="fl">0.7</span>))
 
-<span class="ot">scatterdef ::</span> <span class="dt">Chart</span> a
-scatterdef <span class="fu">=</span> scatter def [def] [xys <span class="dv">1000</span> <span class="fl">0.7</span>]
+<span class="ot">scatterdef ::</span> <span class="dt">Chart&#39;</span> a
+scatterdef <span class="fu">=</span> unitScatter def [def] [xys <span class="dv">1000</span> <span class="fl">0.7</span>]
 
-<span class="ot">scattersdef ::</span> <span class="dt">Chart</span> a
-scattersdef <span class="fu">=</span> scatter def sc1 [xys <span class="dv">1000</span> <span class="fl">0.8</span>, xys <span class="dv">1000</span> <span class="fu">-</span><span class="fl">0.5</span>]
+<span class="ot">scattersdef ::</span> <span class="dt">Chart&#39;</span> a
+scattersdef <span class="fu">=</span> unitScatter def sc1 [xys <span class="dv">1000</span> <span class="fl">0.8</span>, xys <span class="dv">1000</span> <span class="fu">-</span><span class="fl">0.5</span>]
 
-<span class="ot">scaledef ::</span> <span class="dt">Chart</span> a
-scaledef <span class="fu">=</span> scatter def [def] <span class="fu">$</span> fmap (\x <span class="ot">-&gt;</span> x <span class="fu">*</span> 1e<span class="fu">-</span><span class="dv">8</span>) <span class="fu">&lt;$&gt;</span> [xys <span class="dv">1000</span> <span class="fl">0.7</span>]
+<span class="ot">scaledef ::</span> <span class="dt">Chart&#39;</span> a
+scaledef <span class="fu">=</span> unitScatter def [def] <span class="fu">$</span> fmap (<span class="fu">*</span> 1e<span class="fu">-</span><span class="dv">8</span>) <span class="fu">&lt;$&gt;</span> [xys <span class="dv">1000</span> <span class="fl">0.7</span>]
 
-<span class="ot">histdef ::</span> <span class="dt">Chart</span> a
-histdef <span class="fu">=</span> rect&#39; def [def] [h]
+<span class="ot">histdef ::</span> <span class="dt">Chart&#39;</span> a
+histdef <span class="fu">=</span> unitRect def [def] [h]
 
-<span class="ot">grid ::</span> <span class="dt">Chart</span> a
-grid <span class="fu">=</span> scatter def [def] [r2 <span class="fu">&lt;$&gt;</span> dGrid]
+<span class="ot">griddef ::</span> <span class="dt">Chart&#39;</span> a
+griddef <span class="fu">=</span> unitScatter def [def] [r2 <span class="fu">&lt;$&gt;</span> dGrid]
 
-<span class="ot">bardef ::</span> <span class="dt">Chart</span> a
-bardef <span class="fu">=</span> rect&#39;
+<span class="ot">bardef ::</span> <span class="dt">Chart&#39;</span> a
+bardef <span class="fu">=</span> unitRect
     ( chartAxes <span class="fu">.~</span>
       [ axisTickStyle <span class="fu">.~</span>
         <span class="dt">TickLabels</span> labels <span class="fu">$</span> def
@@ -211,21 +225,17 @@ bardef <span class="fu">=</span> rect&#39;
       <span class="fu">$</span> def
     )
     [def]
-    [zipWith4 <span class="dt">V4</span> [<span class="dv">0</span><span class="fu">..</span><span class="dv">10</span>] (replicate <span class="dv">11</span> <span class="dv">0</span>) [<span class="dv">1</span><span class="fu">..</span><span class="dv">11</span>] ((view _x) <span class="fu">&lt;$&gt;</span> xys <span class="dv">10</span> <span class="fl">0.8</span>)]
+    [zipWith4 <span class="dt">V4</span> [<span class="dv">0</span><span class="fu">..</span><span class="dv">10</span>] (replicate <span class="dv">11</span> <span class="dv">0</span>) [<span class="dv">1</span><span class="fu">..</span><span class="dv">11</span>] (view _x <span class="fu">&lt;$&gt;</span> xys <span class="dv">10</span> <span class="fl">0.8</span>)]
   <span class="kw">where</span>
     labels <span class="fu">=</span> fmap Text.pack <span class="fu">&lt;$&gt;</span> take <span class="dv">10</span> <span class="fu">$</span> (<span class="fu">:</span>[]) <span class="fu">&lt;$&gt;</span> [<span class="ch">&#39;a&#39;</span><span class="fu">..</span>]
 
-
-
-r1 <span class="fu">=</span> [<span class="dt">V4</span> <span class="dv">0</span> <span class="dv">0</span> <span class="dv">1</span> <span class="dv">1</span>, <span class="dt">V4</span> <span class="dv">1</span> <span class="dv">0</span> <span class="dv">1</span> <span class="dv">2</span>, <span class="dt">V4</span> <span class="dv">2</span> <span class="dv">0</span> <span class="dv">1</span> <span class="dv">5</span>]
-
-<span class="ot">axesdef ::</span> <span class="dt">Chart</span> a
+<span class="ot">axesdef ::</span> <span class="dt">Chart&#39;</span> a
 axesdef <span class="fu">=</span> chartWith def
   (const unitSquare)
   (<span class="dt">V2</span> (<span class="dt">Range</span> (<span class="dv">0</span>,<span class="dv">1</span>)) (<span class="dt">Range</span> (<span class="fu">-</span><span class="dv">1000</span>,<span class="dv">10000</span>))) scaleR2s ([[]]<span class="ot"> ::</span> [[<span class="dt">V2</span> <span class="dt">Double</span>]])
 
-<span class="ot">doubleHist ::</span> <span class="dt">Chart</span> a
-doubleHist <span class="fu">=</span> rect&#39; def
+<span class="ot">doubleHist ::</span> <span class="dt">Chart&#39;</span> a
+doubleHist <span class="fu">=</span> unitRect def
     [ def
     , rectBorderColor <span class="fu">.~</span> <span class="dt">Color</span> <span class="dv">0</span> <span class="dv">0</span> <span class="dv">0</span> <span class="dv">0</span>
       <span class="fu">$</span> rectColor <span class="fu">.~</span> <span class="dt">Color</span> <span class="fl">0.333</span> <span class="fl">0.333</span> <span class="fl">0.333</span> <span class="fl">0.4</span>
@@ -235,11 +245,40 @@ doubleHist <span class="fu">=</span> rect&#39; def
     , hist <span class="dv">50</span> <span class="fu">$</span> (\(<span class="dt">V2</span> x y) <span class="ot">-&gt;</span> x<span class="fu">+</span>y) <span class="fu">&lt;$&gt;</span> xys <span class="dv">10000</span> <span class="dv">0</span>
     ]
 
-<span class="ot">main ::</span> <span class="dt">IO</span> ()
+<span class="ot">a1 ::</span> [<span class="dt">V4</span> <span class="dt">Double</span>]
+a1 <span class="fu">=</span> zipWith (\(<span class="dt">V2</span> x y) (<span class="dt">V2</span> z w) <span class="ot">-&gt;</span> <span class="dt">V4</span> x y z w) pos dir&#39;
+  <span class="kw">where</span>
+    pos <span class="fu">=</span> locs (<span class="dt">Range</span> (<span class="fu">-</span><span class="dv">1</span>, <span class="dv">1</span>)) (<span class="dt">Range</span> (<span class="fu">-</span><span class="dv">1</span>, <span class="dv">1</span>)) <span class="dv">10</span>
+    dir&#39; <span class="fu">=</span> gradF rosenbrock <span class="fl">0.01</span> <span class="fu">&lt;$&gt;</span> pos
+
+<span class="ot">arrowsdef ::</span> <span class="dt">Chart&#39;</span> a
+arrowsdef <span class="fu">=</span> unitArrow def [def] [a1]
+
+<span class="ot">grid ::</span> forall b<span class="fu">.</span> (<span class="dt">Fractional</span> b, <span class="dt">Enum</span> b) <span class="ot">=&gt;</span> <span class="dt">Range</span> b <span class="ot">-&gt;</span> b <span class="ot">-&gt;</span> [b]
+grid (<span class="dt">Range</span> (x,x&#39;)) steps <span class="fu">=</span> (\a <span class="ot">-&gt;</span> x <span class="fu">+</span> (x&#39;<span class="fu">-</span>x)<span class="fu">/</span>steps <span class="fu">*</span> a) <span class="fu">&lt;$&gt;</span> [<span class="dv">0</span><span class="fu">..</span>steps]
+
+<span class="ot">locs ::</span> <span class="dt">Range</span> <span class="dt">Double</span> <span class="ot">-&gt;</span> <span class="dt">Range</span> <span class="dt">Double</span> <span class="ot">-&gt;</span> <span class="dt">Double</span> <span class="ot">-&gt;</span> [<span class="dt">V2</span> <span class="dt">Double</span>]
+locs rx ry steps <span class="fu">=</span> [<span class="dt">V2</span> x y <span class="fu">|</span> x <span class="ot">&lt;-</span> grid rx steps, y <span class="ot">&lt;-</span> grid ry steps]
+
+gradF <span class="ot">::</span>
+    (forall s<span class="fu">.</span> (<span class="dt">Reifies</span> s <span class="dt">Tape</span>) <span class="ot">=&gt;</span> [<span class="dt">Reverse</span> s <span class="dt">Double</span>] <span class="ot">-&gt;</span> <span class="dt">Reverse</span> s <span class="dt">Double</span>) <span class="ot">-&gt;</span>
+    <span class="dt">Double</span> <span class="ot">-&gt;</span>
+    <span class="dt">V2</span> <span class="dt">Double</span> <span class="ot">-&gt;</span>
+    <span class="dt">V2</span> <span class="dt">Double</span>
+gradF f step (<span class="dt">V2</span> x y) <span class="fu">=</span>
+    <span class="fu">-</span> r2 ((\[x&#39;,y&#39;] <span class="ot">-&gt;</span> (x&#39;,y&#39;)) <span class="fu">$</span>
+          gradWith (\x0 x1 <span class="ot">-&gt;</span> x0 <span class="fu">+</span> (x1 <span class="fu">-</span> x0) <span class="fu">*</span> step) f [x,y])
+
+<span class="ot">rosenbrock ::</span> <span class="dt">Num</span> a <span class="ot">=&gt;</span> [a] <span class="ot">-&gt;</span> a
+rosenbrock [] <span class="fu">=</span> <span class="dv">0</span>
+rosenbrock [x] <span class="fu">=</span> <span class="dv">100</span> <span class="fu">*</span> (negate x<span class="fu">^</span><span class="dv">2</span>)<span class="fu">^</span><span class="dv">2</span> <span class="fu">+</span> (x <span class="fu">-</span> <span class="dv">1</span>)<span class="fu">^</span><span class="dv">2</span>
+rosenbrock (x<span class="fu">:</span>y<span class="fu">:</span>_) <span class="fu">=</span> <span class="dv">100</span> <span class="fu">*</span> (y <span class="fu">-</span> x<span class="fu">^</span><span class="dv">2</span>)<span class="fu">^</span><span class="dv">2</span> <span class="fu">+</span> (x <span class="fu">-</span> <span class="dv">1</span>)<span class="fu">^</span><span class="dv">2</span></code></pre></div>
+<h1 id="main">main</h1>
+<p>main creates the example charts and makes the svgs. See develop section below for the workflow thatcreates the rendered html/markdown.</p>
+<div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell"><span class="ot">main ::</span> <span class="dt">IO</span> ()
 main <span class="fu">=</span> <span class="kw">do</span></code></pre></div>
-<p>See develop section below for my workflow.</p>
-<div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell">  scratchSvg <span class="fu">$</span> doubleHist
-  scratchPng <span class="fu">$</span> doubleHist
+<div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell">  scratchSvg arrowsdef
+  scratchPng arrowsdef
   fileSvg <span class="st">&quot;other/line.svg&quot;</span> (<span class="dv">200</span>,<span class="dv">200</span>) linedef
   filePng <span class="st">&quot;other/line.png&quot;</span> (<span class="dv">200</span>,<span class="dv">200</span>) linedef
   fileSvg <span class="st">&quot;other/lines.svg&quot;</span> (<span class="dv">200</span>,<span class="dv">200</span>) linesdef
@@ -250,18 +289,22 @@ main <span class="fu">=</span> <span class="kw">do</span></code></pre></div>
   filePng <span class="st">&quot;other/dots.png&quot;</span> (<span class="dv">200</span>,<span class="dv">200</span>) dotsdef
   fileSvg <span class="st">&quot;other/scatter.svg&quot;</span> (<span class="dv">200</span>,<span class="dv">200</span>) scatterdef
   filePng <span class="st">&quot;other/scatter.png&quot;</span> (<span class="dv">200</span>,<span class="dv">200</span>) scatterdef
-  fileSvg <span class="st">&quot;other/scale.svg&quot;</span> (<span class="dv">200</span>,<span class="dv">200</span>) <span class="fu">$</span> scaledef
-  filePng <span class="st">&quot;other/scale.png&quot;</span> (<span class="dv">200</span>,<span class="dv">200</span>) <span class="fu">$</span> scaledef
+  fileSvg <span class="st">&quot;other/scale.svg&quot;</span> (<span class="dv">200</span>,<span class="dv">200</span>) scaledef
+  filePng <span class="st">&quot;other/scale.png&quot;</span> (<span class="dv">200</span>,<span class="dv">200</span>) scaledef
   fileSvg <span class="st">&quot;other/scatters.svg&quot;</span> (<span class="dv">200</span>,<span class="dv">200</span>) scattersdef
   filePng <span class="st">&quot;other/scatters.png&quot;</span> (<span class="dv">200</span>,<span class="dv">200</span>) scattersdef
   fileSvg <span class="st">&quot;other/bar.svg&quot;</span> (<span class="dv">200</span>,<span class="dv">200</span>) bardef
   filePng <span class="st">&quot;other/bar.png&quot;</span> (<span class="dv">200</span>,<span class="dv">200</span>) bardef
   fileSvg <span class="st">&quot;other/hist.svg&quot;</span> (<span class="dv">200</span>,<span class="dv">200</span>) histdef
   filePng <span class="st">&quot;other/hist.png&quot;</span> (<span class="dv">200</span>,<span class="dv">200</span>) histdef
-  fileSvg <span class="st">&quot;other/grid.svg&quot;</span> (<span class="dv">200</span>,<span class="dv">200</span>) grid
-  filePng <span class="st">&quot;other/grid.png&quot;</span> (<span class="dv">200</span>,<span class="dv">200</span>) grid
+  fileSvg <span class="st">&quot;other/dhist.svg&quot;</span> (<span class="dv">200</span>,<span class="dv">200</span>) doubleHist
+  filePng <span class="st">&quot;other/dhist.png&quot;</span> (<span class="dv">200</span>,<span class="dv">200</span>) doubleHist
+  fileSvg <span class="st">&quot;other/grid.svg&quot;</span> (<span class="dv">200</span>,<span class="dv">200</span>) griddef
+  filePng <span class="st">&quot;other/grid.png&quot;</span> (<span class="dv">200</span>,<span class="dv">200</span>) griddef
   fileSvg <span class="st">&quot;other/axes.svg&quot;</span> (<span class="dv">200</span>,<span class="dv">200</span>) axesdef
-  filePng <span class="st">&quot;other/axes.png&quot;</span> (<span class="dv">200</span>,<span class="dv">200</span>) axesdef</code></pre></div>
+  filePng <span class="st">&quot;other/axes.png&quot;</span> (<span class="dv">200</span>,<span class="dv">200</span>) axesdef
+  fileSvg <span class="st">&quot;other/arrows.svg&quot;</span> (<span class="dv">200</span>,<span class="dv">200</span>) arrowsdef
+  filePng <span class="st">&quot;other/arrows.png&quot;</span> (<span class="dv">200</span>,<span class="dv">200</span>) arrowsdef</code></pre></div>
 <h2 id="diagrams-development-recipe">diagrams development recipe</h2>
 <p>In constructing new <code>units</code>:</p>
 <ul class="incremental">
@@ -299,6 +342,10 @@ scratchPng <span class="fu">=</span> filePng <span class="st">&quot;other/scratc
 <img src="other/hist.png" />
 
 </div>
+<div class="figure">
+<img src="other/dhist.png" />
+
+</div>
 <p>Line</p>
 <div class="figure">
 <img src="other/line.png" />
@@ -314,8 +361,8 @@ scratchPng <span class="fu">=</span> filePng <span class="st">&quot;other/scratc
 <img src="other/bar.png" />
 
 </div>
-<p>Grid Overlay</p>
+<p>Vector Field Chart</p>
 <div class="figure">
-<img src="other/grid.png" />
+<img src="other/arrows.svg" />
 
 </div>

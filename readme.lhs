@@ -1,4 +1,4 @@
-```include
+```
 other/header.md
 ```
 
@@ -76,6 +76,8 @@ Histogram
 
 ![](other/hist.svg)
 
+![](other/dhist.svg)
+
 Line
 
 ![](other/line.svg)
@@ -88,16 +90,13 @@ Labelled Bar Chart
 
 ![](other/bar.svg)
 
-Grid Overlay
+Vector Field Chart
 
-Note how the axis ticks line up exactly with middle of the dots.  I now think of the axes as a small subset of possible HUDs to help users interpret data.
-
-![](other/grid.svg)
+![](other/arrows.svg)
 
 > {-# OPTIONS_GHC -Wall #-}
 > {-# OPTIONS_GHC -fno-warn-type-defaults #-}
-> {-# OPTIONS_GHC -fno-warn-missing-signatures #-}
-> import Protolude
+> import Protolude hiding ((&))
 > import Control.Monad.Primitive (unsafeInlineIO)
 > import Diagrams.Prelude hiding ((<>))
 > import qualified Control.Foldl as L
@@ -110,6 +109,10 @@ Note how the axis ticks line up exactly with middle of the dots.  I now think of
 > import Diagrams.Backend.Rasterific (Rasterific)
 > import Chart.Unit
 > import Chart.Types
+> import Numeric.AD
+> import Numeric.AD.Mode.Reverse
+> import Data.Reflection
+> import Numeric.AD.Internal.Reverse
 
 some test data
 ---
@@ -119,7 +122,7 @@ Standard normal random variates in one dimension.
 > rvs :: Int -> IO [Double]
 > rvs n =
 >   replicateM n $ R.runRVar R.stdNormal R.StdRandom
->
+> 
 
 This generates n 2D random variate pairs where x and y are correlated.
 
@@ -129,7 +132,7 @@ This generates n 2D random variate pairs where x and y are correlated.
 >   s1 <- replicateM n $ R.runRVar R.stdNormal R.StdRandom
 >   let s1' = zipWith (\x y -> c * x + sqrt (1 - c * c) * y) s0 s1
 >   pure $ zipWith V2 s0 s1'
->
+> 
 
 h is a histogram of 10000 one-dim random normals.
 
@@ -146,11 +149,11 @@ The data out is a V4 with xz as the bucket range, and yw as 0 and the bucket cou
 >   let histMap = L.fold count $ (\x -> L.fold countBool (fmap (x >) cuts)) <$> ys'
 >   let histList = (\x -> Map.findWithDefault 0 x histMap) <$> [0..n]
 >   return (zipWith4 V4 (init cuts) (replicate (n+1) 0) (drop 1 cuts) (fromIntegral <$> histList))
->
+> 
 > 
 
 > hist :: Int -> [Double] -> [V4 Double]
-> hist n xs = (zipWith4 V4 (init cuts) (replicate (length xs+1) 0) (drop 1 cuts) (fromIntegral <$> histList))
+> hist n xs = zipWith4 V4 (init cuts) (replicate (length xs+1) 0) (drop 1 cuts) (fromIntegral <$> histList)
 >   where
 >     r = range xs
 >     cuts = mkTicksExact r n
@@ -158,9 +161,7 @@ The data out is a V4 with xz as the bucket range, and yw as 0 and the bucket cou
 >     countBool = L.Fold (\x a -> x + if a then 1 else 0) 0 identity
 >     histMap = L.fold count $ (\x -> L.fold countBool (fmap (x >) cuts)) <$> xs
 >     histList = (\x -> Map.findWithDefault 0 x histMap) <$> [0..length xs]
->
-
-
+> 
 
 Scale Robustness
 ---
@@ -195,52 +196,62 @@ The concrete manifestation of data on a page (the chart), and the heads-up-displ
 
 ![](other/axes.svg)
 
-main
-===
+Grid Overlay
 
-A few values pulled out of main, on their way to abstraction
+Note how the axis ticks line up exactly with middle of the dots.  I now think of the axes as a small subset of possible HUDs to help users interpret data.
+
+![](other/grid.svg)
+
+examples
+===
 
 > dGrid :: [(Double,Double)]
 > dGrid = (,) <$> [0..10] <*> [0..10]
->
+> 
+> lc1 :: [LineConfig]
 > lc1 = zipWith LineConfig [0.01,0.02,0.03] $ opacs 0.5 palette1
+> 
+> sc1 :: [ScatterConfig]
 > sc1 = zipWith ScatterConfig [0.02,0.05,0.1] $ opacs 0.1 palette1
+> 
+> swish :: [(Double, Double)]
 > swish = [(0.0,1.0),(1.0,1.0),(2.0,5.0)]
+> 
+> swish2 :: [(Double, Double)]
 > swish2 = [(0.0,0.0),(3.0,3.0)]
->
-> linedef :: Chart a
-> linedef = line def lc1 (fmap r2 <$> [swish,swish2])
->
-> linesdef :: Chart a
+> 
+> linedef :: Chart' a
+> linedef = unitLine def lc1 (fmap r2 <$> [swish,swish2])
+> 
+> linesdef :: Chart' a
 > linesdef =
->     line def (((\c -> LineConfig 0.01 $ opac 0.5 c) <$> palette1)) $
->     ((\x -> zipWith V2 (fromIntegral <$> [0..] :: [Double]) x)) <$>
->     ((drop 1 . L.scan L.sum) <$> (unsafeInlineIO $ replicateM 5 $ rvs 100))
->
->
+>     unitLine def ((LineConfig 0.01 . opac 0.5) <$> palette1) $
+>     zipWith V2 (fromIntegral <$> [0..] :: [Double]) <$>
+>     ((drop 1 . L.scan L.sum) <$> unsafeInlineIO (replicateM 5 $ rvs 100))
+> 
 > predotsdef :: Chart a
 > predotsdef = scatter1 def (xys 1000 0.7)
->
+> 
 > dotsdef :: Chart a
 > dotsdef = scatter1 def ((\x -> scaleR2 (rangeR2 x) x) (xys 1000 0.7))
->
-> scatterdef :: Chart a
-> scatterdef = scatter def [def] [xys 1000 0.7]
->
-> scattersdef :: Chart a
-> scattersdef = scatter def sc1 [xys 1000 0.8, xys 1000 -0.5]
->
-> scaledef :: Chart a
-> scaledef = scatter def [def] $ fmap (\x -> x * 1e-8) <$> [xys 1000 0.7]
 > 
-> histdef :: Chart a
-> histdef = rect' def [def] [h]
->
-> grid :: Chart a
-> grid = scatter def [def] [r2 <$> dGrid]
->
-> bardef :: Chart a
-> bardef = rect'
+> scatterdef :: Chart' a
+> scatterdef = unitScatter def [def] [xys 1000 0.7]
+> 
+> scattersdef :: Chart' a
+> scattersdef = unitScatter def sc1 [xys 1000 0.8, xys 1000 -0.5]
+> 
+> scaledef :: Chart' a
+> scaledef = unitScatter def [def] $ fmap (* 1e-8) <$> [xys 1000 0.7]
+> 
+> histdef :: Chart' a
+> histdef = unitRect def [def] [h]
+> 
+> griddef :: Chart' a
+> griddef = unitScatter def [def] [r2 <$> dGrid]
+> 
+> bardef :: Chart' a
+> bardef = unitRect
 >     ( chartAxes .~
 >       [ axisTickStyle .~
 >         TickLabels labels $ def
@@ -248,21 +259,17 @@ A few values pulled out of main, on their way to abstraction
 >       $ def
 >     )
 >     [def]
->     [zipWith4 V4 [0..10] (replicate 11 0) [1..11] ((view _x) <$> xys 10 0.8)]
+>     [zipWith4 V4 [0..10] (replicate 11 0) [1..11] (view _x <$> xys 10 0.8)]
 >   where
 >     labels = fmap Text.pack <$> take 10 $ (:[]) <$> ['a'..]
->
->
->
-> r1 = [V4 0 0 1 1, V4 1 0 1 2, V4 2 0 1 5]
->
-> axesdef :: Chart a
+> 
+> axesdef :: Chart' a
 > axesdef = chartWith def
 >   (const unitSquare)
 >   (V2 (Range (0,1)) (Range (-1000,10000))) scaleR2s ([[]] :: [[V2 Double]])
->
-> doubleHist :: Chart a
-> doubleHist = rect' def
+> 
+> doubleHist :: Chart' a
+> doubleHist = unitRect def
 >     [ def
 >     , rectBorderColor .~ Color 0 0 0 0
 >       $ rectColor .~ Color 0.333 0.333 0.333 0.4
@@ -271,14 +278,48 @@ A few values pulled out of main, on their way to abstraction
 >     [ hist 50 $ (\(V2 x y) -> x+y) <$> xys 10000 0.8
 >     , hist 50 $ (\(V2 x y) -> x+y) <$> xys 10000 0
 >     ]
->
+> 
+> a1 :: [V4 Double]
+> a1 = zipWith (\(V2 x y) (V2 z w) -> V4 x y z w) pos dir'
+>   where
+>     pos = locs (Range (-1, 1)) (Range (-1, 1)) 20
+>     dir' = gradF rosenbrock 0.01 <$> pos
+> 
+> arrowsdef :: Chart' a
+> arrowsdef = unitArrow def [def] [a1]
+> 
+> grid :: forall b. (Fractional b, Enum b) => Range b -> b -> [b]
+> grid (Range (x,x')) steps = (\a -> x + (x'-x)/steps * a) <$> [0..steps]
+> 
+> locs :: Range Double -> Range Double -> Double -> [V2 Double]
+> locs rx ry steps = [V2 x y | x <- grid rx steps, y <- grid ry steps]
+> 
+> gradF ::
+>     (forall s. (Reifies s Tape) => [Reverse s Double] -> Reverse s Double) ->
+>     Double ->
+>     V2 Double ->
+>     V2 Double
+> gradF f step (V2 x y) =
+>     - r2 ((\[x',y'] -> (x',y')) $
+>           gradWith (\x0 x1 -> x0 + (x1 - x0) * step) f [x,y])
+> 
+> rosenbrock :: Num a => [a] -> a
+> rosenbrock [] = 0
+> rosenbrock [x] = 100 * (negate x^2)^2 + (x - 1)^2
+> rosenbrock (x:y:_) = 100 * (y - x^2)^2 + (x - 1)^2
+> 
+
+ 
+main
+===
+
+main creates the example charts and makes the svgs. See develop section below for the workflow thatcreates the rendered html/markdown.
+
 > main :: IO ()
 > main = do
 
-See develop section below for my workflow.
-
->   scratchSvg $ doubleHist
->   scratchPng $ doubleHist
+>   scratchSvg arrowsdef
+>   scratchPng arrowsdef
 >   fileSvg "other/line.svg" (200,200) linedef
 >   filePng "other/line.png" (200,200) linedef
 >   fileSvg "other/lines.svg" (200,200) linesdef
@@ -289,18 +330,22 @@ See develop section below for my workflow.
 >   filePng "other/dots.png" (200,200) dotsdef
 >   fileSvg "other/scatter.svg" (200,200) scatterdef
 >   filePng "other/scatter.png" (200,200) scatterdef
->   fileSvg "other/scale.svg" (200,200) $ scaledef
->   filePng "other/scale.png" (200,200) $ scaledef
+>   fileSvg "other/scale.svg" (200,200) scaledef
+>   filePng "other/scale.png" (200,200) scaledef
 >   fileSvg "other/scatters.svg" (200,200) scattersdef
 >   filePng "other/scatters.png" (200,200) scattersdef
 >   fileSvg "other/bar.svg" (200,200) bardef
 >   filePng "other/bar.png" (200,200) bardef
 >   fileSvg "other/hist.svg" (200,200) histdef
 >   filePng "other/hist.png" (200,200) histdef
->   fileSvg "other/grid.svg" (200,200) grid
->   filePng "other/grid.png" (200,200) grid
+>   fileSvg "other/dhist.svg" (200,200) doubleHist
+>   filePng "other/dhist.png" (200,200) doubleHist
+>   fileSvg "other/grid.svg" (200,200) griddef
+>   filePng "other/grid.png" (200,200) griddef
 >   fileSvg "other/axes.svg" (200,200) axesdef
 >   filePng "other/axes.png" (200,200) axesdef
+>   fileSvg "other/arrows.svg" (200,200) arrowsdef
+>   filePng "other/arrows.png" (200,200) arrowsdef
 
 diagrams development recipe
 ---
@@ -353,6 +398,8 @@ Histogram
 
 ![](other/hist.png)
 
+![](other/dhist.png)
+
 Line
 
 ![](other/line.png)
@@ -365,6 +412,7 @@ Labelled Bar Chart
 
 ![](other/bar.png)
 
-Grid Overlay
+Vector Field Chart
 
-![](other/grid.png)
+![](other/arrows.svg)
+

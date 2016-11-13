@@ -9,10 +9,16 @@ import Data.List ((!!))
 import Diagrams.Prelude hiding (Color(..))
 import qualified Diagrams.TwoD.Text
 
-type Chart a =
-    ( Renderable (Path V2 Double) a
-    , Renderable (Diagrams.TwoD.Text.Text Double) a) =>
-    QDiagram a V2 Double Any
+type Chart b =
+    ( Renderable (Path V2 Double) b
+    ) =>
+    QDiagram b V2 Double Any
+
+type Chart' b =
+    ( Renderable (Path V2 Double) b
+    , Renderable (Diagrams.TwoD.Text.Text Double) b
+    ) =>
+    QDiagram b V2 Double Any
 
 data Orientation = X | Y
 
@@ -54,7 +60,7 @@ opacs :: Double -> [Color] -> [Color]
 opacs t cs = (\(Color r g b o) -> Color r g b (o*t)) <$> cs
 
 opac :: Double -> Color -> Color
-opac t c = (\(Color r g b o) -> Color r g b (o*t)) c
+opac t (Color r g b o) = Color r g b (o*t)
 
 data AxisConfig = AxisConfig
   { _axisPad :: Double
@@ -91,7 +97,7 @@ instance Default AxisConfig where
     0.5
     1
 
-makeLenses ''AxisConfig 
+makeLenses ''AxisConfig
 
 data ChartConfig = ChartConfig
   { _chartPad :: Double
@@ -150,9 +156,20 @@ instance Default RectConfig where
 
 makeLenses ''RectConfig
 
-data ChartType =
-    LineChart LineConfig |
-    BarChart BarConfig |
-    ScatterChart ScatterConfig
+data ArrowConfig = ArrowConfig
+  { _arrowMinHeadSize :: Double
+  , _arrowHeadSize :: Double
+  , _arrowMinStaffLength :: Double
+  , _arrowMaxStaffLength :: Double
+  , _arrowStaffLength :: Double
+  , _arrowMinStaffWidth :: Double
+  , _arrowStaffWidth :: Double
+  , _arrowColor :: Color
+  }
+
+instance Default ArrowConfig where
+  def = ArrowConfig 0.01 0.005 0.1 0.04 0.01 0.002 0.002 (Color 0.333 0.333 0.333 0.4)
+
+makeLenses ''ArrowConfig
 
 
