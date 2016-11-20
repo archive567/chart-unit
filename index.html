@@ -1,4 +1,7 @@
-<p>other/header.md ```</p>
+<meta charset="utf-8"> <link rel="stylesheet" href="other/lhs.css">
+<script type="text/javascript" async
+  src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-MML-AM_CHTML">
+</script>
 <h1 id="chart-unit-build-status"><a href="https://tonyday567.github.io/chart-unit.html">chart-unit</a> <a href="https://travis-ci.org/tonyday567/chart-unit"><img src="https://travis-ci.org/tonyday567/chart-unit.png" alt="Build Status" /></a></h1>
 <h2 id="scratchpad">scratchpad</h2>
 <div class="figure">
@@ -83,12 +86,12 @@ chartWith (ChartConfig p axes) renderer range&#39; scaler ms =</code></pre>
 <span class="ot">{-# OPTIONS_GHC -fno-warn-type-defaults #-}</span>
 <span class="kw">import </span><span class="dt">Protolude</span> <span class="kw">hiding</span> ((&amp;))
 <span class="kw">import </span><span class="dt">Control.Monad.Primitive</span> (unsafeInlineIO)
-<span class="kw">import </span><span class="dt">Diagrams.Prelude</span> <span class="kw">hiding</span> ((&lt;&gt;))
+<span class="kw">import </span><span class="dt">Diagrams.Prelude</span> <span class="kw">hiding</span> ((&lt;&gt;), unit)
 <span class="kw">import qualified</span> <span class="dt">Control.Foldl</span> <span class="kw">as</span> <span class="dt">L</span>
 <span class="kw">import qualified</span> <span class="dt">Data.Random</span> <span class="kw">as</span> <span class="dt">R</span>
 <span class="kw">import qualified</span> <span class="dt">Data.Map.Strict</span> <span class="kw">as</span> <span class="dt">Map</span>
 <span class="kw">import qualified</span> <span class="dt">Data.Text</span> <span class="kw">as</span> <span class="dt">Text</span>
-<span class="kw">import </span><span class="dt">Linear</span> <span class="kw">hiding</span> (identity)
+<span class="kw">import </span><span class="dt">Linear</span> <span class="kw">hiding</span> (identity, unit)
 <span class="kw">import </span><span class="dt">Data.List</span>
 <span class="kw">import </span><span class="dt">Diagrams.Backend.SVG</span> (<span class="dt">SVG</span>)
 <span class="kw">import </span><span class="dt">Diagrams.Backend.Rasterific</span> (<span class="dt">Rasterific</span>)
@@ -141,7 +144,7 @@ hist n xs <span class="fu">=</span> zipWith4 <span class="dt">V4</span> (init cu
 
 </div>
 <p>The size of the dots scale with the data, so to bring it back, we run the data through a scaling routine, which normalises the data according to the diagrams unit, which is <code>V2 (-0.5,0.5) (-0.5,0.5)</code>:</p>
-<pre><code>scatter1 def ((\x -&gt; scaleR2 (rangeR2 x) x) (xys 1000 0.7))</code></pre>
+<pre><code>scatter1 def $ ((\x -&gt; scaleR2 (rangeR2 x) x) &lt;$&gt; (xys 1000 0.7))</code></pre>
 <div class="figure">
 <img src="other/dots.svg" />
 
@@ -199,7 +202,7 @@ linesdef <span class="fu">=</span>
 predotsdef <span class="fu">=</span> scatter1 def (xys <span class="dv">1000</span> <span class="fl">0.7</span>)
 
 <span class="ot">dotsdef ::</span> <span class="dt">Chart</span> a
-dotsdef <span class="fu">=</span> scatter1 def ((\x <span class="ot">-&gt;</span> scaleR2 (rangeR2 x) x) (xys <span class="dv">1000</span> <span class="fl">0.7</span>))
+dotsdef <span class="fu">=</span> scatter1 def ((\x <span class="ot">-&gt;</span> rescaleR2 (rangeR2 x) x) (xys <span class="dv">1000</span> <span class="fl">0.7</span>))
 
 <span class="ot">scatterdef ::</span> <span class="dt">Chart&#39;</span> a
 scatterdef <span class="fu">=</span> unitScatter def [def] [xys <span class="dv">1000</span> <span class="fl">0.7</span>]
@@ -232,7 +235,7 @@ bardef <span class="fu">=</span> unitRect
 <span class="ot">axesdef ::</span> <span class="dt">Chart&#39;</span> a
 axesdef <span class="fu">=</span> chartWith def
   (const unitSquare)
-  (<span class="dt">V2</span> (<span class="dt">Range</span> (<span class="dv">0</span>,<span class="dv">1</span>)) (<span class="dt">Range</span> (<span class="fu">-</span><span class="dv">1000</span>,<span class="dv">10000</span>))) scaleR2s ([[]]<span class="ot"> ::</span> [[<span class="dt">V2</span> <span class="dt">Double</span>]])
+  (<span class="dt">V2</span> (<span class="dt">Range</span> (<span class="dv">0</span>,<span class="dv">1</span>)) (<span class="dt">Range</span> (<span class="fu">-</span><span class="dv">1000</span>,<span class="dv">10000</span>))) rescaleR2s ([[]]<span class="ot"> ::</span> [[<span class="dt">V2</span> <span class="dt">Double</span>]])
 
 <span class="ot">doubleHist ::</span> <span class="dt">Chart&#39;</span> a
 doubleHist <span class="fu">=</span> unitRect def
@@ -248,11 +251,15 @@ doubleHist <span class="fu">=</span> unitRect def
 <span class="ot">a1 ::</span> [<span class="dt">V4</span> <span class="dt">Double</span>]
 a1 <span class="fu">=</span> zipWith (\(<span class="dt">V2</span> x y) (<span class="dt">V2</span> z w) <span class="ot">-&gt;</span> <span class="dt">V4</span> x y z w) pos dir&#39;
   <span class="kw">where</span>
-    pos <span class="fu">=</span> locs (<span class="dt">Range</span> (<span class="fu">-</span><span class="dv">1</span>, <span class="dv">1</span>)) (<span class="dt">Range</span> (<span class="fu">-</span><span class="dv">1</span>, <span class="dv">1</span>)) <span class="dv">10</span>
+    pos <span class="fu">=</span> locs (<span class="dt">Range</span> (<span class="fu">-</span><span class="dv">1</span>, <span class="dv">1</span>)) (<span class="dt">Range</span> (<span class="fu">-</span><span class="dv">1</span>, <span class="dv">1</span>)) <span class="dv">20</span>
     dir&#39; <span class="fu">=</span> gradF rosenbrock <span class="fl">0.01</span> <span class="fu">&lt;$&gt;</span> pos
 
 <span class="ot">arrowsdef ::</span> <span class="dt">Chart&#39;</span> a
 arrowsdef <span class="fu">=</span> unitArrow def [def] [a1]
+
+
+<span class="ot">arrowsdef&#39; ::</span> <span class="dt">Chart&#39;</span> a
+arrowsdef&#39; <span class="fu">=</span> chartWith&#39;&#39; def (centerXY <span class="fu">.</span> mconcat <span class="fu">.</span> zipWith arrow1 [def]) (rangeV4s [a1]) (\r x <span class="ot">-&gt;</span> fmap (rescaleV4 r) <span class="fu">&lt;$&gt;</span> x) [a1]
 
 <span class="ot">grid ::</span> forall b<span class="fu">.</span> (<span class="dt">Fractional</span> b, <span class="dt">Enum</span> b) <span class="ot">=&gt;</span> <span class="dt">Range</span> b <span class="ot">-&gt;</span> b <span class="ot">-&gt;</span> [b]
 grid (<span class="dt">Range</span> (x,x&#39;)) steps <span class="fu">=</span> (\a <span class="ot">-&gt;</span> x <span class="fu">+</span> (x&#39;<span class="fu">-</span>x)<span class="fu">/</span>steps <span class="fu">*</span> a) <span class="fu">&lt;$&gt;</span> [<span class="dv">0</span><span class="fu">..</span>steps]
@@ -277,8 +284,8 @@ rosenbrock (x<span class="fu">:</span>y<span class="fu">:</span>_) <span class="
 <p>main creates the example charts and makes the svgs. See develop section below for the workflow thatcreates the rendered html/markdown.</p>
 <div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell"><span class="ot">main ::</span> <span class="dt">IO</span> ()
 main <span class="fu">=</span> <span class="kw">do</span></code></pre></div>
-<div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell">  scratchSvg arrowsdef
-  scratchPng arrowsdef
+<div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell">  scratchSvg arrowsdef&#39;
+  scratchPng arrowsdef&#39;
   fileSvg <span class="st">&quot;other/line.svg&quot;</span> (<span class="dv">200</span>,<span class="dv">200</span>) linedef
   filePng <span class="st">&quot;other/line.png&quot;</span> (<span class="dv">200</span>,<span class="dv">200</span>) linedef
   fileSvg <span class="st">&quot;other/lines.svg&quot;</span> (<span class="dv">200</span>,<span class="dv">200</span>) linesdef
@@ -303,8 +310,8 @@ main <span class="fu">=</span> <span class="kw">do</span></code></pre></div>
   filePng <span class="st">&quot;other/grid.png&quot;</span> (<span class="dv">200</span>,<span class="dv">200</span>) griddef
   fileSvg <span class="st">&quot;other/axes.svg&quot;</span> (<span class="dv">200</span>,<span class="dv">200</span>) axesdef
   filePng <span class="st">&quot;other/axes.png&quot;</span> (<span class="dv">200</span>,<span class="dv">200</span>) axesdef
-  fileSvg <span class="st">&quot;other/arrows.svg&quot;</span> (<span class="dv">200</span>,<span class="dv">200</span>) arrowsdef
-  filePng <span class="st">&quot;other/arrows.png&quot;</span> (<span class="dv">200</span>,<span class="dv">200</span>) arrowsdef</code></pre></div>
+  fileSvg <span class="st">&quot;other/arrows.svg&quot;</span> (<span class="dv">200</span>,<span class="dv">200</span>) arrowsdef&#39;
+  filePng <span class="st">&quot;other/arrows.png&quot;</span> (<span class="dv">200</span>,<span class="dv">200</span>) arrowsdef&#39;</code></pre></div>
 <h2 id="diagrams-development-recipe">diagrams development recipe</h2>
 <p>In constructing new <code>units</code>:</p>
 <ul class="incremental">

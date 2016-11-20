@@ -156,19 +156,21 @@ instance Default RectConfig where
 
 makeLenses ''RectConfig
 
-data ArrowConfig = ArrowConfig
-  { _arrowMinHeadSize :: Double
-  , _arrowHeadSize :: Double
-  , _arrowMinStaffLength :: Double
-  , _arrowMaxStaffLength :: Double
-  , _arrowStaffLength :: Double
-  , _arrowMinStaffWidth :: Double
-  , _arrowStaffWidth :: Double
+data ArrowConfig a = ArrowConfig
+  { _arrowMinHeadSize :: a
+  , _arrowMaxHeadSize :: a
+  , _arrowHeadSize :: a
+  , _arrowMinStaffLength :: a
+  , _arrowMaxStaffLength :: a
+  , _arrowStaffLength :: a
+  , _arrowMinStaffWidth :: a
+  , _arrowMaxStaffWidth :: a
+  , _arrowStaffWidth :: a
   , _arrowColor :: Color
   }
 
-instance Default ArrowConfig where
-  def = ArrowConfig 0.01 0.005 0.1 0.04 0.01 0.002 0.002 (Color 0.333 0.333 0.333 0.4)
+instance Default (ArrowConfig Double) where
+  def = ArrowConfig 0.01 0.05 0.03 0.1 1 1 0.01 0.005 0.2 (Color 0.333 0.333 0.888 0.8)
 
 makeLenses ''ArrowConfig
 

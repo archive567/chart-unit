@@ -1,6 +1,8 @@
-```
-other/header.md
-```
+<meta charset="utf-8">
+<link rel="stylesheet" href="other/lhs.css">
+<script type="text/javascript" async
+  src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-MML-AM_CHTML">
+</script>
 
 [chart-unit](https://tonyday567.github.io/chart-unit.html) [![Build Status](https://travis-ci.org/tonyday567/chart-unit.png)](https://travis-ci.org/tonyday567/chart-unit)
 ===
@@ -98,12 +100,12 @@ Vector Field Chart
 > {-# OPTIONS_GHC -fno-warn-type-defaults #-}
 > import Protolude hiding ((&))
 > import Control.Monad.Primitive (unsafeInlineIO)
-> import Diagrams.Prelude hiding ((<>))
+> import Diagrams.Prelude hiding ((<>), unit)
 > import qualified Control.Foldl as L
 > import qualified Data.Random as R
 > import qualified Data.Map.Strict as Map
 > import qualified Data.Text as Text
-> import Linear hiding (identity)
+> import Linear hiding (identity, unit)
 > import Data.List
 > import Diagrams.Backend.SVG (SVG)
 > import Diagrams.Backend.Rasterific (Rasterific)
@@ -116,7 +118,7 @@ Vector Field Chart
 
 some test data
 ---
-
+ 
 Standard normal random variates in one dimension.
 
 > rvs :: Int -> IO [Double]
@@ -174,7 +176,7 @@ Starting with the lowest level scatter chart:
 
 The size of the dots scale with the data, so to bring it back, we run the data through a scaling routine, which normalises the data according to the diagrams unit, which is `V2 (-0.5,0.5) (-0.5,0.5)`:
 
-    scatter1 def ((\x -> scaleR2 (rangeR2 x) x) (xys 1000 0.7))
+    scatter1 def $ ((\x -> scaleR2 (rangeR2 x) x) <$> (xys 1000 0.7))
 
 ![](other/dots.svg)
 
@@ -233,7 +235,7 @@ examples
 > predotsdef = scatter1 def (xys 1000 0.7)
 > 
 > dotsdef :: Chart a
-> dotsdef = scatter1 def ((\x -> scaleR2 (rangeR2 x) x) (xys 1000 0.7))
+> dotsdef = scatter1 def ((\x -> rescaleR2 (rangeR2 x) x) (xys 1000 0.7))
 > 
 > scatterdef :: Chart' a
 > scatterdef = unitScatter def [def] [xys 1000 0.7]
@@ -266,7 +268,7 @@ examples
 > axesdef :: Chart' a
 > axesdef = chartWith def
 >   (const unitSquare)
->   (V2 (Range (0,1)) (Range (-1000,10000))) scaleR2s ([[]] :: [[V2 Double]])
+>   (V2 (Range (0,1)) (Range (-1000,10000))) rescaleR2s ([[]] :: [[V2 Double]])
 > 
 > doubleHist :: Chart' a
 > doubleHist = unitRect def
@@ -287,6 +289,10 @@ examples
 > 
 > arrowsdef :: Chart' a
 > arrowsdef = unitArrow def [def] [a1]
+>
+>
+> arrowsdef' :: Chart' a
+> arrowsdef' = chartWith'' def (centerXY . mconcat . zipWith arrow1 [def]) (rangeV4s [a1]) (\r x -> fmap (rescaleV4 r) <$> x) [a1]
 > 
 > grid :: forall b. (Fractional b, Enum b) => Range b -> b -> [b]
 > grid (Range (x,x')) steps = (\a -> x + (x'-x)/steps * a) <$> [0..steps]
@@ -318,8 +324,8 @@ main creates the example charts and makes the svgs. See develop section below fo
 > main :: IO ()
 > main = do
 
->   scratchSvg arrowsdef
->   scratchPng arrowsdef
+>   scratchSvg arrowsdef'
+>   scratchPng arrowsdef'
 >   fileSvg "other/line.svg" (200,200) linedef
 >   filePng "other/line.png" (200,200) linedef
 >   fileSvg "other/lines.svg" (200,200) linesdef
@@ -344,8 +350,8 @@ main creates the example charts and makes the svgs. See develop section below fo
 >   filePng "other/grid.png" (200,200) griddef
 >   fileSvg "other/axes.svg" (200,200) axesdef
 >   filePng "other/axes.png" (200,200) axesdef
->   fileSvg "other/arrows.svg" (200,200) arrowsdef
->   filePng "other/arrows.png" (200,200) arrowsdef
+>   fileSvg "other/arrows.svg" (200,200) arrowsdef'
+>   filePng "other/arrows.png" (200,200) arrowsdef'
 
 diagrams development recipe
 ---
