@@ -87,19 +87,16 @@ library
     TypeFamilies,
     TypeOperators
 
-executable readme
+executable chart-unit-examples
   default-language:
     Haskell2010
   ghc-options:
     -funbox-strict-fields
     -fforce-recomp
-    -threaded
-    -rtsopts
-    -with-rtsopts=-N
   hs-source-dirs:
-    ./
+    examples
   main-is:
-    readme.lhs
+    examples.hs
   build-depends:
     base >= 4.7 && < 5,
     chart-unit,
@@ -112,6 +109,8 @@ executable readme
     foldl,
     lens,
     linear,
+    mwc-random,
+    mwc-probability,
     primitive,
     protolude,
     random-fu,

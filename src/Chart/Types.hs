@@ -102,6 +102,7 @@ makeLenses ''AxisConfig
 data ChartConfig = ChartConfig
   { _chartPad :: Double
   , _chartAxes :: [AxisConfig]
+  , _chartCanvasColor :: Color
   }
 
 instance Default ChartConfig where
@@ -114,6 +115,8 @@ instance Default ChartConfig where
      axisOrientation .~ Y $
      axisPlacement .~ AxisLeft $
      def]
+    (Color 0 0 0 0.02)
+
 
 makeLenses ''ChartConfig
 

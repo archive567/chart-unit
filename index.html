@@ -2,318 +2,132 @@
 <script type="text/javascript" async
   src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-MML-AM_CHTML">
 </script>
-<h1 id="chart-unit-build-status"><a href="https://tonyday567.github.io/chart-unit.html">chart-unit</a> <a href="https://travis-ci.org/tonyday567/chart-unit"><img src="https://travis-ci.org/tonyday567/chart-unit.png" alt="Build Status" /></a></h1>
-<h2 id="scratchpad">scratchpad</h2>
+<h1 id="chart-unit-build-status"><a href="https://tonyday567.github.io/chart-unit">chart-unit</a> <a href="https://travis-ci.org/tonyday567/chart-unit"><img src="https://travis-ci.org/tonyday567/chart-unit.png" alt="Build Status" /></a></h1>
+<p><a href="https://tonyday567.github.com/chart-unit">repo</a></p>
+<p>latest development:</p>
 <div class="figure">
 <img src="other/scratchpad.svg" />
 
 </div>
+<pre><code>scratch $ pad 1.1 $ beside (r2 (-1,0)) (beside (r2 (0,-1)) (((unitSquare # fcA (color $ Color 0.2 0.2 0.2 0.05) # lw 0) &lt;&gt; (centerXY $ scaleX (1/1.5) $ scaleY (1/10) $ (clipped (pathFromTrail $ (closeTrail $ fromVertices (p2 &lt;$&gt; [(0.5,0),(0.5,10),(2,10),(2,0)]))) $ ((mconcat . zipWith line1 (zipWith LineConfig [0.01,0.02,0.03] (opacs 0.5 palette1)))) (fmap r2 &lt;$&gt; [ [(0.0,1.0),(1.0,1.0),(2.0,5.0)], [(0.0,0.0),(3.0,3.0)]]))))) (axis def (Range (0.5,2)))) (axis (axisOrientation .~ Y $ def) (Range (0,2)))</code></pre>
+<p>This is my manual hack of what should happen to the line chart example when drawn using a scale different to the data scale.</p>
+<p>Next step is to refactor back into the chartHub</p>
 <h2 id="tldr">tl;dr</h2>
 <p>This slowly growing collection of charts:</p>
 <ul class="incremental">
-<li>renders nicely over a wide chart size range, svg and png formats.</li>
-<li>render similarly at different scale</li>
+<li>renders nicely in svg over a wide chart size. png is not so good.</li>
+<li>renders similarly at different scale</li>
 <li>are opinionated minimalism</li>
-<li>are unit shapes in the spirit of the <a href="http://projects.haskell.org/diagrams/doc/quickstart.html">diagrams</a> design space.</li>
+<li>are unit shapes in the spirit of the <a href="http://projects.haskell.org/diagrams/doc/quickstart.html">diagrams</a> design space, making combining a snap.</li>
 <li>can be quickly integrated into ad-hoc haskell data analytics, providing a visual feedback loop.</li>
 </ul>
-<h2 id="latest-changes">latest changes</h2>
-<p>The data api is pretty much the same as linear now. I think there's enough room in that library for the extra dimensionality aspect of charting (what ggplot calls aesthetics, such as size, color and shape).</p>
-<p>The bar charts have all become rectangle charts, with 4 dimensions representing (x,y) (z,w) corners of the rectangle.</p>
-<p>Given any remotness to others using this library, it's also a testing ground for the tower project, hence the polymorph spagetti constraints. You'll thanks me when you find rotating through a euclidean infinite dimension space a one liner.</p>
-<p>The charts themselves, with an attached <code>V2 Range a</code> and <code>[[R2 a]]</code> data are themselves very close to numbers, and scaling operations could already be directly applied to the chart.</p>
-<p>I mostly think of a chart as multiple data sets that share common-ranged dimensions in an XY plane. If they don't share ranges, then representing them on a single XY plane is almost the same thing. Regardless, in diagrams, combining two lines with different scales is an easy mappend.</p>
-<h2 id="chartwith">chartWith</h2>
-<pre><code>chartWith :: (Traversable f, Traversable g, R2 r) =&gt; 
-    ChartConfig
-    -&gt; (g (f (r Double)) -&gt; Chart b)
-    -&gt; V2 (Range Double)
-    -&gt; (V2 (Range Double) -&gt; g (f (r Double)) -&gt; g (f (r Double)))
-    -&gt; g (f (r Double))
-    -&gt; Chart b
-chartWith (ChartConfig p axes) renderer range&#39; scaler ms =</code></pre>
-<p>Chart rendering now takes:</p>
-<ul class="incremental">
-<li>configuration</li>
-<li>a render of double-containered R2 data (has an x and y plane) as a concrete pretty picture</li>
-<li>range to render the data and axes on</li>
-<li>a scaler containing a recipe to squish the data down into V2 space.</li>
-<li>double-containered R2 data</li>
-</ul>
-<p>And produces a <code>Chart b</code> available to turn into an svg or for further combinings.</p>
-<h1 id="charts">charts</h1>
-<p>png's at the end for markdown viewers ...</p>
+<h1 id="charts---svg">charts - svg</h1>
 <p>Scatter</p>
 <div class="figure">
-<img src="other/scatter.svg" />
+<img src="other/exampleScatter.svg" />
 
 </div>
-<p>Scatter * 2</p>
+<p>Scatters</p>
 <div class="figure">
-<img src="other/scatters.svg" />
+<img src="other/exampleScatter2.svg" />
 
 </div>
 <p>Histogram</p>
 <div class="figure">
-<img src="other/hist.svg" />
+<img src="other/exampleHist.svg" />
 
 </div>
+<p>Histograms</p>
 <div class="figure">
-<img src="other/dhist.svg" />
+<img src="other/exampleHist2.svg" />
 
 </div>
 <p>Line</p>
 <div class="figure">
-<img src="other/line.svg" />
+<img src="other/exampleLine.svg" />
 
 </div>
 <p>Lines</p>
 <div class="figure">
-<img src="other/lines.svg" />
+<img src="other/exampleManyLines.svg" />
 
 </div>
 <p>Labelled Bar Chart</p>
 <div class="figure">
-<img src="other/bar.svg" />
+<img src="other/exampleBar.svg" />
 
 </div>
-<p>Vector Field Chart</p>
+<p>Arrows Chart</p>
 <div class="figure">
-<img src="other/arrows.svg" />
+<img src="other/exampleArrows.svg" />
 
 </div>
-<div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell"><span class="ot">{-# OPTIONS_GHC -Wall #-}</span>
-<span class="ot">{-# OPTIONS_GHC -fno-warn-type-defaults #-}</span>
-<span class="kw">import </span><span class="dt">Protolude</span> <span class="kw">hiding</span> ((&amp;))
-<span class="kw">import </span><span class="dt">Control.Monad.Primitive</span> (unsafeInlineIO)
-<span class="kw">import </span><span class="dt">Diagrams.Prelude</span> <span class="kw">hiding</span> ((&lt;&gt;), unit)
-<span class="kw">import qualified</span> <span class="dt">Control.Foldl</span> <span class="kw">as</span> <span class="dt">L</span>
-<span class="kw">import qualified</span> <span class="dt">Data.Random</span> <span class="kw">as</span> <span class="dt">R</span>
-<span class="kw">import qualified</span> <span class="dt">Data.Map.Strict</span> <span class="kw">as</span> <span class="dt">Map</span>
-<span class="kw">import qualified</span> <span class="dt">Data.Text</span> <span class="kw">as</span> <span class="dt">Text</span>
-<span class="kw">import </span><span class="dt">Linear</span> <span class="kw">hiding</span> (identity, unit)
-<span class="kw">import </span><span class="dt">Data.List</span>
-<span class="kw">import </span><span class="dt">Diagrams.Backend.SVG</span> (<span class="dt">SVG</span>)
-<span class="kw">import </span><span class="dt">Diagrams.Backend.Rasterific</span> (<span class="dt">Rasterific</span>)
-<span class="kw">import </span><span class="dt">Chart.Unit</span>
-<span class="kw">import </span><span class="dt">Chart.Types</span>
-<span class="kw">import </span><span class="dt">Numeric.AD</span>
-<span class="kw">import </span><span class="dt">Numeric.AD.Mode.Reverse</span>
-<span class="kw">import </span><span class="dt">Data.Reflection</span>
-<span class="kw">import </span><span class="dt">Numeric.AD.Internal.Reverse</span></code></pre></div>
-<h2 id="some-test-data">some test data</h2>
-<p>Standard normal random variates in one dimension.</p>
-<div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell"><span class="ot">rvs ::</span> <span class="dt">Int</span> <span class="ot">-&gt;</span> <span class="dt">IO</span> [<span class="dt">Double</span>]
-rvs n <span class="fu">=</span>
-  replicateM n <span class="fu">$</span> R.runRVar R.stdNormal <span class="dt">R.StdRandom</span></code></pre></div>
-<p>This generates n 2D random variate pairs where x and y are correlated.</p>
-<div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell"><span class="ot">xys ::</span> <span class="dt">Int</span> <span class="ot">-&gt;</span> <span class="dt">Double</span> <span class="ot">-&gt;</span> [<span class="dt">V2</span> <span class="dt">Double</span>]
-xys n c <span class="fu">=</span> unsafeInlineIO <span class="fu">$</span> <span class="kw">do</span>
-  s0 <span class="ot">&lt;-</span> replicateM n <span class="fu">$</span> R.runRVar R.stdNormal <span class="dt">R.StdRandom</span>
-  s1 <span class="ot">&lt;-</span> replicateM n <span class="fu">$</span> R.runRVar R.stdNormal <span class="dt">R.StdRandom</span>
-  <span class="kw">let</span> s1&#39; <span class="fu">=</span> zipWith (\x y <span class="ot">-&gt;</span> c <span class="fu">*</span> x <span class="fu">+</span> sqrt (<span class="dv">1</span> <span class="fu">-</span> c <span class="fu">*</span> c) <span class="fu">*</span> y) s0 s1
-  pure <span class="fu">$</span> zipWith <span class="dt">V2</span> s0 s1&#39;</code></pre></div>
-<p>h is a histogram of 10000 one-dim random normals.</p>
-<p>The data out is a V4 with xz as the bucket range, and yw as 0 and the bucket count. For a rectangle chart this translates to (x,y) as the bottom left point and (z,w) as the upper right point of the rectangle.</p>
-<div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell"><span class="ot">h ::</span> [<span class="dt">V4</span> <span class="dt">Double</span>]
-h <span class="fu">=</span> unsafeInlineIO <span class="fu">$</span> <span class="kw">do</span>
-  ys&#39; <span class="ot">&lt;-</span> replicateM <span class="dv">10000</span> <span class="fu">$</span> R.runRVar R.stdNormal <span class="dt">R.StdRandom</span><span class="ot"> ::</span> <span class="dt">IO</span> [<span class="dt">Double</span>]
-  <span class="kw">let</span> n <span class="fu">=</span> <span class="dv">10</span>
-  <span class="kw">let</span> r <span class="fu">=</span> range ys&#39;
-  <span class="kw">let</span> cuts <span class="fu">=</span> mkTicksExact r n
-  <span class="kw">let</span> count <span class="fu">=</span> <span class="dt">L.Fold</span> (\x a <span class="ot">-&gt;</span> Map.insertWith (<span class="fu">+</span>) a (<span class="dv">1</span><span class="ot">::</span><span class="dt">Integer</span>) x) Map.empty identity
-  <span class="kw">let</span> countBool <span class="fu">=</span> <span class="dt">L.Fold</span> (\x a <span class="ot">-&gt;</span> x <span class="fu">+</span> <span class="kw">if</span> a <span class="kw">then</span> <span class="dv">1</span> <span class="kw">else</span> <span class="dv">0</span>) <span class="dv">0</span> identity
-  <span class="kw">let</span> histMap <span class="fu">=</span> L.fold count <span class="fu">$</span> (\x <span class="ot">-&gt;</span> L.fold countBool (fmap (x <span class="fu">&gt;</span>) cuts)) <span class="fu">&lt;$&gt;</span> ys&#39;
-  <span class="kw">let</span> histList <span class="fu">=</span> (\x <span class="ot">-&gt;</span> Map.findWithDefault <span class="dv">0</span> x histMap) <span class="fu">&lt;$&gt;</span> [<span class="dv">0</span><span class="fu">..</span>n]
-  return (zipWith4 <span class="dt">V4</span> (init cuts) (replicate (n<span class="fu">+</span><span class="dv">1</span>) <span class="dv">0</span>) (drop <span class="dv">1</span> cuts) (fromIntegral <span class="fu">&lt;$&gt;</span> histList))
-</code></pre></div>
-<div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell"><span class="ot">hist ::</span> <span class="dt">Int</span> <span class="ot">-&gt;</span> [<span class="dt">Double</span>] <span class="ot">-&gt;</span> [<span class="dt">V4</span> <span class="dt">Double</span>]
-hist n xs <span class="fu">=</span> zipWith4 <span class="dt">V4</span> (init cuts) (replicate (length xs<span class="fu">+</span><span class="dv">1</span>) <span class="dv">0</span>) (drop <span class="dv">1</span> cuts) (fromIntegral <span class="fu">&lt;$&gt;</span> histList)
-  <span class="kw">where</span>
-    r <span class="fu">=</span> range xs
-    cuts <span class="fu">=</span> mkTicksExact r n
-    count <span class="fu">=</span> <span class="dt">L.Fold</span> (\x a <span class="ot">-&gt;</span> Map.insertWith (<span class="fu">+</span>) a (<span class="dv">1</span><span class="ot">::</span><span class="dt">Integer</span>) x) Map.empty identity
-    countBool <span class="fu">=</span> <span class="dt">L.Fold</span> (\x a <span class="ot">-&gt;</span> x <span class="fu">+</span> <span class="kw">if</span> a <span class="kw">then</span> <span class="dv">1</span> <span class="kw">else</span> <span class="dv">0</span>) <span class="dv">0</span> identity
-    histMap <span class="fu">=</span> L.fold count <span class="fu">$</span> (\x <span class="ot">-&gt;</span> L.fold countBool (fmap (x <span class="fu">&gt;</span>) cuts)) <span class="fu">&lt;$&gt;</span> xs
-    histList <span class="fu">=</span> (\x <span class="ot">-&gt;</span> Map.findWithDefault <span class="dv">0</span> x histMap) <span class="fu">&lt;$&gt;</span> [<span class="dv">0</span><span class="fu">..</span>length xs]</code></pre></div>
+<div class="figure">
+<img src="other/exampleArrows2.svg" />
+
+</div>
+<h2 id="api-notes">api notes</h2>
+<p>Most of the api can be seen in the chartWith sig:</p>
+<div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell"><span class="ot">    chartWith ::</span> (<span class="dt">Traversable</span> f, <span class="dt">Traversable</span> g, <span class="dt">R2</span> r) <span class="ot">=&gt;</span> 
+        <span class="dt">ChartConfig</span>
+        <span class="ot">-&gt;</span> (g (f (r <span class="dt">Double</span>)) <span class="ot">-&gt;</span> <span class="dt">Chart</span> b) <span class="co">-- double-containered R? chart renderer</span>
+        <span class="ot">-&gt;</span> <span class="dt">V2</span> (<span class="dt">Range</span> <span class="dt">Double</span>)             <span class="co">-- render range</span>
+        <span class="ot">-&gt;</span> (<span class="dt">V2</span> (<span class="dt">Range</span> <span class="dt">Double</span>) <span class="ot">-&gt;</span> g (f (r <span class="dt">Double</span>)) <span class="ot">-&gt;</span> g (f (r <span class="dt">Double</span>))) <span class="co">-- scaler</span>
+        <span class="ot">-&gt;</span> g (f (r <span class="dt">Double</span>)) <span class="co">-- data</span>
+        <span class="ot">-&gt;</span> <span class="dt">Chart</span> b
+    chartWith (<span class="dt">ChartConfig</span> p axes) renderer range&#39; scaler ms <span class="fu">=</span></code></pre></div>
+<h2 id="data">data</h2>
+<p>Double-containered dimensioned data covers what a chart charts - one or more data sets with at least an x and y dimension (called R2 in the linear library).</p>
+<p>Most chart variations are about what to do with the extra dimensions in the data. A rectangle, for example, is built from 4 dimensions, an anchoring of position in XY space, with a width (W) and height (Z). A contour map is three dimensional data (V3 in linear), with placement as XY and color as Z.</p>
+<h2 id="ranging">ranging</h2>
+<p>A range represents boundaries of a space. Diagrams often uses unit to refer to a <code>V2 (Range (-0.5,0.5)) (Range (-0.5,0.5))</code>.</p>
+<h2 id="scaling">scaling</h2>
+<p>A scaler converts data to other ranges, and helps get everything on the same page (literally).</p>
 <h2 id="scale-robustness">Scale Robustness</h2>
-<p>Starting with the lowest level scatter chart:</p>
+<p>Starting with the lowest level scatter chart (see examples/examples.hs for complete code):</p>
 <pre><code>scatter1 def (xys 1000 0.7)</code></pre>
 <div class="figure">
-<img src="other/predots.svg" />
+<img src="other/exampleDots.svg" />
 
 </div>
 <p>The size of the dots scale with the data, so to bring it back, we run the data through a scaling routine, which normalises the data according to the diagrams unit, which is <code>V2 (-0.5,0.5) (-0.5,0.5)</code>:</p>
 <pre><code>scatter1 def $ ((\x -&gt; scaleR2 (rangeR2 x) x) &lt;$&gt; (xys 1000 0.7))</code></pre>
 <div class="figure">
-<img src="other/dots.svg" />
+<img src="other/exampleDotsScaled.svg" />
 
 </div>
-<p>This scaling ensures that axes absolute configuration has the same look and feel. Hiding the scaling in a more general function:</p>
+<p>This scaling ensures that configuration paramters such as dot size, and axis look-n-feel is invariant to data scale. Hiding the scaling and axes creation in a more general function:</p>
 <pre><code>scatter def [def] [xys 1000 0.7]</code></pre>
 <div class="figure">
-<img src="other/scatter.svg" />
+<img src="other/exampleScatter.svg" />
 
 </div>
 <p>The chart is then robust to a wide range of magnitudes:</p>
 <pre><code>scatter def [def] $ fmap (1e-8 *) &lt;$&gt; [xys 1000 0.7]</code></pre>
 <div class="figure">
-<img src="other/scale.svg" />
+<img src="other/exampleDotsScaled2.svg" />
 
 </div>
-<p>The concrete manifestation of data on a page (the chart), and the heads-up-display (the hud) are then trivially separated:</p>
-<pre><code>chartWith def (const unitSquare) (V2 (Range (0,1), Range(-1000,10000))) scaleR2s [[]]</code></pre>
+<h2 id="separation-of-chart-and-hud">Separation of Chart and HUD</h2>
+<p>It's useful to separate a chart into two distinct bits:</p>
+<ul class="incremental">
+<li><p>the Chart. A concrete manifestation of data on the XY plane, with extra dimensions as aethestics (color, size, time, 1D or 3D projections into 2D)</p></li>
+<li><p>the HUD. A Heads-Up-Display aka decoration around the chart designed to help users interpret and navigate the data representation.</p></li>
+</ul>
+<p>The code below, for example, draws an X and Y axis without any data:</p>
+<pre><code>chartHud def (const mempty) (V2 (Range (-1e8,1e8)) (Range (-1e-8,1e-8))) rescaleR2s ([[]] :: [[V2 Double]])</code></pre>
 <div class="figure">
-<img src="other/axes.svg" />
+<img src="other/exampleAxes.svg" />
 
 </div>
-<p>Grid Overlay</p>
-<p>Note how the axis ticks line up exactly with middle of the dots. I now think of the axes as a small subset of possible HUDs to help users interpret data.</p>
+<p>HUDs can be built with chart routines. Here's a grid overlay that can be attached to any unit chart. Note how the axis ticks line up exactly with middle of the dots. I now think of the axes as a small subset of possible HUDs to help users interpret data.</p>
+<pre><code>unitScatter def [def] [V2 &lt;$&gt; [0..10] &lt;*&gt; [0..10]]</code></pre>
 <div class="figure">
-<img src="other/grid.svg" />
+<img src="other/exampleGrid.svg" />
 
 </div>
-<h1 id="examples">examples</h1>
-<div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell"><span class="ot">dGrid ::</span> [(<span class="dt">Double</span>,<span class="dt">Double</span>)]
-dGrid <span class="fu">=</span> (,) <span class="fu">&lt;$&gt;</span> [<span class="dv">0</span><span class="fu">..</span><span class="dv">10</span>] <span class="fu">&lt;*&gt;</span> [<span class="dv">0</span><span class="fu">..</span><span class="dv">10</span>]
-
-<span class="ot">lc1 ::</span> [<span class="dt">LineConfig</span>]
-lc1 <span class="fu">=</span> zipWith <span class="dt">LineConfig</span> [<span class="fl">0.01</span>,<span class="fl">0.02</span>,<span class="fl">0.03</span>] <span class="fu">$</span> opacs <span class="fl">0.5</span> palette1
-
-<span class="ot">sc1 ::</span> [<span class="dt">ScatterConfig</span>]
-sc1 <span class="fu">=</span> zipWith <span class="dt">ScatterConfig</span> [<span class="fl">0.02</span>,<span class="fl">0.05</span>,<span class="fl">0.1</span>] <span class="fu">$</span> opacs <span class="fl">0.1</span> palette1
-
-<span class="ot">swish ::</span> [(<span class="dt">Double</span>, <span class="dt">Double</span>)]
-swish <span class="fu">=</span> [(<span class="fl">0.0</span>,<span class="fl">1.0</span>),(<span class="fl">1.0</span>,<span class="fl">1.0</span>),(<span class="fl">2.0</span>,<span class="fl">5.0</span>)]
-
-<span class="ot">swish2 ::</span> [(<span class="dt">Double</span>, <span class="dt">Double</span>)]
-swish2 <span class="fu">=</span> [(<span class="fl">0.0</span>,<span class="fl">0.0</span>),(<span class="fl">3.0</span>,<span class="fl">3.0</span>)]
-
-<span class="ot">linedef ::</span> <span class="dt">Chart&#39;</span> a
-linedef <span class="fu">=</span> unitLine def lc1 (fmap r2 <span class="fu">&lt;$&gt;</span> [swish,swish2])
-
-<span class="ot">linesdef ::</span> <span class="dt">Chart&#39;</span> a
-linesdef <span class="fu">=</span>
-    unitLine def ((<span class="dt">LineConfig</span> <span class="fl">0.01</span> <span class="fu">.</span> opac <span class="fl">0.5</span>) <span class="fu">&lt;$&gt;</span> palette1) <span class="fu">$</span>
-    zipWith <span class="dt">V2</span> (fromIntegral <span class="fu">&lt;$&gt;</span> [<span class="dv">0</span><span class="fu">..</span>]<span class="ot"> ::</span> [<span class="dt">Double</span>]) <span class="fu">&lt;$&gt;</span>
-    ((drop <span class="dv">1</span> <span class="fu">.</span> L.scan L.sum) <span class="fu">&lt;$&gt;</span> unsafeInlineIO (replicateM <span class="dv">5</span> <span class="fu">$</span> rvs <span class="dv">100</span>))
-
-<span class="ot">predotsdef ::</span> <span class="dt">Chart</span> a
-predotsdef <span class="fu">=</span> scatter1 def (xys <span class="dv">1000</span> <span class="fl">0.7</span>)
-
-<span class="ot">dotsdef ::</span> <span class="dt">Chart</span> a
-dotsdef <span class="fu">=</span> scatter1 def ((\x <span class="ot">-&gt;</span> rescaleR2 (rangeR2 x) x) (xys <span class="dv">1000</span> <span class="fl">0.7</span>))
-
-<span class="ot">scatterdef ::</span> <span class="dt">Chart&#39;</span> a
-scatterdef <span class="fu">=</span> unitScatter def [def] [xys <span class="dv">1000</span> <span class="fl">0.7</span>]
-
-<span class="ot">scattersdef ::</span> <span class="dt">Chart&#39;</span> a
-scattersdef <span class="fu">=</span> unitScatter def sc1 [xys <span class="dv">1000</span> <span class="fl">0.8</span>, xys <span class="dv">1000</span> <span class="fu">-</span><span class="fl">0.5</span>]
-
-<span class="ot">scaledef ::</span> <span class="dt">Chart&#39;</span> a
-scaledef <span class="fu">=</span> unitScatter def [def] <span class="fu">$</span> fmap (<span class="fu">*</span> 1e<span class="fu">-</span><span class="dv">8</span>) <span class="fu">&lt;$&gt;</span> [xys <span class="dv">1000</span> <span class="fl">0.7</span>]
-
-<span class="ot">histdef ::</span> <span class="dt">Chart&#39;</span> a
-histdef <span class="fu">=</span> unitRect def [def] [h]
-
-<span class="ot">griddef ::</span> <span class="dt">Chart&#39;</span> a
-griddef <span class="fu">=</span> unitScatter def [def] [r2 <span class="fu">&lt;$&gt;</span> dGrid]
-
-<span class="ot">bardef ::</span> <span class="dt">Chart&#39;</span> a
-bardef <span class="fu">=</span> unitRect
-    ( chartAxes <span class="fu">.~</span>
-      [ axisTickStyle <span class="fu">.~</span>
-        <span class="dt">TickLabels</span> labels <span class="fu">$</span> def
-      ]
-      <span class="fu">$</span> def
-    )
-    [def]
-    [zipWith4 <span class="dt">V4</span> [<span class="dv">0</span><span class="fu">..</span><span class="dv">10</span>] (replicate <span class="dv">11</span> <span class="dv">0</span>) [<span class="dv">1</span><span class="fu">..</span><span class="dv">11</span>] (view _x <span class="fu">&lt;$&gt;</span> xys <span class="dv">10</span> <span class="fl">0.8</span>)]
-  <span class="kw">where</span>
-    labels <span class="fu">=</span> fmap Text.pack <span class="fu">&lt;$&gt;</span> take <span class="dv">10</span> <span class="fu">$</span> (<span class="fu">:</span>[]) <span class="fu">&lt;$&gt;</span> [<span class="ch">&#39;a&#39;</span><span class="fu">..</span>]
-
-<span class="ot">axesdef ::</span> <span class="dt">Chart&#39;</span> a
-axesdef <span class="fu">=</span> chartWith def
-  (const unitSquare)
-  (<span class="dt">V2</span> (<span class="dt">Range</span> (<span class="dv">0</span>,<span class="dv">1</span>)) (<span class="dt">Range</span> (<span class="fu">-</span><span class="dv">1000</span>,<span class="dv">10000</span>))) rescaleR2s ([[]]<span class="ot"> ::</span> [[<span class="dt">V2</span> <span class="dt">Double</span>]])
-
-<span class="ot">doubleHist ::</span> <span class="dt">Chart&#39;</span> a
-doubleHist <span class="fu">=</span> unitRect def
-    [ def
-    , rectBorderColor <span class="fu">.~</span> <span class="dt">Color</span> <span class="dv">0</span> <span class="dv">0</span> <span class="dv">0</span> <span class="dv">0</span>
-      <span class="fu">$</span> rectColor <span class="fu">.~</span> <span class="dt">Color</span> <span class="fl">0.333</span> <span class="fl">0.333</span> <span class="fl">0.333</span> <span class="fl">0.4</span>
-      <span class="fu">$</span> def
-    ]
-    [ hist <span class="dv">50</span> <span class="fu">$</span> (\(<span class="dt">V2</span> x y) <span class="ot">-&gt;</span> x<span class="fu">+</span>y) <span class="fu">&lt;$&gt;</span> xys <span class="dv">10000</span> <span class="fl">0.8</span>
-    , hist <span class="dv">50</span> <span class="fu">$</span> (\(<span class="dt">V2</span> x y) <span class="ot">-&gt;</span> x<span class="fu">+</span>y) <span class="fu">&lt;$&gt;</span> xys <span class="dv">10000</span> <span class="dv">0</span>
-    ]
-
-<span class="ot">a1 ::</span> [<span class="dt">V4</span> <span class="dt">Double</span>]
-a1 <span class="fu">=</span> zipWith (\(<span class="dt">V2</span> x y) (<span class="dt">V2</span> z w) <span class="ot">-&gt;</span> <span class="dt">V4</span> x y z w) pos dir&#39;
-  <span class="kw">where</span>
-    pos <span class="fu">=</span> locs (<span class="dt">Range</span> (<span class="fu">-</span><span class="dv">1</span>, <span class="dv">1</span>)) (<span class="dt">Range</span> (<span class="fu">-</span><span class="dv">1</span>, <span class="dv">1</span>)) <span class="dv">20</span>
-    dir&#39; <span class="fu">=</span> gradF rosenbrock <span class="fl">0.01</span> <span class="fu">&lt;$&gt;</span> pos
-
-<span class="ot">arrowsdef ::</span> <span class="dt">Chart&#39;</span> a
-arrowsdef <span class="fu">=</span> unitArrow def [def] [a1]
-
-
-<span class="ot">arrowsdef&#39; ::</span> <span class="dt">Chart&#39;</span> a
-arrowsdef&#39; <span class="fu">=</span> chartWith&#39;&#39; def (centerXY <span class="fu">.</span> mconcat <span class="fu">.</span> zipWith arrow1 [def]) (rangeV4s [a1]) (\r x <span class="ot">-&gt;</span> fmap (rescaleV4 r) <span class="fu">&lt;$&gt;</span> x) [a1]
-
-<span class="ot">grid ::</span> forall b<span class="fu">.</span> (<span class="dt">Fractional</span> b, <span class="dt">Enum</span> b) <span class="ot">=&gt;</span> <span class="dt">Range</span> b <span class="ot">-&gt;</span> b <span class="ot">-&gt;</span> [b]
-grid (<span class="dt">Range</span> (x,x&#39;)) steps <span class="fu">=</span> (\a <span class="ot">-&gt;</span> x <span class="fu">+</span> (x&#39;<span class="fu">-</span>x)<span class="fu">/</span>steps <span class="fu">*</span> a) <span class="fu">&lt;$&gt;</span> [<span class="dv">0</span><span class="fu">..</span>steps]
-
-<span class="ot">locs ::</span> <span class="dt">Range</span> <span class="dt">Double</span> <span class="ot">-&gt;</span> <span class="dt">Range</span> <span class="dt">Double</span> <span class="ot">-&gt;</span> <span class="dt">Double</span> <span class="ot">-&gt;</span> [<span class="dt">V2</span> <span class="dt">Double</span>]
-locs rx ry steps <span class="fu">=</span> [<span class="dt">V2</span> x y <span class="fu">|</span> x <span class="ot">&lt;-</span> grid rx steps, y <span class="ot">&lt;-</span> grid ry steps]
-
-gradF <span class="ot">::</span>
-    (forall s<span class="fu">.</span> (<span class="dt">Reifies</span> s <span class="dt">Tape</span>) <span class="ot">=&gt;</span> [<span class="dt">Reverse</span> s <span class="dt">Double</span>] <span class="ot">-&gt;</span> <span class="dt">Reverse</span> s <span class="dt">Double</span>) <span class="ot">-&gt;</span>
-    <span class="dt">Double</span> <span class="ot">-&gt;</span>
-    <span class="dt">V2</span> <span class="dt">Double</span> <span class="ot">-&gt;</span>
-    <span class="dt">V2</span> <span class="dt">Double</span>
-gradF f step (<span class="dt">V2</span> x y) <span class="fu">=</span>
-    <span class="fu">-</span> r2 ((\[x&#39;,y&#39;] <span class="ot">-&gt;</span> (x&#39;,y&#39;)) <span class="fu">$</span>
-          gradWith (\x0 x1 <span class="ot">-&gt;</span> x0 <span class="fu">+</span> (x1 <span class="fu">-</span> x0) <span class="fu">*</span> step) f [x,y])
-
-<span class="ot">rosenbrock ::</span> <span class="dt">Num</span> a <span class="ot">=&gt;</span> [a] <span class="ot">-&gt;</span> a
-rosenbrock [] <span class="fu">=</span> <span class="dv">0</span>
-rosenbrock [x] <span class="fu">=</span> <span class="dv">100</span> <span class="fu">*</span> (negate x<span class="fu">^</span><span class="dv">2</span>)<span class="fu">^</span><span class="dv">2</span> <span class="fu">+</span> (x <span class="fu">-</span> <span class="dv">1</span>)<span class="fu">^</span><span class="dv">2</span>
-rosenbrock (x<span class="fu">:</span>y<span class="fu">:</span>_) <span class="fu">=</span> <span class="dv">100</span> <span class="fu">*</span> (y <span class="fu">-</span> x<span class="fu">^</span><span class="dv">2</span>)<span class="fu">^</span><span class="dv">2</span> <span class="fu">+</span> (x <span class="fu">-</span> <span class="dv">1</span>)<span class="fu">^</span><span class="dv">2</span></code></pre></div>
-<h1 id="main">main</h1>
-<p>main creates the example charts and makes the svgs. See develop section below for the workflow thatcreates the rendered html/markdown.</p>
-<div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell"><span class="ot">main ::</span> <span class="dt">IO</span> ()
-main <span class="fu">=</span> <span class="kw">do</span></code></pre></div>
-<div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell">  scratchSvg arrowsdef&#39;
-  scratchPng arrowsdef&#39;
-  fileSvg <span class="st">&quot;other/line.svg&quot;</span> (<span class="dv">200</span>,<span class="dv">200</span>) linedef
-  filePng <span class="st">&quot;other/line.png&quot;</span> (<span class="dv">200</span>,<span class="dv">200</span>) linedef
-  fileSvg <span class="st">&quot;other/lines.svg&quot;</span> (<span class="dv">200</span>,<span class="dv">200</span>) linesdef
-  filePng <span class="st">&quot;other/lines.png&quot;</span> (<span class="dv">200</span>,<span class="dv">200</span>) linesdef
-  fileSvg <span class="st">&quot;other/predots.svg&quot;</span> (<span class="dv">200</span>,<span class="dv">200</span>) predotsdef
-  filePng <span class="st">&quot;other/predots.png&quot;</span> (<span class="dv">200</span>,<span class="dv">200</span>) predotsdef
-  fileSvg <span class="st">&quot;other/dots.svg&quot;</span> (<span class="dv">200</span>,<span class="dv">200</span>) dotsdef
-  filePng <span class="st">&quot;other/dots.png&quot;</span> (<span class="dv">200</span>,<span class="dv">200</span>) dotsdef
-  fileSvg <span class="st">&quot;other/scatter.svg&quot;</span> (<span class="dv">200</span>,<span class="dv">200</span>) scatterdef
-  filePng <span class="st">&quot;other/scatter.png&quot;</span> (<span class="dv">200</span>,<span class="dv">200</span>) scatterdef
-  fileSvg <span class="st">&quot;other/scale.svg&quot;</span> (<span class="dv">200</span>,<span class="dv">200</span>) scaledef
-  filePng <span class="st">&quot;other/scale.png&quot;</span> (<span class="dv">200</span>,<span class="dv">200</span>) scaledef
-  fileSvg <span class="st">&quot;other/scatters.svg&quot;</span> (<span class="dv">200</span>,<span class="dv">200</span>) scattersdef
-  filePng <span class="st">&quot;other/scatters.png&quot;</span> (<span class="dv">200</span>,<span class="dv">200</span>) scattersdef
-  fileSvg <span class="st">&quot;other/bar.svg&quot;</span> (<span class="dv">200</span>,<span class="dv">200</span>) bardef
-  filePng <span class="st">&quot;other/bar.png&quot;</span> (<span class="dv">200</span>,<span class="dv">200</span>) bardef
-  fileSvg <span class="st">&quot;other/hist.svg&quot;</span> (<span class="dv">200</span>,<span class="dv">200</span>) histdef
-  filePng <span class="st">&quot;other/hist.png&quot;</span> (<span class="dv">200</span>,<span class="dv">200</span>) histdef
-  fileSvg <span class="st">&quot;other/dhist.svg&quot;</span> (<span class="dv">200</span>,<span class="dv">200</span>) doubleHist
-  filePng <span class="st">&quot;other/dhist.png&quot;</span> (<span class="dv">200</span>,<span class="dv">200</span>) doubleHist
-  fileSvg <span class="st">&quot;other/grid.svg&quot;</span> (<span class="dv">200</span>,<span class="dv">200</span>) griddef
-  filePng <span class="st">&quot;other/grid.png&quot;</span> (<span class="dv">200</span>,<span class="dv">200</span>) griddef
-  fileSvg <span class="st">&quot;other/axes.svg&quot;</span> (<span class="dv">200</span>,<span class="dv">200</span>) axesdef
-  filePng <span class="st">&quot;other/axes.png&quot;</span> (<span class="dv">200</span>,<span class="dv">200</span>) axesdef
-  fileSvg <span class="st">&quot;other/arrows.svg&quot;</span> (<span class="dv">200</span>,<span class="dv">200</span>) arrowsdef&#39;
-  filePng <span class="st">&quot;other/arrows.png&quot;</span> (<span class="dv">200</span>,<span class="dv">200</span>) arrowsdef&#39;</code></pre></div>
 <h2 id="diagrams-development-recipe">diagrams development recipe</h2>
-<p>In constructing new <code>units</code>:</p>
+<p>In constructing new chart units, I keep this list around:</p>
 <ul class="incremental">
 <li>diagrams go from abstract to concrete</li>
 <li>start with the unitSquare: 4 points, 1x1, origin in the center</li>
@@ -325,51 +139,11 @@ main <span class="fu">=</span> <span class="kw">do</span></code></pre></div>
 <p>You can slide up and down the various diagrams abstraction levels creating transformations at each level. For example, here's something I use to work at the point level:</p>
 <pre><code>unitp f = unitSquare # f # fromVertices # closeTrail # strokeTrail</code></pre>
 <h2 id="workflow">workflow</h2>
-<div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell"><span class="ot">scratchSvg ::</span> <span class="dt">Chart</span> <span class="dt">SVG</span> <span class="ot">-&gt;</span> <span class="dt">IO</span> ()
-scratchSvg <span class="fu">=</span> fileSvg <span class="st">&quot;other/scratchpad.svg&quot;</span> (<span class="dv">400</span>,<span class="dv">400</span>)
-<span class="ot">scratchPng ::</span> <span class="dt">Chart</span> <span class="dt">Rasterific</span> <span class="ot">-&gt;</span> <span class="dt">IO</span> ()
-scratchPng <span class="fu">=</span> filePng <span class="st">&quot;other/scratchpad.png&quot;</span> (<span class="dv">400</span>,<span class="dv">400</span>)</code></pre></div>
-<p>Create a markdown version of readme.lhs:</p>
-<pre><code>pandoc -f markdown+lhs -t html -i readme.lhs -o index.html</code></pre>
-<p>Then fire up an intero session, and use padq to display coding results on-the-fly, mashing the refresh button on a browser pointed to readme.html.</p>
-<p>or go for a compilation loop like:</p>
-<pre><code>stack install &amp;&amp; readme &amp;&amp; pandoc -f markdown+lhs -t html -i readme.lhs -o index.html --mathjax --filter pandoc-include &amp;&amp; pandoc -f markdown+lhs -t markdown -i readme.lhs -o readme.md --mathjax --filter pandoc-include</code></pre>
-<h1 id="rasterific-png-renders">rasterific png renders</h1>
-<div class="figure">
-<img src="other/scratchpad.png" />
-
-</div>
-<p>Scatter</p>
-<div class="figure">
-<img src="other/scatter.png" />
-
-</div>
-<p>Histogram</p>
-<div class="figure">
-<img src="other/hist.png" />
-
-</div>
-<div class="figure">
-<img src="other/dhist.png" />
-
-</div>
-<p>Line</p>
-<div class="figure">
-<img src="other/line.png" />
-
-</div>
-<p>Lines</p>
-<div class="figure">
-<img src="other/lines.png" />
-
-</div>
-<p>Labelled Bar Chart</p>
-<div class="figure">
-<img src="other/bar.png" />
-
-</div>
-<p>Vector Field Chart</p>
-<div class="figure">
-<img src="other/arrows.svg" />
-
-</div>
+<div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell"><span class="ot">scratch ::</span> <span class="dt">Chart</span> <span class="dt">SVG</span> <span class="ot">-&gt;</span> <span class="dt">IO</span> ()
+scratch <span class="fu">=</span> fileSvg <span class="st">&quot;other/scratchpad.svg&quot;</span> (<span class="dv">400</span>,<span class="dv">400</span>)</code></pre></div>
+<p>I tend to work in ghci a lot, using scratch to try code out, and mashing the refresh button in the browser.</p>
+<p>As new charts emerge I then includ ethem in examples and integrate them with readme.md:</p>
+<pre><code>stack install &amp;&amp; chart-unit-examples &amp;&amp; pandoc -f markdown -t html -i readme.md -o index.html --mathjax --filter pandoc-include</code></pre>
+<h2 id="rasterific-space-leak">rasterific space leak</h2>
+<p>Until I can work out a space leak, I'm letting png slide.</p>
+<p>-- import Diagrams.Backend.Rasterific (Rasterific) -- scratchPng :: Chart Rasterific -&gt; IO () -- scratchPng = filePng &quot;other/scratchpad.png&quot; (400,400) -- filePng &quot;other/bar.png&quot; s exampleBar</p>
