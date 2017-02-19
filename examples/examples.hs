@@ -7,6 +7,7 @@ import qualified Control.Foldl as L
 import Data.List
 import qualified Data.Text as Text
 import Diagrams.Backend.SVG (SVG)
+import qualified Diagrams.TwoD.Text
 import Diagrams.Prelude hiding ((<>), unit)
 import FakeData
 import Linear hiding (identity, unit)
@@ -113,6 +114,7 @@ exampleOtherRange =
      (Range (0,2)))
 
 -- exampleOtherRange' :: QDiagram SVG V2 Double Any
+exampleOtherRange' :: forall b. (Renderable (Diagrams.TwoD.Text.Text Double) b, Renderable (Path V2 Double) b) => V2 (Range Double) -> QDiagram b V2 Double Any -> QDiagram b V2 Double Any
 exampleOtherRange' (V2 rx@(Range (lx,ux)) ry@(Range (ly,uy))) canvas =
     pad 1.1 $
     beside (r2 (-1,0))
@@ -137,6 +139,7 @@ t1 = exampleOtherRange' (V2 (Range (1.2,2.6)) (Range (0.6,1.4)))
           (fmap r2 <$> [ [(0.0,1.0),(1.0,1.0),(2.0,5.0)],
                          [(0.0,0.0),(3.0,3.0)]]))
 
+t2 :: forall b (f :: * -> *) (r :: * -> *). (Renderable (Diagrams.TwoD.Text.Text Double) b, Renderable (Path V2 Double) b, R2 r, Traversable f) => f (r Double) -> QDiagram b V2 Double Any
 t2 xys = exampleOtherRange' (V2 (Range (0.5,2)) (Range (0,10))) (scatter1 def xys)
 
 
@@ -166,6 +169,42 @@ main = do
   fileSvg "other/exampleBar.svg" s exampleBar
   fileSvg "other/exampleArrows.svg" s exampleArrows
   fileSvg "other/exampleArrows2.svg" s exampleArrows2
+
+
+
+
+
+
+makePng :: IO ()
+makePng = do
+  gen <- create
+  xs <- rvs gen 1000
+  xys <- rvsCorr gen 1000 0.7
+  xys' <- rvsCorr gen 1000 -0.7
+  let s = (400,400)
+  -- png versions
+  {-
+  filePng "other/exampleEmptyChart.png" s exampleEmptyChart
+  filePng "other/exampleAxes.png" s exampleAxes
+  filePng "other/exampleGrid.png" s exampleGrid
+  filePng "other/exampleLine.png" s exampleLine
+  filePng "other/exampleManyLines.png" s (exampleManyLines xss)
+  filePng "other/exampleDots.png" s (exampleDots xys)
+  filePng "other/exampleDotsScaled.png" s (exampleDotsScaled xys)
+  filePng "other/exampleDotsScaled2.png" s (exampleDotsScaled2 xys)
+  filePng "other/exampleScatter.png" s (exampleScatter xys)
+  -}
+  filePng "other/exampleScatters.png" s (exampleScatters [xys,xys'])
+  filePng "other/exampleHist.png" s (exampleHist xs)
+  filePng "other/exampleHist2.png" s (exampleHist2 [xys,xys'])
+  filePng "other/exampleBar.png" s exampleBar
+{-
+  filePng "other/exampleArrows.png" s exampleArrows
+  filePng "other/exampleArrows2.png" s exampleArrows2
+-}
+
+{-
+-}
 
 {-
 
