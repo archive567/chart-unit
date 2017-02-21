@@ -8,6 +8,7 @@ import Protolude
 import Data.List ((!!))
 import Diagrams.Prelude hiding (Color(..))
 import qualified Diagrams.TwoD.Text
+import Diagrams.Backend.SVG (SVG)
 
 type Chart b =
     ( Renderable (Path V2 Double) b
@@ -20,13 +21,29 @@ type Chart' b =
     ) =>
     QDiagram b V2 Double Any
 
+newtype Range a = Range { unRange :: (a,a) } deriving (Show, Eq, Functor)
+
+instance (Ord a) => Semigroup (Range a) where
+    (Range (l,u)) <> (Range (l',u')) =
+        Range (if l < l' then l else l',if u > u' then u else u')
+
+low :: Lens' (Range a) a
+low = lens (\(Range (l,_)) -> l) (\(Range (_,u)) l -> Range (l,u))
+
+high :: Lens' (Range a) a
+high = lens (\(Range (_,u)) -> u) (\(Range (l,_)) u -> Range (l,u))
+
+data Canvas = Canvas { _qdd :: QDiagram SVG V2 Double Any, _qdr :: V2 (Range Double)}
+
+makeLenses ''Canvas
+
 data Orientation = X | Y
 
 data Placement = AxisLeft | AxisRight | AxisTop | AxisBottom
 
 data TickStyle = TickNone | TickLabels [Text] | TickRound Int | TickExact Int
 
-data Color = Color { _r :: Double, _g :: Double, _b :: Double, _a :: Double}
+data Color = Color { _red :: Double, _green :: Double, _blue :: Double, _aaa :: Double}
 
 color ∷ Color → AlphaColour Double
 color (Color r g b a)= withOpacity (sRGB r g b) a

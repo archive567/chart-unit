@@ -17,11 +17,6 @@ import Formatting
 import Linear hiding (zero, identity, unit)
 import Protolude hiding (min,max,from,to, (&))
 
-newtype Range a = Range { unRange :: (a,a) } deriving (Show, Eq, Functor)
-
-instance (Ord a) => Semigroup (Range a) where
-    (Range (l,u)) <> (Range (l',u')) =
-        Range (if l < l' then l else l',if u > u' then u else u')
 
 -- range of a foldable
 range :: (Fractional a, Foldable f, Ord a) => f a -> Range a
@@ -37,6 +32,9 @@ range = L.fold (L.Fold step initial extract)
 
 unitRange :: (Fractional a) => Range a
 unitRange = Range (-0.5, 0.5)
+
+unitRangeV2 :: (Fractional a) => V2 (Range a)
+unitRangeV2 = V2 unitRange unitRange
 
 -- | rescale a data point by a range
 -- rescale unitRange === identity
@@ -192,6 +190,63 @@ axis cfg r = pad (cfg ^. axisPad) $ strut' $ centerXY $
           fromVertices .
           scaleX h $
           unitSquare
+
+
+-- axis rendering
+axis' ::
+    AxisConfig -> Range Double -> Chart' b
+axis' cfg r = pad (cfg ^. axisPad) $ strut' $ centerXY $
+  atPoints
+    (t <$> tickLocations)
+    ((`mkLabel` cfg) <$> tickLabels)
+  `atop`
+  (axisRect (cfg ^. axisHeight) r
+   # blob (cfg ^. axisColor))
+  where
+    strut' x = beside dir x $ strut'' (cfg ^. axisInsideStrut)
+    dir = case cfg ^. axisPlacement of
+      AxisBottom -> r2 (0,1)
+      AxisTop -> r2 (0,-1)
+      AxisLeft -> r2 (1,0)
+      AxisRight -> r2 (-1,0)
+    strut'' = case cfg ^. axisOrientation of
+      X -> strutX
+      Y -> strutY
+    t = case cfg ^. axisOrientation of
+      X -> \x -> p2 (x, 0)
+      Y -> \y -> p2 (-(cfg ^. axisMarkSize), y)
+    tickLocations = case cfg ^. axisTickStyle of
+      TickNone -> []
+      {- To Do:
+        rounded ticks introduce the possibility of marks beyond the existing range.
+        if this happens, it should really be fed into the chart rendering as a new,
+        revised range.
+      -}
+      TickRound n -> mkTicksRound r n
+      TickExact n -> mkTicksExact r n
+      TickLabels ls -> (\x -> x - 0.5) . fromIntegral <$> [1..length ls]
+    tickLabels = case cfg ^. axisTickStyle of
+      TickNone -> []
+      TickRound n -> tickFormat <$> mkTicksRound r n
+      TickExact n -> tickFormat <$> mkTicksExact r n
+      TickLabels ls -> ls
+    tickFormat = sformat (prec 2)
+    axisRect h (Range (l,u)) = case cfg ^. axisOrientation of
+      X -> moveTo (p2 (u,0)) .
+          strokeTrail .
+          closeTrail .
+          fromVertices .
+          scaleY h .
+          scaleX (u-l) $
+          unitSquare
+      Y -> moveTo (p2 (0,l)) .
+          strokeTrail .
+          closeTrail .
+          fromVertices .
+          scaleX h .
+          scaleY (u-l) $
+          unitSquare
+
 
 -- axis rendering
 unitAxis ::
@@ -415,12 +470,12 @@ chartHud (ChartConfig p axes cc) renderer range'@(V2 (Range (_,_)) (Range (_,_))
           AxisRight -> r2 (1,0)
     (V2 rx ry) = range'
 
-chartHudTrunc :: (R2 r) =>
+chartHudTrunc ::
     ChartConfig
-    -> ([[(r Double)]] -> Chart' b)
+    -> ([[r Double]] -> Chart' b)
     -> V2 (Range Double)
     -> (V2 (Range Double) -> [[r Double]] -> [[r Double]])
-    -> [[(r Double)]]
+    -> [[r Double]]
     -> Chart' b
 chartHudTrunc (ChartConfig p axes cc) renderer range'@(V2 (Range (lx,ux)) (Range (ly,uy))) scaler ms =
   L.fold (L.Fold step begin (pad p)) axes

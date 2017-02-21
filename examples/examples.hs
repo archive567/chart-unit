@@ -7,12 +7,66 @@ import qualified Control.Foldl as L
 import Data.List
 import qualified Data.Text as Text
 import Diagrams.Backend.SVG (SVG)
-import qualified Diagrams.TwoD.Text
+-- import qualified Diagrams.TwoD.Text
 import Diagrams.Prelude hiding ((<>), unit)
 import FakeData
 import Linear hiding (identity, unit)
 import Protolude hiding ((&))
 import System.Random.MWC
+import Diagrams.TwoD.Text
+
+
+exampleCanvasLine :: [V2 Double] -> Canvas
+exampleCanvasLine xys = Canvas ch r
+  where
+    ch = undefined -- line1' (LineConfig 0.02 (opac 0.5 (palette1 !! 3))) xys
+    r = rangeR2 xys
+ 
+exampleCanvasLines :: [[V2 Double]] -> Canvas
+exampleCanvasLines xys = Canvas ch r
+  where
+    ch = mconcat $ zipWith line1 (zipWith LineConfig [0.01,0.02,0.03] (opacs 0.5 palette1)) xys
+    r = rangeR2s xys
+
+exampleCanvasBlank :: Canvas
+exampleCanvasBlank = Canvas mempty (V2 (Range (0,1)) (Range (0,1)))
+
+exampleCanvasBox :: V2 (Range Double) -> Canvas
+exampleCanvasBox r = Canvas (box r) r
+
+xxx = (view qdd $ exampleCanvasHud def (view qdr ch)) <> ((box $ view qdr ch) <> (view qdd ch))
+  where
+    ch = exampleCanvasLines $ fmap r2 <$> [ [(0.0,1.0),(1.0,1.0),(2.0,5.0)], [(0.0,0.0),(3.0,3.0)]]
+
+dl = fmap r2 <$> [ [(0.0,1.0),(1.0,1.0),(2.0,5.0)], [(0.0,0.0),(3.0,3.0)]]
+
+exampleCanvasHud ::
+      ChartConfig
+    -> V2 (Range Double)
+    -> Canvas
+exampleCanvasHud (ChartConfig p axes cc) range' = Canvas ch range'
+  where
+    ch = L.fold (L.Fold step begin (pad p)) axes
+    begin = showOrigin $ box range' # fcA (color cc) # lw 1
+    step x cfg = beside dir x (showOrigin $ mo $ axis' cfg r)
+      where
+        r = case view axisOrientation cfg of
+              X -> rx
+              Y -> ry
+        dir = case view axisPlacement cfg of
+          AxisBottom -> r2 (0,-1)
+          AxisTop -> r2 (0,1)
+          AxisLeft -> r2 (-1,0)
+          AxisRight -> r2 (1,0)
+        mo = case view axisOrientation cfg of
+              X -> moveOriginTo (p2 (-lx-(ux-lx)/2,0))
+              Y -> moveOriginTo (p2 (0,-ly-(uy-ly)/2))
+
+    (V2 rx@(Range (lx,ux)) ry@(Range (ly,uy))) = range'
+
+
+box :: (V t ~ V2, HasOrigin t, Transformable t, TrailLike t) => V2 (Range (N t)) -> t
+box (V2 (Range (lx,ux)) (Range (ly,uy))) = moveOriginTo (p2 (-lx-(ux-lx)/2,-ly-(uy-ly)/2)) $ scaleX (ux-lx) $ scaleY (uy-ly) unitSquare
 
 exampleEmptyChart :: Chart' a
 exampleEmptyChart =
@@ -91,57 +145,39 @@ exampleArrows2 :: Chart' a
 exampleArrows2 = chartWith'' def (centerXY . mconcat . zipWith arrow1 [def]) (rangeV4s [arrowData]) (\r x -> fmap (rescaleV4 r) <$> x) [arrowData]
 
 scratch :: Chart SVG -> IO ()
-scratch = fileSvg "other/scratchpad.svg" (300,300)
+scratch = fileSvg "other/scratchpad.svg" (600,300)
 
-exampleOtherRange :: QDiagram SVG V2 Double Any
-exampleOtherRange =
-    pad 1.1 $
-    beside (r2 (-1,0))
-    (beside (r2 (0,-1))
-     ((unitSquare # fcA (color $ Color 0.2 0.2 0.2 0.05) # lw 0) <>
-       centerXY
-       (scaleX (1/1.5) $
-        scaleY (1/10)
-        (clipped
-         (pathFromTrail $
-          closeTrail (fromVertices (p2 <$> [(0.5,0),(0.5,10),(2,10),(2,0)]))) $
-          (mconcat . zipWith line1
-            (zipWith LineConfig [0.01,0.02,0.03] (opacs 0.5 palette1)))
-          (fmap r2 <$> [ [(0.0,1.0),(1.0,1.0),(2.0,5.0)],
-                         [(0.0,0.0),(3.0,3.0)]]))))
-      (axis def (Range (0.5,2))))
-    (axis (axisOrientation .~ Y $ def)
-     (Range (0,2)))
+-- exampleClipping :: Chart' a
+exampleClipping :: (Renderable (Path V2 Double) b, R2 r, Traversable f) => f (r Double) -> QDiagram b V2 Double Any
+exampleClipping xys =
+    beside (r2 (0,1))
+    (beside (r2 (0,1))
+     (stroke (pathFromLocTrail $ abox -0.5 0.5 -0.5 0.5) <>
+          clipped (pathFromLocTrail $ abox -0.5 0 -0.5 0) (l1 <> s1 xys))
+      (l1 <> s1 xys))
+    (clipped (pathFromLocTrail $ abox -0.5 0 -0.5 0) (l1 <> s1 xys))
 
--- exampleOtherRange' :: QDiagram SVG V2 Double Any
-exampleOtherRange' :: forall b. (Renderable (Diagrams.TwoD.Text.Text Double) b, Renderable (Path V2 Double) b) => V2 (Range Double) -> QDiagram b V2 Double Any -> QDiagram b V2 Double Any
-exampleOtherRange' (V2 rx@(Range (lx,ux)) ry@(Range (ly,uy))) canvas =
-    pad 1.1 $
-    beside (r2 (-1,0))
-    (beside (r2 (0,-1))
-     ((unitSquare # fcA (color $ Color 0.2 0.2 0.2 0.05) # lw 0) <>
-       centerXY
-       (scaleX (1/(ux-lx)) $
-        scaleY (1/(uy-ly))
-        (clipped box canvas)))
-      (axis def rx))
-    (axis (axisOrientation .~ Y $ def) ry)
+abox :: forall t. (V t ~ V2, HasOrigin t, Transformable t, TrailLike t) => N t -> N t -> N t -> N t -> t
+abox lx ux ly uy = moveOriginTo (p2 (-lx-(ux-lx)/2,-ly-(uy-ly)/2)) $ scaleX (ux-lx) $ scaleY (uy-ly) unitSquare
+
+s1 :: forall (f :: * -> *) (r :: * -> *) b. (Renderable (Path V2 Double) b, R2 r, Traversable f) => f (r Double) -> QDiagram b V2 Double Any
+s1 xys = scatter1 (ScatterConfig 0.02 (opac 0.2 $ palette1 !! 1)) (unitizeR2 xys)
+
+l1 :: Chart a
+l1 = mconcat $ zipWith line1 (zipWith LineConfig [0.01,0.02,0.03] (opacs 0.5 palette1)) (unitizeR2s d)
   where
-    box = pathFromTrail $
-           closeTrail
-            (fromVertices
-              (p2 <$> [(lx,ly),(lx,uy),(ux,uy),(ux,ly)]))
+    d = fmap r2 <$> [ [(0.0,1.0),(1.0,1.0),(2.0,5.0)], [(0.0,0.0),(3.0,3.0)]]
 
-t1 :: QDiagram SVG V2 Double Any
-t1 = exampleOtherRange' (V2 (Range (1.2,2.6)) (Range (0.6,1.4)))
-     ((mconcat . zipWith line1
-            (zipWith LineConfig [0.01,0.02,0.03] (opacs 0.5 palette1)))
-          (fmap r2 <$> [ [(0.0,1.0),(1.0,1.0),(2.0,5.0)],
-                         [(0.0,0.0),(3.0,3.0)]]))
-
-t2 :: forall b (f :: * -> *) (r :: * -> *). (Renderable (Diagrams.TwoD.Text.Text Double) b, Renderable (Path V2 Double) b, R2 r, Traversable f) => f (r Double) -> QDiagram b V2 Double Any
-t2 xys = exampleOtherRange' (V2 (Range (0.5,2)) (Range (0,10))) (scatter1 def xys)
-
+-- drawing a box
+-- for a line chart after clipping
+-- scratch $ pad 1.1 $ (unitSquare # moveOriginTo (p2 (-0.5,-0.5)) # scaleX 5 # scaleY 2) # moveOriginTo (p2 (2,0)) <> decon -2 3 0 2
+-- drawing a box using a pathFromTrail
+-- for a line chart
+-- scratch $ (stroke $ moveOriginTo (p2 (0.5,0.5)) $ pathFromTrail $ closeTrail (fromVertices (p2 <$> [(-0.5,-0.5),(-0.5,0.5),(0.5,0.5),(0.5,-0.5)]))) <> (mconcat $ zipWith line1 (zipWith LineConfig [0.01,0.02,0.03] (opacs 0.5 palette1)) (unitizeR2s l1))
+-- for a scatter chart
+-- scratch $ (stroke $ moveOriginTo (p2 (0.5,0.5)) $ pathFromTrail $ closeTrail (fromVertices (p2 <$> [(-0.5,-0.5),(-0.5,0.5),(0.5,0.5),(0.5,-0.5)]))) <> (scatter1 (ScatterConfig 0.02 (opac 0.2 $ palette1 !! 1)) (unitizeR2 xys))
+-- both
+-- scratch $ (stroke $ moveOriginTo (p2 (0.5,0.5)) $ pathFromTrail $ closeTrail (fromVertices (p2 <$> [(-0.5,-0.5),(-0.5,0.5),(0.5,0.5),(0.5,-0.5)]))) <> (scatter1 (ScatterConfig 0.02 (opac 0.2 $ palette1 !! 1)) (unitizeR2 xys)) <> (mconcat $ zipWith line1 (zipWith LineConfig [0.01,0.02,0.03] (opacs 0.5 palette1)) (unitizeR2s l1))
 
 main :: IO ()
 main = do
@@ -152,7 +188,7 @@ main = do
   xys' <- rvsCorr gen 1000 -0.7
   let s = (400,400)
 
-  scratch exampleOtherRange
+  scratch (exampleClipping xys)
 
   fileSvg "other/exampleEmptyChart.svg" s exampleEmptyChart
   fileSvg "other/exampleAxes.svg" s exampleAxes
@@ -170,11 +206,7 @@ main = do
   fileSvg "other/exampleArrows.svg" s exampleArrows
   fileSvg "other/exampleArrows2.svg" s exampleArrows2
 
-
-
-
-
-
+{-
 makePng :: IO ()
 makePng = do
   gen <- create
@@ -202,8 +234,6 @@ makePng = do
   filePng "other/exampleArrows.png" s exampleArrows
   filePng "other/exampleArrows2.png" s exampleArrows2
 -}
-
-{-
 -}
 
 {-

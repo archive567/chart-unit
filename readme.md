@@ -1,4 +1,4 @@
-<meta charset="utf-8"> <link rel="stylesheet" href="other/lhs.css">
+<meta charset="utf-8"> <link rel="stylesheet" href="https://tonyday567.github.io/other/lhs.css">
 <script type="text/javascript" async
   src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-MML-AM_CHTML">
 </script>
@@ -9,17 +9,12 @@
 
 latest development:
 
+Working out how to safely clip a chart.
+
 ![](other/scratchpad.svg)
 
-~~~
-scratch $ pad 1.1 $ beside (r2 (-1,0)) (beside (r2 (0,-1)) (((unitSquare # fcA (color $ Color 0.2 0.2 0.2 0.05) # lw 0) <> (centerXY $ scaleX (1/1.5) $ scaleY (1/10) $ (clipped (pathFromTrail $ (closeTrail $ fromVertices (p2 <$> [(0.5,0),(0.5,10),(2,10),(2,0)]))) $ ((mconcat . zipWith line1 (zipWith LineConfig [0.01,0.02,0.03] (opacs 0.5 palette1)))) (fmap r2 <$> [ [(0.0,1.0),(1.0,1.0),(2.0,5.0)], [(0.0,0.0),(3.0,3.0)]]))))) (axis def (Range (0.5,2)))) (axis (axisOrientation .~ Y $ def) (Range (0,2)))
-~~~
 
-This is my manual hack of what should happen to the line chart example when drawn using a scale different to the data scale. 
-
-Next step is to refactor back into the chartHub
-
-tl;dr
+unital charting
 -----
 
 This slowly growing collection of charts:
@@ -32,10 +27,6 @@ This slowly growing collection of charts:
     design space, making combining a snap.
 -   can be quickly integrated into ad-hoc haskell data analytics,
     providing a visual feedback loop.
-
-
-
-
 
 charts - svg
 ======

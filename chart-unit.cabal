@@ -97,6 +97,8 @@ executable chart-unit-examples
     examples
   main-is:
     examples.hs
+  other-modules:
+    FakeData
   build-depends:
     base >= 4.7 && < 5,
     chart-unit,
