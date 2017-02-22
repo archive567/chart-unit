@@ -4,6 +4,7 @@
 module Chart.Unit where
 
 import Chart.Types
+import Chart.Range
 import qualified Control.Foldl as L
 import Control.Lens hiding (beside, none, (#), at)
 import Data.List hiding (head)
@@ -97,7 +98,7 @@ rangeR2s :: (Fractional a, Traversable g, Traversable f, R2 r, Ord a) =>
     g (f (r a)) ->
     V2 (Range a)
 rangeR2s qss = foldl1 (\(V2 x y) (V2 x' y') -> V2 (x<>x') (y<>y')) $ rangeR2 <$> qss
-
+ 
 -- rescale multiple R2 sets
 rescaleR2s :: (Functor g, Functor f, Fractional a, Eq a, R2 r) =>
     V2 (Range a) -> g (f (r a)) -> g (f (r a))

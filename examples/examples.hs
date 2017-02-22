@@ -3,6 +3,7 @@
 
 import Chart.Types
 import Chart.Unit
+import Chart.Range
 import qualified Control.Foldl as L
 import Data.List
 import qualified Data.Text as Text
@@ -13,7 +14,8 @@ import FakeData
 import Linear hiding (identity, unit)
 import Protolude hiding ((&))
 import System.Random.MWC
-
+import Data.Semigroup
+import qualified Data.List.NonEmpty as NonEmpty
 
 exampleCanvasLines :: [[V2 Double]] -> Canvas
 exampleCanvasLines xys = Canvas ch r
@@ -37,15 +39,39 @@ exampleCanvasScatterUnitized = do
     pure $ Canvas ch r
 
 
-qdsc :: IO (QC [[V2 Double]])
-qdsc = do
+exsc :: IO (QC [[V2 Double]])
+exsc = do
     gen <- create
     xys <- rvsCorr gen 1000 0.7
     xys' <- rvsCorr gen 1000 -0.7
-    let qcScatter xy xyss = mconcat $ zipWith scatter1 (zipWith ScatterConfig [0.01,0.02,0.03] (opacs 0.5 palette1)) (rescaleR2s' xy xyss)
     let r = rangeR2s [xys, xys']
     pure $ QC qcScatter r [xys,xys']
 
+qcScatter xy xyss = mconcat $ zipWith scatter1 (zipWith ScatterConfig [0.01,0.02,0.03] (opacs 0.5 palette1)) (scaleXYs xy xyss)
+
+qcLine xy xyss = mconcat $ zipWith line1 (zipWith LineConfig [0.01,0.02,0.03] (opacs 0.5 palette1)) (scaleXYs xy xyss)
+
+
+scaleXYs xy qss = rescaleXY xy xy' <$> qss
+  where
+    xy' = rangeR2s qss
+
+rescaleXY (V2 rx ry) (V2 rx' ry') qs =
+    (over _x (rescaleP rx rx') . over _y (rescaleP ry ry')) <$> qs
+
+
+mkQCS qcs = QCS qcs (sconcat $ (view qxy) <$> qcs)
+
+rends (QCS qcs xys) = sconcat $ (\x -> (view qchart x) xys (view qdata x)) <$> qcs
+
+
+v1 t = view qxys (mkQCS (t NonEmpty.:| [exline]))
+
+-- t <- exsc
+-- scratch $ (rend $ t) <> (box v1 <> (rend $ exline))
+
+exline :: QC [[V2 Double]]
+exline = QC qcLine (rangeR2s dl) dl
 
 rend :: QC a -> Chart SVG
 rend (QC qc r d) = qc r d

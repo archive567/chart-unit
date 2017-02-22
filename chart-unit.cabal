@@ -30,7 +30,8 @@ library
     src
   exposed-modules:
     Chart.Unit,
-    Chart.Types
+    Chart.Types,
+    Chart.Range
   ghc-options:
     -funbox-strict-fields
     -fforce-recomp          
@@ -115,7 +116,6 @@ executable chart-unit-examples
     mwc-probability,
     primitive,
     protolude,
-    random-fu,
     text,
     ad,
     ListLike,

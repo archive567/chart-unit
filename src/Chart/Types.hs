@@ -9,6 +9,9 @@ import Data.List ((!!))
 import Diagrams.Prelude hiding (Color(..))
 import qualified Diagrams.TwoD.Text
 import Diagrams.Backend.SVG (SVG)
+import Chart.Range
+import Data.Semigroup
+import qualified Data.List.NonEmpty as NonEmpty
 
 type Chart b =
     ( Renderable (Path V2 Double) b
@@ -21,29 +24,18 @@ type Chart' b =
     ) =>
     QDiagram b V2 Double Any
 
-newtype Range a = Range { unRange :: (a,a) } deriving (Show, Eq, Functor)
-
-instance (Ord a) => Semigroup (Range a) where
-    (Range (l,u)) <> (Range (l',u')) =
-        Range (if l < l' then l else l',if u > u' then u else u')
-
-low :: Lens' (Range a) a
-low = lens (\(Range (l,_)) -> l) (\(Range (_,u)) l -> Range (l,u))
-
-high :: Lens' (Range a) a
-high = lens (\(Range (_,u)) -> u) (\(Range (l,_)) u -> Range (l,u))
-
 data Canvas = Canvas { _qdd :: QDiagram SVG V2 Double Any, _qdr :: V2 (Range Double)}
 
 makeLenses ''Canvas
-
-type XY = V2 (Range Double)
 
 data QC a = QC { _qchart :: XY -> a -> QDiagram SVG V2 Double Any, _qxy :: XY, _qdata :: a}
 
 makeLenses ''QC
 
-data QCS a = QCS { _qcharts :: [QC a], _qxys :: V2 (Range Double)}
+data QCS a = QCS { _qcharts :: NonEmpty.NonEmpty (QC a), _qxys :: XY}
+
+instance Semigroup (QCS a) where
+    (QCS chs (V2 rx ry)) <> (QCS chs' (V2 rx' ry')) = QCS (chs <> chs') (V2 (rx <> rx') (ry <> ry'))
 
 makeLenses ''QCS
 

@@ -21,6 +21,7 @@ import qualified Control.Foldl as L
 import Data.List
 import Chart.Unit
 import Chart.Types
+import Chart.Range
 import Diagrams.Prelude hiding ((<>), unit)
 
 {-
