@@ -13,20 +13,49 @@ import FakeData
 import Linear hiding (identity, unit)
 import Protolude hiding ((&))
 import System.Random.MWC
-import Diagrams.TwoD.Text
 
 
-exampleCanvasLine :: [V2 Double] -> Canvas
-exampleCanvasLine xys = Canvas ch r
-  where
-    ch = undefined -- line1' (LineConfig 0.02 (opac 0.5 (palette1 !! 3))) xys
-    r = rangeR2 xys
- 
 exampleCanvasLines :: [[V2 Double]] -> Canvas
 exampleCanvasLines xys = Canvas ch r
   where
     ch = mconcat $ zipWith line1 (zipWith LineConfig [0.01,0.02,0.03] (opacs 0.5 palette1)) xys
     r = rangeR2s xys
+
+exampleCanvasLinesUnitized :: [[V2 Double]] -> Canvas
+exampleCanvasLinesUnitized xys = Canvas ch r
+  where
+    ch = mconcat $ zipWith line1 (zipWith LineConfig [0.01,0.02,0.03] (opacs 0.5 palette1)) (unitizeR2s xys)
+    r = rangeR2s xys
+
+exampleCanvasScatterUnitized :: IO Canvas
+exampleCanvasScatterUnitized = do
+    gen <- create
+    xys <- rvsCorr gen 1000 0.7
+    xys' <- rvsCorr gen 1000 -0.7
+    let ch = mconcat $ zipWith scatter1 (zipWith ScatterConfig [0.01,0.02,0.03] (opacs 0.5 palette1)) (unitizeR2s [xys,xys'])
+    let r = rangeR2s [xys, xys']
+    pure $ Canvas ch r
+
+
+qdsc :: IO (QC [[V2 Double]])
+qdsc = do
+    gen <- create
+    xys <- rvsCorr gen 1000 0.7
+    xys' <- rvsCorr gen 1000 -0.7
+    let qcScatter xy xyss = mconcat $ zipWith scatter1 (zipWith ScatterConfig [0.01,0.02,0.03] (opacs 0.5 palette1)) (rescaleR2s' xy xyss)
+    let r = rangeR2s [xys, xys']
+    pure $ QC qcScatter r [xys,xys']
+
+
+rend :: QC a -> Chart SVG
+rend (QC qc r d) = qc r d
+
+rendunit :: QC a -> Chart SVG
+rendunit (QC qc _ d) = qc unitRangeV2 d
+
+
+
+
 
 exampleCanvasBlank :: Canvas
 exampleCanvasBlank = Canvas mempty (V2 (Range (0,1)) (Range (0,1)))
@@ -34,10 +63,24 @@ exampleCanvasBlank = Canvas mempty (V2 (Range (0,1)) (Range (0,1)))
 exampleCanvasBox :: V2 (Range Double) -> Canvas
 exampleCanvasBox r = Canvas (box r) r
 
+exampleCanvasBoxUnitized :: V2 (Range Double) -> Canvas
+exampleCanvasBoxUnitized r = Canvas (unitSquare) r
+
+box :: (V t ~ V2, HasOrigin t, Transformable t, TrailLike t) => V2 (Range (N t)) -> t
+box (V2 (Range (lx,ux)) (Range (ly,uy))) = moveOriginTo (p2 (-lx-(ux-lx)/2,-ly-(uy-ly)/2)) $ scaleX (ux-lx) $ scaleY (uy-ly) unitSquare
+
+unitbox :: (V t ~ V2, HasOrigin t, TrailLike t) => V2 (Range (N t)) -> t
+unitbox (V2 (Range (lx,ux)) (Range (ly,uy))) = moveOriginTo (p2 (x',y')) $ unitSquare
+  where
+    x' = if lx == ux then 0 else -lx/(ux-lx) - 0.5
+    y' = if ly == uy then 0 else -ly/(uy-ly) - 0.5
+
+xxx :: QDiagram SVG V2 Double Any
 xxx = (view qdd $ exampleCanvasHud def (view qdr ch)) <> ((box $ view qdr ch) <> (view qdd ch))
   where
     ch = exampleCanvasLines $ fmap r2 <$> [ [(0.0,1.0),(1.0,1.0),(2.0,5.0)], [(0.0,0.0),(3.0,3.0)]]
 
+dl :: [[V2 Double]]
 dl = fmap r2 <$> [ [(0.0,1.0),(1.0,1.0),(2.0,5.0)], [(0.0,0.0),(3.0,3.0)]]
 
 exampleCanvasHud ::
@@ -63,10 +106,6 @@ exampleCanvasHud (ChartConfig p axes cc) range' = Canvas ch range'
               Y -> moveOriginTo (p2 (0,-ly-(uy-ly)/2))
 
     (V2 rx@(Range (lx,ux)) ry@(Range (ly,uy))) = range'
-
-
-box :: (V t ~ V2, HasOrigin t, Transformable t, TrailLike t) => V2 (Range (N t)) -> t
-box (V2 (Range (lx,ux)) (Range (ly,uy))) = moveOriginTo (p2 (-lx-(ux-lx)/2,-ly-(uy-ly)/2)) $ scaleX (ux-lx) $ scaleY (uy-ly) unitSquare
 
 exampleEmptyChart :: Chart' a
 exampleEmptyChart =

@@ -37,6 +37,16 @@ data Canvas = Canvas { _qdd :: QDiagram SVG V2 Double Any, _qdr :: V2 (Range Dou
 
 makeLenses ''Canvas
 
+type XY = V2 (Range Double)
+
+data QC a = QC { _qchart :: XY -> a -> QDiagram SVG V2 Double Any, _qxy :: XY, _qdata :: a}
+
+makeLenses ''QC
+
+data QCS a = QCS { _qcharts :: [QC a], _qxys :: V2 (Range Double)}
+
+makeLenses ''QCS
+
 data Orientation = X | Y
 
 data Placement = AxisLeft | AxisRight | AxisTop | AxisBottom
