@@ -4,14 +4,12 @@
 
 module Chart.Types where
 
-import Protolude
+import Tower.Prelude
 import Data.List ((!!))
 import Diagrams.Prelude hiding (Color(..))
 import qualified Diagrams.TwoD.Text
 import Diagrams.Backend.SVG (SVG)
 import Chart.Range
-import Data.Semigroup
-import qualified Data.List.NonEmpty as NonEmpty
 
 type Chart b =
     ( Renderable (Path V2 Double) b
@@ -24,20 +22,13 @@ type Chart' b =
     ) =>
     QDiagram b V2 Double Any
 
-data Canvas = Canvas { _qdd :: QDiagram SVG V2 Double Any, _qdr :: V2 (Range Double)}
+data Canvas = Canvas { _qdd :: QDiagram SVG V2 Double Any, _qdr :: XY}
 
 makeLenses ''Canvas
 
 data QC a = QC { _qchart :: XY -> a -> QDiagram SVG V2 Double Any, _qxy :: XY, _qdata :: a}
 
 makeLenses ''QC
-
-data QCS a = QCS { _qcharts :: NonEmpty.NonEmpty (QC a), _qxys :: XY}
-
-instance Semigroup (QCS a) where
-    (QCS chs (V2 rx ry)) <> (QCS chs' (V2 rx' ry')) = QCS (chs <> chs') (V2 (rx <> rx') (ry <> ry'))
-
-makeLenses ''QCS
 
 data Orientation = X | Y
 
@@ -121,6 +112,7 @@ makeLenses ''AxisConfig
 data ChartConfig = ChartConfig
   { _chartPad :: Double
   , _chartAxes :: [AxisConfig]
+  , _chartAspect :: XY
   , _chartCanvasColor :: Color
   }
 
@@ -134,6 +126,7 @@ instance Default ChartConfig where
      axisOrientation .~ Y $
      axisPlacement .~ AxisLeft $
      def]
+    one
     (Color 0 0 0 0.02)
 
 

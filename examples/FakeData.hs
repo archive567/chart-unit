@@ -7,8 +7,9 @@ various fake data
 
 module FakeData where
 
-import Protolude hiding ((&))
-import Linear hiding (identity, unit)
+import Tower.Prelude hiding ((&))
+import qualified Protolude as P
+import Linear hiding (identity, unit, Additive)
 import Numeric.AD
 import Numeric.AD.Mode.Reverse
 import Data.Reflection
@@ -20,9 +21,9 @@ import Control.Monad.Primitive (PrimState)
 import qualified Control.Foldl as L
 import Data.List
 import Chart.Unit
-import Chart.Types
+-- import Chart.Types
 import Chart.Range
-import Diagrams.Prelude hiding ((<>), unit)
+import Diagrams.Prelude hiding ((<>), unit, Additive)
 
 {-
 Standard normal random variates in one dimension.
@@ -45,7 +46,7 @@ rvsCorr gen n c = do
 makeHist :: Int -> [Double] -> [V4 Double]
 makeHist n xs = zipWith4 V4 (init cuts) (replicate (length xs+1) 0) (drop 1 cuts) (fromIntegral <$> histList)
   where
-    r = range xs
+    r = Chart.Range.range xs
     cuts = mkTicksExact r n
     count = L.Fold (\x a -> Map.insertWith (+) a (1::Integer) x) Map.empty identity
     countBool = L.Fold (\x a -> x + if a then 1 else 0) 0 identity
@@ -55,14 +56,14 @@ makeHist n xs = zipWith4 V4 (init cuts) (replicate (length xs+1) 0) (drop 1 cuts
 arrowData :: [V4 Double]
 arrowData = zipWith (\(V2 x y) (V2 z w) -> V4 x y z w) pos dir'
   where
-    pos = locs (Range (-1, 1)) (Range (-1, 1)) 20
+    pos = locs (Extrema (-1, 1)) (Extrema (-1, 1)) 20
     dir' = gradF rosenbrock 0.01 <$> pos
     
-locs :: Range Double -> Range Double -> Double -> [V2 Double]
+locs :: Extrema Double -> Extrema Double -> Double -> [V2 Double]
 locs rx ry steps = [V2 x y | x <- grid rx steps, y <- grid ry steps]
 
-grid :: forall b. (Fractional b, Enum b) => Range b -> b -> [b]
-grid (Range (x,x')) steps = (\a -> x + (x'-x)/steps * a) <$> [0..steps]
+grid :: forall b. (Field b, Fractional b, Enum b) => Extrema b -> b -> [b]
+grid (Extrema (x,x')) steps = (\a -> x + (x'-x)/steps * a) <$> [0..steps]
 
 gradF ::
     (forall s. (Reifies s Tape) => [Reverse s Double] -> Reverse s Double) ->
@@ -73,8 +74,8 @@ gradF f step (V2 x y) =
     - r2 ((\[x',y'] -> (x',y')) $
           gradWith (\x0 x1 -> x0 + (x1 - x0) * step) f [x,y])
 
-rosenbrock :: Num a => [a] -> a
+rosenbrock :: (Num a) => [a] -> a
 rosenbrock [] = 0
-rosenbrock [x] = 100 * (negate x^2)^2 + (x - 1)^2
-rosenbrock (x:y:_) = 100 * (y - x^2)^2 + (x - 1)^2
+rosenbrock [x] = 100 P.* (P.negate x P.^ 2) P.^ 2 P.+ (x P.- 1) P.^ 2
+rosenbrock (x:y:_) = 100 P.* (y P.- x P.^ 2) P.^ 2 P.+ (x P.- 1) P.^ 2
 

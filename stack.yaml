@@ -7,6 +7,13 @@ resolver: lts-7.19
 # Local packages, usually specified by relative directory name
 packages:
 - '.'
+- '../tower'
+
+#- location:
+#    git: https://github.com/tonyday567/tower.git
+#    commit: 43cb546052e3ff7b8f2bde0934f163d34e472ef3
+#  extra-dep: true
+
 - location:
     git: https://github.com/dequbed/polynomial.git
     commit: 8f78235e6fe6e34624547e25049e916ad4c6e401

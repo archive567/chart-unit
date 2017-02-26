@@ -51,7 +51,8 @@ library
     linear,
     primitive,
     protolude,
-    text
+    text,
+    tower
   default-language:
     Haskell2010
   default-extensions:
@@ -119,7 +120,9 @@ executable chart-unit-examples
     text,
     ad,
     ListLike,
-    reflection
+    reflection,
+    tower,
+    formatting
 
   default-extensions:
     NoImplicitPrelude,
