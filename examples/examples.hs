@@ -1,4 +1,5 @@
 {-# OPTIONS_GHC -fno-warn-name-shadowing #-}
+{-# OPTIONS_GHC -fno-warn-name-shadowing #-}
 {-# OPTIONS_GHC -Wall #-}
 {-# OPTIONS_GHC -fno-warn-type-defaults #-}
 
@@ -15,162 +16,153 @@ import FakeData
 import Linear hiding (identity, unit)
 import Tower.Prelude hiding ((&))
 import System.Random.MWC
--- import Data.Semigroup
-import qualified Data.List.NonEmpty as NonEmpty
-import System.IO.Unsafe
 import Formatting
 
-exampleCanvasLines :: [[V2 Double]] -> Canvas
-exampleCanvasLines xys = Canvas ch r
-  where
-    ch = mconcat $ zipWith line1 (zipWith LineConfig [0.01,0.02,0.03] (opacs 0.5 palette1)) xys
-    r = rangeR2s xys
 
-exampleCanvasLinesUnitized :: [[V2 Double]] -> Canvas
-exampleCanvasLinesUnitized xys = Canvas ch r
-  where
-    ch = mconcat $ zipWith line1 (zipWith LineConfig [0.01,0.02,0.03] (opacs 0.5 palette1)) (unitizeR2s xys)
-    r = rangeR2s xys
+scratch :: Chart SVG -> IO ()
+scratch = fileSvg "other/scratchpad.svg" (600,300)
 
-exampleCanvasScatterUnitized :: IO Canvas
-exampleCanvasScatterUnitized = do
+exampleBox :: Chart' a
+exampleBox = box sixby4
+
+exampleAxes :: Chart' a
+exampleAxes = qcAxes def sixby4 [toCorners (one::XY)]
+
+exampleGrid :: Chart a
+exampleGrid =
+    qcScatter
+    [ScatterConfig 0.01 (palette1!!4)]
+    sixby4
+    [V2 <$> [0..10] <*> [0..10]]
+
+exampleLine :: Chart a
+exampleLine =
+    qcLine defs sixby4 dl
+  where
+    defs = zipWith LineConfig [0.01,0.02,0.03] (opacs 0.5 palette1)
+    dl = fmap r2 <$> [ [(0.0,1.0),(1.0,1.0),(2.0,5.0)], [(0.0,0.0),(3.0,3.0)]]
+
+exampleLineAxes :: Chart' a
+exampleLineAxes =
+    qcLine defs sixby4 dl <> qcAxes def sixby4 dl
+  where
+    defs = zipWith LineConfig [0.01,0.02,0.03] (opacs 0.5 palette1)
+    dl = fmap r2 <$> [ [(0.0,1.0),(1.0,1.0),(2.0,5.0)], [(0.0,0.0),(3.0,3.0)]]
+
+exampleScatter :: [[V2 Double]] -> Chart' a
+exampleScatter xys =
+    qcScatter defs one xys <> qcAxes def one xys
+  where
+    defs = zipWith ScatterConfig [0.01,0.02,0.03] (drop 3 (opacs 0.5 palette1))
+
+mkScatterData :: IO [[V2 Double]]
+mkScatterData = do
+    g <- create
+    xys <- rvsCorr g 1000 0.7
+    xys1 <- rvsCorr g 400 -0.5
+    pure [xys,xys1]
+
+exampleHist :: [[V4 Double]] -> Chart' a
+exampleHist xys = qcHist
+    [ def
+    , rectBorderColor .~ Color 0 0 0 0
+      $ rectColor .~ Color 0.333 0.333 0.333 0.4
+      $ def
+    ]
+    (recip sixby4 `times` mconcat (rangeRect <$> xys))
+    xys <>
+    qcAxes def sixby4 xys
+
+mkHistData :: IO [[V4 Double]]
+mkHistData = do
+    g <- create
+    xys <- rvs g 1000
+    xys1 <- rvs g 1000
+    pure $ makeHist 30 <$> [xys,(1.5*) <$> xys1]
+
+exampleBar :: Chart' a
+exampleBar = qcHist def sixby4 xys <> qcAxes
+    ( chartAxes .~
+      [ axisTickStyle .~
+        TickLabels labels $ def
+      ]
+      $ def
+    ) sixby4 xys
+  where
+    labels = fmap Text.pack <$> take 10 $ (:[]) <$> ['a'..]
+    xys = [zipWith4 V4 [0..10] (replicate 11 0) [0..11] [1,2,3,5,8,0,-2,11]]
+
+-- compound charts
+qcomsc :: IO (QCom a)
+qcomsc = do
     gen <- create
     xys <- rvsCorr gen 1000 0.7
     xys' <- rvsCorr gen 1000 -0.7
-    let ch = mconcat $ zipWith scatter1 (zipWith ScatterConfig [0.01,0.02,0.03] (opacs 0.5 palette1)) (unitizeR2s [xys,xys'])
     let r = rangeR2s [xys, xys']
-    pure $ Canvas ch r
+    let d = VD1 [xys,xys']
+    let defs = zipWith ScatterConfig [0.01,0.02,0.03] (opacs 0.5 palette1)
+    let qcomScatter xy (VD1 x) = qcScatter defs xy x
+        qcomScatter xy (VD2 x) = qcScatter defs xy [x]
+    pure $ QCom qcomScatter r d
 
-exsc :: (QC [[V2 Double]])
-exsc = unsafePerformIO $ do
-    gen <- create
-    xys <- rvsCorr gen 1000 0.7
-    xys' <- rvsCorr gen 1000 -0.7
-    let r = rangeR2s [xys, xys']
-    pure $ QC qcScatter r [xys,xys']
+qcoml :: QCom a
+qcoml = QCom qcomLine (rangeR2s dl) (VD1 dl)
+  where
+    defs = zipWith LineConfig [0.01,0.02,0.03] (opacs 0.5 palette1)
+    qcomLine xy (VD1 xs) = qcLine defs xy xs
+    qcomLine xy (VD2 x) = qcLine defs xy [x]
+    qcomLine xy (VD4 x) = qcLine defs xy x
+    dl = fmap r2 <$> [ [(0.0,1.0),(1.0,1.0),(2.0,5.0)], [(0.0,0.0),(3.0,3.0)]]
 
-exl :: (QC [[V2 Double]])
-exl = QC qcLine (rangeR2s dl) dl
+qcombox :: XY -> QCom a
+qcombox xy = QCom (\xy0 _ -> box xy0) xy (VD1 [[]])
 
-exb :: (QC [[V2 Double]])
-exb = QC qcBox (rangeR2s dl) dl
+qcomax :: XY -> QCom a
+qcomax xy = QCom (\xy0 (VD1 xs) -> qcAxes def xy0 xs) xy (VD1 [toCorners xy])
 
-xyBoth = exsc ^. qxy <> exl ^. qxy
+qcomhist :: IO (QCom a)
+qcomhist = do
+    d0 <- dhist
+    let xy0 = mconcat $ rangeRect <$> d0
+    pure $ QCom qcomHist xy0 (VD4 d0) 
+  where
+    dhist = do
+        gen <- create
+        xs <- rvs gen 1000
+        xs2 <- rvs gen 1000 
+        let h = makeHist 50 xs
+        let h2 = makeHist 50 ((1.4*) <$> xs2)
+        pure [h,take 49 h2]
+    defs =
+        [ def
+        , rectBorderColor .~ Color 0 0 0 0
+          $ rectColor .~ Color 0.333 0.333 0.333 0.4
+          $ def
+        ]
 
-exaxis :: QC [[V2 Double]]
-exaxis = QC (qcAxes def) xyBoth [toCorners xyBoth]
-
-ex1 = ( rend $ QC (qcAxes def)
-        (V2 (Extrema (-1, 1))
-            (Extrema (-1, 1)))
-        [toCorners $
-         (V2 (Extrema (-1, 1))
-             (Extrema (-1, 1)))]) <>
-      ( rend $ qxy .~
-        (V2 (Extrema (-0.5, 0.5))
-            (Extrema (-0.5, 0.5))) $
-        QC (qcAxes def) one [toCorners $
-         (V2 (Extrema (-0.5, 0.5))
-             (Extrema (-0.5, 0.5)))])
-
-ex2 e = (rend $ QC (qcAxes def) one [toCorners $ e]) <>
-        (rend $ qxy .~ (one `times` recip e) $
-        QC (qcAxes def) one [toCorners $ V2 one one])
-
-ex3 e1 e2 = (rend $ QC (qcAxes def) e1 [toCorners $ e1]) <>
-        (rend $ qxy .~ e2 $
-        QC (qcAxes def) e2 [toCorners $ e2])
-
-ex3 e1 e2 = (rend $ QC (qcAxes def) e1 [toCorners $ e1]) <>
-        (rend $ qxy .~ e2 $
-        QC (qcAxes def) e2 [toCorners $ e2])
-
-ex4 e1 e2 e3 e4 =
-    (rend $ QC (qcAxes def) (toE e1) [toCorners $ (toE e2)]) <>
-    (rend $ QC (qcAxes def) (toE e3) [toCorners $ (toE e4)])
+    qcomHist xy (VD4 xs) = qcHist defs (recip xy `times` mconcat (rangeRect <$> xs)) xs
 
 
+-- | render a list of charts using a common scale
+qcomRends :: ((Renderable (Diagrams.TwoD.Text.Text Double) a), Renderable (Path V2 Double) a) => XY -> [QCom a] -> QDiagram a V2 Double Any
+qcomRends xy qcs = mconcat $ (\x -> view qcomChart x (recip xysum `times` view qcomXY x `times` xy) (view qcomData x)) <$> qcs
+    where
+      xysum = mconcat $ view qcomXY <$> qcs
 
-toE (a,b,c,d) = V2 (Extrema (a, b)) (Extrema (c, d))
-
-ex5 e1 e2 e3 e4 =
-    (rend $ QC (qcAxes def) (e1) [toCorners $ (e2)]) <>
-    (rend $ QC (qcAxes def) (e3) [toCorners $ (e4)])
-
-ex6 = scratch $ ex5 (V2 (Extrema (-0.5,0.5)) (Extrema (0,0.5))) (V2 (Extrema (-0.5,0.5)) (Extrema (-0.5,0.5))) (V2 (Extrema (-0.5,0.5)) (Extrema (-0.5,0.5))) (V2 (Extrema (-0.5,0.5)) (Extrema (-1.5,0.5)))
-
-ex7 e = scratch $ ex5 (V2 one (recip e)) (V2 one one) (V2 one one) (V2 one e)
-
-ex8 = ex7 (Extrema (-1.5,0.5))
-
--- (-0.5,0.5) / (-1.5,0.5) = (0,0.5)
--- recip (-1.5,0.5) = (0,0.5)
--- s' = 1/s
--- m' = (m - 0.5)/2
--- (0,0.5) * (-1.5,0.5) = (-0.5,0.5)
--- size 0.5 * size 2 = size 1
--- mid 0.25 * mid -0.5 = mid 0
--- low 0 * low -1.5 = low -0.5
--- l' = ((l0+l1) + 0.5)/2
-
--- recip (-1.5,-0.5) = (-0.5,0)
--- size = 1/size
--- mid -1 <=> mid -0.25
-
--- (-1.5,-0.5) / (-1.5,0.5) = (-0.5,0)
--- (-0.5,0.5) / (-1.5,0.5) = (0,0.5)
--- (0,1) / (0,2) = (-0.5,0)
--- (1,2) / (0,2) = (0,0.5)
-
--- (-1.5,-0.5) = (-0.5,0) * (-1.5,0.5)
--- (-0.5,0.5)  = (0,0.5)  * (-1.5,0.5)
--- (-0.5,0.5)  = (-0.5,0) * (-0.5,1.5)
--- (0,1)       = (-0.5,0) * (0,2)
--- (1,2)       = (0,0.5)  * (0,2)
--- (-0.5,0.5)  = (-0.5,0.5) * (-0.5,0.5)
--- (0,1)       = (0,1) * (-0.5,0.5)
--- (-0.5,0.5)  = (0,1)  * (?,?)
-
--- -1   = -0.25 / 0.5 , -0.5 / 2.0 ==> -0.75 ==> -0.25
---  0   =  0.25 + -0.5 ==> -0.25 ==>  0.25
---  0.5 = -0.25 +  1   ==>  0.75 ==> -0.25
---  1.5 =  0.25 +  1   ==>  1.25 ==>  0.25
---  0   =  0    +  0   ==>  0    ==>  0
---  0.5 =  0.5  +  0   ==>  0.5  ==>  0
-
--- -1   = -0.25 + -0.5 ==> -0.75 ==> -0.25
---  0   =  0.25 + -0.5 ==> -0.25 ==>  0.25
---  0.5 = -0.25 +  1   ==>  0.75 ==> -0.25
---  1.5 =  0.25 +  1   ==>  1.25 ==>  0.25
---  0   =  0    +  0   ==>  0    ==>  0
---  0.5 =  0.5  +  0   ==>  0.5  ==>  0
-
--- lower
--- -1.5 = -0.5 + -1.5 ==> -2   ==> -0.5
--- -0.5 =  0   + -1.5 ==> -1.5 ==>  1
---  0   = -0.5 +  0   ==> -0.5 ==>  0.5
---  1   =  0   +  0   ==>  0   ==>  1
--- -0.5 = -0.5 + -0.5 ==> -1   ==>  0.5
-
--- recip
--- (0,0.5)  <=> (-1.5,0.5)
--- (-0.5,0) <=> (-0.5,1.5)
-
---  0.25 , 0.5 => -0.5  , 2.0 => (-)0.25 * 2  = -0.5
--- -0.25 , 0.5 =>  0.5  , 2.0 => (-)-0.25 * 2 =  0.5
--- -0.5  , 2.0 =>  0.25 , 0.5 => (-)-0.5 * 0.5 = 0.25
---  0.5  , 2.0 => -0.25 , 0.5 => (-)0.5 * 0.5 = -0.25
+sixby4 :: V2 (Extrema Double)
+sixby4 = V2 ((1.5*) <$> one) one
 
 
+-- | charting
+qcScatter :: (Renderable (Path V2 Double) b, R2 r, Traversable f) => [ScatterConfig] -> V2 (Extrema Double) -> [f (r Double)] -> QDiagram b V2 Double Any
+qcScatter defs xy xyss = mconcat $ zipWith scatter1 defs (scaleXYs xy xyss)
 
--- half examples
--- scratch $ ex4 (-0.5,0.5,0,0.5) (-0.5,0.5,-0.5,0.5) (-0.5,0.5,-0.5,0.5) (-0.5,0.5,-1.5,0.5)
--- scratch $ ex4 (-0.5,0.5,0,0.5) (-0.5,0.5,-0.5,0.5) (-0.5,0.5,-0.5,0) (-0.5,0.5,-1.5,-0.5)
--- scratch $ ex4 (-0.5,0.5,-0.5,0) (-0.5,0.5,0,1) (-0.5,0.5,0,0.5) (-0.5,0.5,1,2)
+qcLine :: (Renderable (Path V2 Double) b, R2 r, Traversable f) => [LineConfig] -> V2 (Extrema Double) -> [f (r Double)] -> QDiagram b V2 Double Any
+qcLine defs xy xyss = mconcat $ zipWith line1 defs (scaleXYs xy xyss)
 
+qcHist :: (Renderable (Path V2 Double) b, Traversable f) => [RectConfig] -> V2 (Extrema Double) -> [f (V4 Double)] -> QDiagram b V2 Double Any
+qcHist defs xy xs = (centerXY . mconcat . zipWith rect1 defs $ rescaleRects xy xs)
 
-
--- scratch $ ex4 (-0.5,0.5,-0.5,0.5) (-0.5,0.5,-0.5,0.5) (-0.5,0.5,-0.5,0.5) (-0.5,0.5,-0.5,0.5)
 qcAxes :: ((Renderable (Diagrams.TwoD.Text.Text Double) b), Renderable (Path V2 Double) b, R2 r, Traversable f) => ChartConfig -> V2 (Extrema Double) -> [f (r Double)] -> QDiagram b V2 Double Any
 qcAxes (ChartConfig p axes cc) rrange dd = ch
   where
@@ -196,18 +188,7 @@ qcAxes (ChartConfig p axes cc) rrange dd = ch
 
     (V2 rx@(Extrema (lx,ux)) ry@(Extrema (ly,uy))) = rrange
 
-
-qcBox :: (Renderable (Path V2 Double) b, R2 r, Traversable f) => V2 (Extrema Double) -> [f (r Double)] -> QDiagram b V2 Double Any
-qcBox r _ = box r
-
-qcScatter :: (Renderable (Path V2 Double) b, R2 r, Traversable f) => V2 (Extrema Double) -> [f (r Double)] -> QDiagram b V2 Double Any
-qcScatter xy xyss = mconcat $ zipWith scatter1 (zipWith ScatterConfig [0.01,0.02,0.03] (opacs 0.5 palette1)) (scaleXYs xy xyss)
-
-qcLine :: forall (f :: * -> *) (r :: * -> *) b. (Renderable (Path V2 Double) b, R2 r, Traversable f) => V2 (Extrema Double) -> [f (r Double)] -> QDiagram b V2 Double Any
-qcLine xy xyss = mconcat $ zipWith line1 (zipWith LineConfig [0.01,0.02,0.03] (opacs 0.5 palette1)) (scaleXYs xy xyss)
-
-exqcs = [exsc, exl, exb, exaxis]
-
+-- | scale helpers
 scaleXYs :: forall (f :: * -> *) (f1 :: * -> *) (t :: * -> *) a. (R2 t, BoundedField a, Traversable f1, Traversable f, Ord a, Fractional a) => V2 (Extrema a) -> f (f1 (t a)) -> f (f1 (t a))
 scaleXYs xy qss = rescaleXY xy xy' <$> qss
   where
@@ -216,32 +197,6 @@ scaleXYs xy qss = rescaleXY xy xy' <$> qss
 rescaleXY :: forall (f :: * -> *) (t :: * -> *) a. (R2 t, Field a, Functor f, Fractional a) => V2 (Extrema a) -> V2 (Extrema a) -> f (t a) -> f (t a)
 rescaleXY (V2 rx ry) (V2 rx' ry') qs =
     (over _x (rescaleP rx rx') . over _y (rescaleP ry ry')) <$> qs
-
-
--- t <- exsc
--- scratch $ (rend $ t) <> (box v1 <> (rend $ exline))
-
-exline :: QC [[V2 Double]]
-exline = QC qcLine (rangeR2s dl) dl
-
--- | render a chart with a certain scale
-rendWith :: XY -> QC [[V2 Double]] -> QDiagram SVG V2 Double Any
-rendWith xy qc = (view qchart qc xy (view qdata qc))
-
-sixby4 :: V2 (Extrema Double)
-sixby4 = V2 ((1.5*) <$> one) one
-
--- | render a square (unital) chart
-rend :: QC [[V2 Double]] -> QDiagram SVG V2 Double Any
-rend qc = (view qchart qc) one (view qdata qc)
-
--- | render a list of charts so that the entire chart has a unit range
-rends :: [QC [[V2 Double]]] -> QDiagram SVG V2 Double Any
-rends qcs = rendsWith qcs (mconcat $ view qxy <$> qcs)
-
--- | render a list of charts using a scale
-rendsWith :: [QC [[V2 Double]]] -> XY -> QDiagram SVG V2 Double Any
-rendsWith qcs xy = mconcat $ (\x -> view qchart x (recip xy `times` view qxy x) (view qdata x)) <$> qcs
 
 -- axis rendering
 axist ::
@@ -278,17 +233,17 @@ axist cfg r tickr = pad (cfg ^. axisPad) $ strut' $ centerXY $
         if this happens, it should really be fed into the chart rendering as a new,
         revised range.
       -}
-      TickRound n -> rescaleP r tickr <$> ticks
-      TickExact n -> rescaleP r tickr <$> ticks
+      TickRound _ -> rescaleP r tickr <$> ticks
+      TickExact _ -> rescaleP r tickr <$> ticks
       TickLabels ls ->
           rescaleP
-          (Extrema (0, (fromIntegral $ length ls)))
+          (Extrema (0, fromIntegral $ length ls))
           r <$>
           ((\x -> x - 0.5) . fromIntegral <$> [1..length ls])
     tickLabels = case cfg ^. axisTickStyle of
       TickNone -> []
-      TickRound n -> tickFormat <$> ticks
-      TickExact n -> tickFormat <$> ticks
+      TickRound _ -> tickFormat <$> ticks
+      TickExact _ -> tickFormat <$> ticks
       TickLabels ls -> ls
     tickFormat = sformat (prec 2)
     axisRect h (Extrema (l,u)) = case cfg ^. axisOrientation of
@@ -307,138 +262,17 @@ axist cfg r tickr = pad (cfg ^. axisPad) $ strut' $ centerXY $
           scaleY (u-l) $
           unitSquare
 
-
-
-exampleCanvasBlank :: Canvas
-exampleCanvasBlank = Canvas mempty (V2 one one)
-
-exampleCanvasBox :: V2 (Extrema Double) -> Canvas
-exampleCanvasBox r = Canvas (box r) r
-
-exampleCanvasBoxUnitized :: V2 (Extrema Double) -> Canvas
-exampleCanvasBoxUnitized r = Canvas unitSquare r
-
 box :: (Field (N t), V t ~ V2, HasOrigin t, Transformable t, TrailLike t) => V2 (Extrema (N t)) -> t
 box (V2 (Extrema (lx,ux)) (Extrema (ly,uy))) = moveOriginTo (p2 ((-lx) - (ux-lx)/2,(-ly) - (uy-ly)/2)) $ scaleX (ux-lx) $ scaleY (uy-ly) unitSquare
 
-unitbox :: (Field (N t), V t ~ V2, HasOrigin t, TrailLike t) => V2 (Extrema (N t)) -> t
-unitbox (V2 (Extrema (lx,ux)) (Extrema (ly,uy))) = moveOriginTo (p2 (x',y')) unitSquare
-  where
-    x' = if lx == ux then 0 else (-lx)/(ux-lx) - 0.5
-    y' = if ly == uy then 0 else (-ly)/(uy-ly) - 0.5
-
-xxx :: QDiagram SVG V2 Double Any
-xxx = view qdd (exampleCanvasHud def (view qdr ch)) <> (box (view qdr ch) <> view qdd ch)
-  where
-    ch = exampleCanvasLines $ fmap r2 <$> [ [(0.0,1.0),(1.0,1.0),(2.0,5.0)], [(0.0,0.0),(3.0,3.0)]]
-
-dl :: [[V2 Double]]
-dl = fmap r2 <$> [ [(0.0,1.0),(1.0,1.0),(2.0,5.0)], [(0.0,0.0),(3.0,3.0)]]
-
-exampleCanvasHud ::
-      ChartConfig
-    -> V2 (Extrema Double)
-    -> Canvas
-exampleCanvasHud (ChartConfig p axes cc) range' = Canvas ch range'
-  where
-    ch = L.fold (L.Fold step begin (pad p)) axes
-    begin = showOrigin $ box range' # fcA (color cc) # lw 1
-    step x cfg = beside dir x (showOrigin $ mo $ axis' cfg r)
-      where
-        r = case view axisOrientation cfg of
-              X -> rx
-              Y -> ry
-        dir = case view axisPlacement cfg of
-          AxisBottom -> r2 (0,-1)
-          AxisTop -> r2 (0,1)
-          AxisLeft -> r2 (-1,0)
-          AxisRight -> r2 (1,0)
-        mo = case view axisOrientation cfg of
-              X -> moveOriginTo (p2 ((-lx)-(ux-lx)/2,0))
-              Y -> moveOriginTo (p2 (0,(-ly)-(uy-ly)/2))
-
-    (V2 rx@(Extrema (lx,ux)) ry@(Extrema (ly,uy))) = range'
-
-exampleEmptyChart :: Chart' a
-exampleEmptyChart =
-    chartHud
-    def
-    (const mempty)
-    (rangeR2 ([]::[V2 Double]))
-    rescaleR2s
-    ([[]] :: [[V2 Double]])
-
-exampleAxes :: Chart' a
-exampleAxes = chartHud def (const mempty) (V2 (Extrema (-1e8,1e8)) (Extrema (-1e-8,1e-8))) rescaleR2s ([[]] :: [[V2 Double]])
-
-exampleGrid :: Chart' a
-exampleGrid = unitScatter def [def] [V2 <$> [0..10] <*> [0..10]]
-
-exampleLine :: Chart' a
-exampleLine = unitLine def
-    (zipWith LineConfig [0.01,0.02,0.03] (opacs 0.5 palette1))
-    (fmap r2 <$>
-      [ [(0.0,1.0),(1.0,1.0),(2.0,5.0)]
-      , [(0.0,0.0),(3.0,3.0)]])
-
-exampleManyLines :: [[Double]] -> Chart' a
-exampleManyLines vs =
-    unitLine def ((LineConfig 0.01 . opac 0.5) <$> palette1) $
-    zipWith V2 (fromIntegral <$> [0..] :: [Double]) <$>
-    ((drop 1 . L.scan L.sum) <$> vs)
-
-exampleDots :: [V2 Double] -> Chart a
-exampleDots = scatter1 def
-
-exampleDotsScaled :: [V2 Double] -> Chart a
-exampleDotsScaled vs = scatter1 def ((\x -> rescaleR2 (rangeR2 x) x) vs)
-
-exampleDotsScaled2 :: [V2 Double] -> Chart' a
-exampleDotsScaled2 vs = unitScatter def [def] $ fmap (scale 1e-8) <$> [vs]
-
-exampleScatter :: [V2 Double] -> Chart' a
-exampleScatter vs = unitScatter def [def] [vs]
-
-exampleScatters :: [[V2 Double]] -> Chart' a
-exampleScatters = unitScatter def $
-    zipWith ScatterConfig [0.02,0.05,0.1] $ opacs 0.1 palette1
-
-exampleHist :: [Double] -> Chart' a
-exampleHist vs = unitRect def [def] [makeHist 50 vs]
-
-exampleHist2 :: [[V2 Double]] -> Chart' a
-exampleHist2 vss = unitRect def
-    [ def
-    , rectBorderColor .~ Color 0 0 0 0
-      $ rectColor .~ Color 0.333 0.333 0.333 0.4
-      $ def
-    ]
-    (fmap (makeHist 50) $ fmap (\(V2 x y) -> x+y) <$> vss)
-
-exampleBar :: Chart' a
-exampleBar =
-  unitRect
-    ( chartAxes .~
-      [ axisTickStyle .~
-        TickLabels labels $ def
-      ]
-      $ def
-    )
-    [def]
-    [zipWith4 V4 [0..10] (replicate 11 0) [0..11] [1,2,3,5,8,0,-2,11]]
-  where
-    labels = fmap Text.pack <$> take 10 $ (:[]) <$> ['a'..]
-
+-- old examples to replicate
 exampleArrows :: Chart' a
 exampleArrows = unitArrow def [def] [arrowData]
 
 exampleArrows2 :: Chart' a
 exampleArrows2 = chartWith'' def (centerXY . mconcat . zipWith arrow1 [def]) (rangeV4s [arrowData]) (\r x -> fmap (rescaleV4 r) <$> x) [arrowData]
 
-scratch :: Chart SVG -> IO ()
-scratch = fileSvg "other/scratchpad.svg" (600,300)
-
--- exampleClipping :: Chart' a
+-- clipping
 exampleClipping :: (Renderable (Path V2 Double) b, R2 r, Traversable f) => f (r Double) -> QDiagram b V2 Double Any
 exampleClipping xys =
     beside (r2 (0,1))
@@ -481,19 +315,18 @@ main = do
 
   scratch (exampleClipping xys)
 
-  fileSvg "other/exampleEmptyChart.svg" s exampleEmptyChart
   fileSvg "other/exampleAxes.svg" s exampleAxes
   fileSvg "other/exampleGrid.svg" s exampleGrid
   fileSvg "other/exampleLine.svg" s exampleLine
-  fileSvg "other/exampleManyLines.svg" s (exampleManyLines xss)
-  fileSvg "other/exampleDots.svg" s (exampleDots xys)
-  fileSvg "other/exampleDotsScaled.svg" s (exampleDotsScaled xys)
-  fileSvg "other/exampleDotsScaled2.svg" s (exampleDotsScaled2 xys)
-  fileSvg "other/exampleScatter.svg" s (exampleScatter xys)
-  fileSvg "other/exampleScatters.svg" s (exampleScatters [xys,xys'])
-  fileSvg "other/exampleHist.svg" s (exampleHist xs)
-  fileSvg "other/exampleHist2.svg" s (exampleHist2 [xys,xys'])
-  fileSvg "other/exampleBar.svg" s exampleBar
+  -- fileSvg "other/exampleManyLines.svg" s (exampleManyLines xss)
+  -- fileSvg "other/exampleDots.svg" s (exampleDots xys)
+  -- fileSvg "other/exampleDotsScaled.svg" s (exampleDotsScaled xys)
+  -- fileSvg "other/exampleDotsScaled2.svg" s (exampleDotsScaled2 xys)
+  -- fileSvg "other/exampleScatter.svg" s (exampleScatter xys)
+  -- fileSvg "other/exampleScatters.svg" s (exampleScatters [xys,xys'])
+  -- fileSvg "other/exampleHist.svg" s (exampleHist xs)
+  -- fileSvg "other/exampleHist2.svg" s (exampleHist2 [xys,xys'])
+  -- fileSvg "other/exampleBar.svg" s exampleBar
   fileSvg "other/exampleArrows.svg" s exampleArrows
   fileSvg "other/exampleArrows2.svg" s exampleArrows2
 

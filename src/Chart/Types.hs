@@ -10,6 +10,7 @@ import Diagrams.Prelude hiding (Color(..))
 import qualified Diagrams.TwoD.Text
 import Diagrams.Backend.SVG (SVG)
 import Chart.Range
+import Linear.V4
 
 type Chart b =
     ( Renderable (Path V2 Double) b
@@ -29,6 +30,13 @@ makeLenses ''Canvas
 data QC a = QC { _qchart :: XY -> a -> QDiagram SVG V2 Double Any, _qxy :: XY, _qdata :: a}
 
 makeLenses ''QC
+
+data ValidData = VD1 [[V2 Double]] | VD2 [V2 Double] | VD4 [[V4 Double]]
+
+data QCom a = QCom { _qcomChart :: ((Renderable (Diagrams.TwoD.Text.Text Double) a)
+, Renderable (Path V2 Double) a) => XY -> ValidData -> QDiagram a V2 Double Any, _qcomXY :: XY, _qcomData :: ValidData}
+
+makeLenses ''QCom
 
 data Orientation = X | Y
 
@@ -112,7 +120,7 @@ makeLenses ''AxisConfig
 data ChartConfig = ChartConfig
   { _chartPad :: Double
   , _chartAxes :: [AxisConfig]
-  , _chartAspect :: XY
+  -- , _chartAspect :: XY
   , _chartCanvasColor :: Color
   }
 
@@ -126,7 +134,7 @@ instance Default ChartConfig where
      axisOrientation .~ Y $
      axisPlacement .~ AxisLeft $
      def]
-    one
+    -- one
     (Color 0 0 0 0.02)
 
 
