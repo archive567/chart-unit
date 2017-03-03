@@ -1,7 +1,7 @@
 name:
   chart-unit
 version:
-  0.1.0.0
+  0.2.0
 synopsis:
   A set of native haskell charts.
 description:
@@ -49,7 +49,6 @@ library
     formatting,
     lens,
     linear,
-    primitive,
     protolude,
     text,
     tower
@@ -104,25 +103,85 @@ executable chart-unit-examples
   build-depends:
     base >= 4.7 && < 5,
     chart-unit,
+    protolude,
     containers,
     diagrams,
     diagrams-core,
     diagrams-lib,
-    diagrams-rasterific,
     diagrams-svg,
+    linear,
     foldl,
     lens,
-    linear,
+    text,
+    tower,
+    formatting,
+
+    -- for data examples
     mwc-random,
     mwc-probability,
     primitive,
-    protolude,
-    text,
     ad,
     ListLike,
-    reflection,
-    tower,
-    formatting
+    reflection
+
+    -- diagrams-rasterific
+
+
+  default-extensions:
+    NoImplicitPrelude,
+    UnicodeSyntax,
+    BangPatterns,
+    BinaryLiterals,
+    DeriveFoldable,
+    DeriveFunctor,
+    DeriveGeneric,
+    DeriveTraversable,
+    DisambiguateRecordFields,
+    EmptyCase,
+    FlexibleContexts,
+    FlexibleInstances,
+    FunctionalDependencies,
+    GADTSyntax,
+    InstanceSigs,
+    KindSignatures,
+    LambdaCase,
+    MonadComprehensions,
+    MultiParamTypeClasses,
+    MultiWayIf,
+    NegativeLiterals,
+    OverloadedStrings,
+    ParallelListComp,
+    PartialTypeSignatures,
+    PatternSynonyms,
+    RankNTypes,
+    RecordWildCards,
+    RecursiveDo,
+    ScopedTypeVariables,
+    TupleSections,
+    TypeFamilies,
+    TypeOperators
+
+test-suite test
+  default-language:
+    Haskell2010
+  type:
+    exitcode-stdio-1.0
+  hs-source-dirs:
+    test
+  main-is:
+    test.hs
+  build-depends:
+    base >= 4.7 && < 5,
+    HUnit,
+    QuickCheck,
+    chart-unit,
+    protolude,
+    smallcheck,
+    tasty,
+    tasty-hunit,
+    tasty-quickcheck,
+    tasty-smallcheck,
+    tower
 
   default-extensions:
     NoImplicitPrelude,

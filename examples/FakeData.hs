@@ -20,7 +20,7 @@ import qualified Data.Map.Strict as Map
 import Control.Monad.Primitive (PrimState)
 import qualified Control.Foldl as L
 import Data.List
-import Chart.Unit
+-- import Chart.Unit
 -- import Chart.Types
 import Chart.Range
 import Diagrams.Prelude hiding ((<>), unit, Additive)
@@ -46,24 +46,24 @@ rvsCorr gen n c = do
 makeHist :: Int -> [Double] -> [V4 Double]
 makeHist n xs = zipWith4 V4 (init cuts) (replicate (length xs+1) 0) (drop 1 cuts) (fromIntegral <$> histList)
   where
-    r = Chart.Range.range xs
-    cuts = mkTicksExact r n
+    r = range xs
+    cuts = ticksExact r n
     count = L.Fold (\x a -> Map.insertWith (+) a (1::Integer) x) Map.empty identity
     countBool = L.Fold (\x a -> x + if a then 1 else 0) 0 identity
     histMap = L.fold count $ (\x -> L.fold countBool (fmap (x >) cuts)) <$> xs
     histList = (\x -> Map.findWithDefault 0 x histMap) <$> [0..length xs]
-    
+
 arrowData :: [V4 Double]
 arrowData = zipWith (\(V2 x y) (V2 z w) -> V4 x y z w) pos dir'
   where
-    pos = locs (Extrema (-1, 1)) (Extrema (-1, 1)) 20
+    pos = locs (-1 ... 1) (-1 ... 1) 20
     dir' = gradF rosenbrock 0.01 <$> pos
     
-locs :: Extrema Double -> Extrema Double -> Double -> [V2 Double]
+locs :: Range Double -> Range Double -> Double -> [V2 Double]
 locs rx ry steps = [V2 x y | x <- grid rx steps, y <- grid ry steps]
 
-grid :: forall b. (Field b, Fractional b, Enum b) => Extrema b -> b -> [b]
-grid (Extrema (x,x')) steps = (\a -> x + (x'-x)/steps * a) <$> [0..steps]
+grid :: forall b. (Field b, Fractional b, Enum b) => Range b -> b -> [b]
+grid (Range (x,x')) steps = (\a -> x + (x'-x)/steps * a) <$> [0..steps]
 
 gradF ::
     (forall s. (Reifies s Tape) => [Reverse s Double] -> Reverse s Double) ->

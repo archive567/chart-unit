@@ -4,144 +4,132 @@
 </script>
 <h1 id="chart-unit-build-status"><a href="https://tonyday567.github.io/chart-unit">chart-unit</a> <a href="https://travis-ci.org/tonyday567/chart-unit"><img src="https://travis-ci.org/tonyday567/chart-unit.png" alt="Build Status" /></a></h1>
 <p><a href="https://tonyday567.github.com/chart-unit">repo</a></p>
-<p>latest development:</p>
-<p>Working out how to safely clip a chart.</p>
-<div class="figure">
-<img src="other/scratchpad.svg" />
-
-</div>
+<p><code>chart-unit</code> is an experimental haskell chart library.</p>
+<p>scratchpad</p>
+<p><img style="border:5px solid grey" src="other/scratchpad.svg"></p>
 <h2 id="unital-charting">unital charting</h2>
 <p>This slowly growing collection of charts:</p>
 <ul class="incremental">
-<li>renders nicely in svg over a wide chart size. png is not so good.</li>
-<li>renders similarly at different scale</li>
-<li>are opinionated minimalism</li>
-<li>are unit shapes in the spirit of the <a href="http://projects.haskell.org/diagrams/doc/quickstart.html">diagrams</a> design space, making combining a snap.</li>
+<li>renders nicely in svg over a wide chart size.</li>
+<li>retain a similar look-n-feel across different scales</li>
+<li>are highly customizable</li>
+<li>have a unit scale in the spirit of the <a href="http://projects.haskell.org/diagrams/doc/quickstart.html">diagrams</a> design space, making combining a snap.</li>
 <li>can be quickly integrated into ad-hoc haskell data analytics, providing a visual feedback loop.</li>
 </ul>
-<h1 id="charts---svg">charts - svg</h1>
-<p>Scatter</p>
-<div class="figure">
-<img src="other/exampleScatter.svg" />
-
-</div>
-<p>Scatters</p>
-<div class="figure">
-<img src="other/exampleScatter2.svg" />
-
-</div>
-<p>Histogram</p>
-<div class="figure">
-<img src="other/exampleHist.svg" />
-
-</div>
-<p>Histograms</p>
-<div class="figure">
-<img src="other/exampleHist2.svg" />
-
-</div>
-<p>Line</p>
-<div class="figure">
-<img src="other/exampleLine.svg" />
-
-</div>
-<p>Lines</p>
-<div class="figure">
-<img src="other/exampleManyLines.svg" />
-
-</div>
-<p>Labelled Bar Chart</p>
-<div class="figure">
-<img src="other/exampleBar.svg" />
-
-</div>
-<p>Arrows Chart</p>
-<div class="figure">
-<img src="other/exampleArrows.svg" />
-
-</div>
-<div class="figure">
-<img src="other/exampleArrows2.svg" />
-
-</div>
-<h2 id="api-notes">api notes</h2>
-<p>Most of the api can be seen in the chartWith sig:</p>
-<div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell"><span class="ot">    chartWith ::</span> (<span class="dt">Traversable</span> f, <span class="dt">Traversable</span> g, <span class="dt">R2</span> r) <span class="ot">=&gt;</span> 
-        <span class="dt">ChartConfig</span>
-        <span class="ot">-&gt;</span> (g (f (r <span class="dt">Double</span>)) <span class="ot">-&gt;</span> <span class="dt">Chart</span> b) <span class="co">-- double-containered R? chart renderer</span>
-        <span class="ot">-&gt;</span> <span class="dt">V2</span> (<span class="dt">Range</span> <span class="dt">Double</span>)             <span class="co">-- render range</span>
-        <span class="ot">-&gt;</span> (<span class="dt">V2</span> (<span class="dt">Range</span> <span class="dt">Double</span>) <span class="ot">-&gt;</span> g (f (r <span class="dt">Double</span>)) <span class="ot">-&gt;</span> g (f (r <span class="dt">Double</span>))) <span class="co">-- scaler</span>
-        <span class="ot">-&gt;</span> g (f (r <span class="dt">Double</span>)) <span class="co">-- data</span>
-        <span class="ot">-&gt;</span> <span class="dt">Chart</span> b
-    chartWith (<span class="dt">ChartConfig</span> p axes) renderer range&#39; scaler ms <span class="fu">=</span></code></pre></div>
-<h2 id="data">data</h2>
-<p>Double-containered dimensioned data covers what a chart charts - one or more data sets with at least an x and y dimension (called R2 in the linear library).</p>
-<p>Most chart variations are about what to do with the extra dimensions in the data. A rectangle, for example, is built from 4 dimensions, an anchoring of position in XY space, with a width (W) and height (Z). A contour map is three dimensional data (V3 in linear), with placement as XY and color as Z.</p>
-<h2 id="ranging">ranging</h2>
-<p>A range represents boundaries of a space. Diagrams often uses unit to refer to a <code>V2 (Range (-0.5,0.5)) (Range (-0.5,0.5))</code>.</p>
-<h2 id="scaling">scaling</h2>
-<p>A scaler converts data to other ranges, and helps get everything on the same page (literally).</p>
-<h2 id="scale-robustness">Scale Robustness</h2>
-<p>Starting with the lowest level scatter chart (see examples/examples.hs for complete code):</p>
-<pre><code>scatter1 def (xys 1000 0.7)</code></pre>
-<div class="figure">
-<img src="other/exampleDots.svg" />
-
-</div>
-<p>The size of the dots scale with the data, so to bring it back, we run the data through a scaling routine, which normalises the data according to the diagrams unit, which is <code>V2 (-0.5,0.5) (-0.5,0.5)</code>:</p>
-<pre><code>scatter1 def $ ((\x -&gt; scaleR2 (rangeR2 x) x) &lt;$&gt; (xys 1000 0.7))</code></pre>
-<div class="figure">
-<img src="other/exampleDotsScaled.svg" />
-
-</div>
-<p>This scaling ensures that configuration paramters such as dot size, and axis look-n-feel is invariant to data scale. Hiding the scaling and axes creation in a more general function:</p>
-<pre><code>scatter def [def] [xys 1000 0.7]</code></pre>
-<div class="figure">
-<img src="other/exampleScatter.svg" />
-
-</div>
-<p>The chart is then robust to a wide range of magnitudes:</p>
-<pre><code>scatter def [def] $ fmap (1e-8 *) &lt;$&gt; [xys 1000 0.7]</code></pre>
-<div class="figure">
-<img src="other/exampleDotsScaled2.svg" />
-
-</div>
-<h2 id="separation-of-chart-and-hud">Separation of Chart and HUD</h2>
-<p>It's useful to separate a chart into two distinct bits:</p>
-<ul class="incremental">
-<li><p>the Chart. A concrete manifestation of data on the XY plane, with extra dimensions as aethestics (color, size, time, 1D or 3D projections into 2D)</p></li>
-<li><p>the HUD. A Heads-Up-Display aka decoration around the chart designed to help users interpret and navigate the data representation.</p></li>
-</ul>
-<p>The code below, for example, draws an X and Y axis without any data:</p>
-<pre><code>chartHud def (const mempty) (V2 (Range (-1e8,1e8)) (Range (-1e-8,1e-8))) rescaleR2s ([[]] :: [[V2 Double]])</code></pre>
+<h1 id="charts">charts</h1>
+<p>A chart can be anything that is represented on an XY plane, and usually comes with visual clues about what is being represented, such as axes, titles and legends. Here's the default blank chart:</p>
 <div class="figure">
 <img src="other/exampleAxes.svg" />
 
 </div>
-<p>HUDs can be built with chart routines. Here's a grid overlay that can be attached to any unit chart. Note how the axis ticks line up exactly with middle of the dots. I now think of the axes as a small subset of possible HUDs to help users interpret data.</p>
-<pre><code>unitScatter def [def] [V2 &lt;$&gt; [0..10] &lt;*&gt; [0..10]]</code></pre>
+<pre><code>axes def sixbyfour [toCorners (one::XY)]</code></pre>
+<p><code>sixbyfour</code> is a value of type XY, and represents the rectangle that the chart will be rendered with. As with any SVG element, the ultimate product is still subject to sizing on use, so think of <code>sixbyfour</code> as a relative aspect ratio rather than a concrete size.</p>
+<p>Note that there are two independent scales used:</p>
+<ul class="incremental">
+<li>the aspect ratio of the chart, and</li>
+<li>the axes scales, <code>[toCorners (one::XY)]</code> which computes to -0.5 to 0.5 for both the X and Y axes in the above chart</li>
+</ul>
+<h2 id="customization">customization</h2>
+<p>Axes and most other things are highly customizable. Here's an approximation of ggplot axes and canvas style:</p>
 <div class="figure">
-<img src="other/exampleGrid.svg" />
+<img src="other/exampleGgplot.svg" />
 
 </div>
-<h2 id="diagrams-development-recipe">diagrams development recipe</h2>
-<p>In constructing new chart units, I keep this list around:</p>
+<h2 id="line-chart">line chart</h2>
+<p>Some actual, real-life lines to be plotted:</p>
+<div class="figure">
+<img src="other/exampleLine.svg" />
+
+</div>
+<pre><code>line lineDefs sixbyfour lineData</code></pre>
+<p>Breaking the code down:</p>
 <ul class="incremental">
-<li>diagrams go from abstract to concrete</li>
-<li>start with the unitSquare: 4 points, 1x1, origin in the center</li>
-<li>work out where the origin should be, given the scaling needed.</li>
-<li>turn the pointful shape into a Trail</li>
+<li><code>line</code> is a typical chart renderer, taking a</li>
+<li><code>[LineConfig]</code>, which is a list of configurations for each line, an</li>
+<li><code>XY</code>, which is the aspect ratio to render the chart, and, finally</li>
+<li>the data, a <code>(Traversable g, Traversable f, R2~r) =&gt; g (f (r a))</code>, or in this case, a <code>[[V2 Double]]</code>, which is a double container of the values to chart</li>
+</ul>
+<p>Adding axes:</p>
+<div class="figure">
+<img src="other/exampleLineAxes.svg" />
+
+</div>
+<pre><code>line lineDefs sixbyfour lineData &lt;&gt; axes def sixbyfour lineData</code></pre>
+<h2 id="scatter">scatter</h2>
+<p>Other default chart types follow this same pattern:</p>
+<div class="figure">
+<img src="other/exampleScatter.svg" />
+
+</div>
+<pre><code>scatter defs one xys &lt;&gt; axes def one xys</code></pre>
+<p>As with <code>line</code>, <code>scatter</code> zips together multiple configurations and multiple containers of data. It's often much easier to construct charts assuming multiple data sets.</p>
+<p>A major point of the chart-unit library is that the look-n-feel of a chart is invariant to the data scale.</p>
+<div class="figure">
+<img src="other/exampleScatter2.svg" />
+
+</div>
+<pre><code>let xys1 = fmap (over _x (*1e8) . over _y (*1e-8)) &lt;$&gt; xys in
+scatter defs one xys1 &lt;&gt; axes def one xys1</code></pre>
+<h2 id="histogram">histogram</h2>
+<p>A histogram, in widescreen</p>
+<div class="figure">
+<img src="other/exampleHist.svg" />
+
+</div>
+<pre><code>hist
+    [ def
+    , rectBorderColor .~ Color 0 0 0 0
+      $ rectColor .~ Color 0.333 0.333 0.333 0.4
+      $ def
+    ]
+    wideScreen
+    xys</code></pre>
+<p>A labelled bar chart:</p>
+<div class="figure">
+<img src="other/exampleLabelledBar.svg" />
+
+</div>
+<h2 id="compound-charts">Compound charts</h2>
+<p><code>chart-unit</code> is a fairly thin wrapper over diagrams that establishes the basics of what a chart is, and provides some sane defaults. From this starting point, production of high-quality charting is easy and pleasant. Two examples:</p>
+<p>A scatter chart with histograms of the data along the x &amp; y dimensions.</p>
+<div class="figure">
+<img src="other/exampleScatterHist.svg" />
+
+</div>
+<p>A unital gradient chart, using diagrams arrows:</p>
+<div class="figure">
+<img src="other/exampleArrow.svg" />
+
+</div>
+<p>The <code>QChart</code> type exists to enable combining different types of charts using the same scale.</p>
+<div class="figure">
+<img src="other/exampleCompound.svg" />
+
+</div>
+<p>Clipping charts</p>
+<div class="figure">
+<img src="other/exampleClipping.svg" />
+
+</div>
+<h2 id="data">data</h2>
+<p>Double-containered dimensioned data covers what a chart charts - one or more data sets with at least an x and y dimension (called R2 in the linear library).</p>
+<p>Most chart variations are about what to do with the extra dimensions in the data. A rectangle, for example, is built from 4 dimensions, an anchoring of position in XY space, with a width (W) and height (Z). A contour map is three dimensional data (V3 in linear), with placement as XY and color as Z.</p>
+<h2 id="diagrams-development-recipe">diagrams development recipe</h2>
+<p>In constructing new chart units:</p>
+<ul class="incremental">
+<li>diagrams go from polymorphic &amp; abstract to strongly-typed &amp; concrete</li>
+<li>V2 (-0.5 ... 0.5) (-0.5 ... 0.5) forms a unitSquare: one unit by one unit, origin in the center</li>
+<li>regularly check where the origin is, usually not where it needs to be.</li>
+<li>turn pointful shapes into a Trail</li>
 <li>close the Trail into a SVG-like loop</li>
-<li>turn the Trail into a QDiagram</li>
+<li>turn the closed Trail into a QDiagram</li>
 </ul>
 <p>You can slide up and down the various diagrams abstraction levels creating transformations at each level. For example, here's something I use to work at the point level:</p>
 <pre><code>unitp f = unitSquare # f # fromVertices # closeTrail # strokeTrail</code></pre>
 <h2 id="workflow">workflow</h2>
+<p>recipe 1</p>
 <div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell"><span class="ot">scratch ::</span> <span class="dt">Chart</span> <span class="dt">SVG</span> <span class="ot">-&gt;</span> <span class="dt">IO</span> ()
-scratch <span class="fu">=</span> fileSvg <span class="st">&quot;other/scratchpad.svg&quot;</span> (<span class="dv">400</span>,<span class="dv">400</span>)</code></pre></div>
-<p>I tend to work in ghci a lot, using scratch to try code out, and mashing the refresh button in the browser.</p>
-<p>As new charts emerge I then includ ethem in examples and integrate them with readme.md:</p>
-<pre><code>stack install &amp;&amp; chart-unit-examples &amp;&amp; pandoc -f markdown -t html -i readme.md -o index.html --mathjax --filter pandoc-include</code></pre>
-<h2 id="rasterific-space-leak">rasterific space leak</h2>
-<p>Until I can work out a space leak, I'm letting png slide.</p>
-<p>-- import Diagrams.Backend.Rasterific (Rasterific) -- scratchPng :: Chart Rasterific -&gt; IO () -- scratchPng = filePng &quot;other/scratchpad.png&quot; (400,400) -- filePng &quot;other/bar.png&quot; s exampleBar</p>
+scratch <span class="fu">=</span> fileSvg <span class="st">&quot;other/scratchpad.svg&quot;</span> (<span class="dv">600</span>,<span class="dv">400</span>)</code></pre></div>
+<p>I tend to work in ghci a lot, using the above <code>scratch</code> to try code out, mashing the refresh button in the browser.</p>
+<p>recipe 2</p>
+<pre><code>stack build --copy-bins --exec  &quot;chart-unit-examples&quot; --exec &quot;pandoc -f markdown -t html -i readme.md -o index.html --mathjax --filter pandoc-include&quot; --file-watch</code></pre>

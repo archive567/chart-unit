@@ -1,3 +1,4 @@
+{-# LANGUAGE GADTs #-}
 {-# OPTIONS_GHC -Wall #-}
 {-# OPTIONS_GHC -fno-warn-type-defaults #-}
 {-# LANGUAGE TemplateHaskell #-}
@@ -8,35 +9,39 @@ import Tower.Prelude
 import Data.List ((!!))
 import Diagrams.Prelude hiding (Color(..))
 import qualified Diagrams.TwoD.Text
-import Diagrams.Backend.SVG (SVG)
 import Chart.Range
-import Linear.V4
 
-type Chart b =
-    ( Renderable (Path V2 Double) b
+-- | a Chart has a concrete scale, and combinatory options amount to mappend (on top of) and beside
+type Chart a =
+    ( Renderable (Path V2 Double) a
     ) =>
-    QDiagram b V2 Double Any
+    QDiagram a V2 Double Any
 
-type Chart' b =
-    ( Renderable (Path V2 Double) b
-    , Renderable (Diagrams.TwoD.Text.Text Double) b
+-- | an alternative synonym where text is involved.
+type Chart' a =
+    ( Renderable (Path V2 Double) a
+    , Renderable (Diagrams.TwoD.Text.Text Double) a
     ) =>
+    QDiagram a V2 Double Any
+
+-- | The concrete nature of a QDiagram, and a desire to scale data and hud items naturally, a QChart is mostly a late binding of the XY plane (or aspect ratio) that the chart is to be projected on to and the data.
+data QChart a = forall b. QChart
+    { _qChart :: ( ( Renderable (Diagrams.TwoD.Text.Text Double) a)
+                  , Renderable (Path V2 Double) a) =>
+                XY -> b -> QDiagram a V2 Double Any
+    , _qXY :: XY
+    , _qData :: b
+    }
+
+makeLenses ''QChart
+
+-- | chart rendering polymorphic to backend and configurator
+type Renderer b c =
+    forall f r. (Renderable (Path V2 Double) b, R2 r, Traversable f) =>
+    [c] ->
+    XY ->
+    [f (r Double)] ->
     QDiagram b V2 Double Any
-
-data Canvas = Canvas { _qdd :: QDiagram SVG V2 Double Any, _qdr :: XY}
-
-makeLenses ''Canvas
-
-data QC a = QC { _qchart :: XY -> a -> QDiagram SVG V2 Double Any, _qxy :: XY, _qdata :: a}
-
-makeLenses ''QC
-
-data ValidData = VD1 [[V2 Double]] | VD2 [V2 Double] | VD4 [[V4 Double]]
-
-data QCom a = QCom { _qcomChart :: ((Renderable (Diagrams.TwoD.Text.Text Double) a)
-, Renderable (Path V2 Double) a) => XY -> ValidData -> QDiagram a V2 Double Any, _qcomXY :: XY, _qcomData :: ValidData}
-
-makeLenses ''QCom
 
 data Orientation = X | Y
 
@@ -104,10 +109,10 @@ instance Default AxisConfig where
     X
     AxisBottom
     0.02
-    colorAxis1
+    (Color 0.333 0.333 0.333 0.2)
     0.02
     colorAxis2
-    0.3
+    0.05
     0.02
     0.04
     colorAxis3
@@ -135,7 +140,7 @@ instance Default ChartConfig where
      axisPlacement .~ AxisLeft $
      def]
     -- one
-    (Color 0 0 0 0.02)
+    (Color 1 1 1 0.02)
 
 
 makeLenses ''ChartConfig
@@ -193,7 +198,7 @@ data ArrowConfig a = ArrowConfig
   }
 
 instance Default (ArrowConfig Double) where
-  def = ArrowConfig 0.01 0.05 0.03 0.1 1 1 0.01 0.005 0.2 (Color 0.333 0.333 0.888 0.8)
+  def = ArrowConfig 0.01 0.05 0.03 0.1 0.1 0.1 0.01 0.005 0.2 (Color 0.333 0.333 0.888 0.8)
 
 makeLenses ''ArrowConfig
 
