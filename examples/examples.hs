@@ -1,37 +1,35 @@
 {-# OPTIONS_GHC -Wall #-}
 {-# OPTIONS_GHC -Wno-type-defaults #-}
 
-import Chart.Range
-import Chart.Types
-import Chart.Unit
+import Chart
+import Tower.Prelude
 
 import FakeData
 
 import qualified Control.Foldl as L
-import Data.List ((!!), zipWith4)
+import Data.List ((!!))
 import Data.Text (pack)
-import Diagrams.Backend.SVG (SVG)
-import Diagrams.Prelude hiding ((<>), arrow)
-import Linear (V4(..))
 import System.Random.MWC (create)
-import Tower.Prelude hiding ((&))
 
 scratch :: Chart SVG -> IO ()
 scratch = fileSvg "other/scratchpad.svg" (600,400)
 
 exampleBox :: Chart a
-exampleBox = box sixbyfour
+exampleBox = box one
 
 exampleAxes :: Chart' a
-exampleAxes = axes def sixbyfour [toCorners (one::XY)]
+exampleAxes = axes def
+
+exampleEmpty :: Chart' a
+exampleEmpty =
+    withChart def (\_ _ -> mempty) [toCorners one]
 
 exampleGrid :: Chart a
 exampleGrid =
-    scatter
-    [ScatterConfig 0.01 (palette1!!4)]
+    scatters
+    [ScatterConfig 0.01 (palette!!4)]
     sixbyfour
     [V2 <$> [0..10] <*> [0..10]]
-
 
 lineDefs :: [LineConfig]
 lineDefs =
@@ -49,20 +47,27 @@ lineData =
     ]
 
 exampleLine :: Chart a
-exampleLine = line lineDefs sixbyfour lineData
+exampleLine = lines lineDefs sixbyfour lineData
 
 exampleLineAxes :: Chart' a
-exampleLineAxes = line lineDefs sixbyfour lineData <> axes def sixbyfour lineData
+exampleLineAxes =
+    lines lineDefs sixbyfour lineData <>
+    axes (chartRange .~ Just (rangeR2s lineData) $ def)
+
+exampleLineAxes2 :: Chart' a
+exampleLineAxes2 =
+    withChart def (lines lineDefs) lineData
 
 scatterDefs :: [ScatterConfig]
-scatterDefs = zipWith ScatterConfig [0.01,0.02,0.03] (opacs 0.5 palette1)
+scatterDefs = zipWith ScatterConfig [0.01,0.02,0.03] (opacs 0.5 palette)
 
 exampleScatter :: [[V2 Double]] -> Chart' a
-exampleScatter xys = scatter scatterDefs one xys <> axes def one xys
+exampleScatter xys =
+    withChart (chartAspect .~ asquare $ def) (scatters scatterDefs) xys
 
 exampleScatter2 :: [[V2 Double]] -> Chart' a
 exampleScatter2 xys =
-    scatter scatterDefs one xys1 <> axes def one xys1
+    withChart (chartAspect .~ asquare $ def) (scatters scatterDefs) xys1
   where
     xys1 = fmap (over _x (*1e8) . over _y (*1e-8)) <$> xys
 
@@ -82,9 +87,14 @@ histDefs =
       $ def
     ]
 
+-- | withCharts doesn't work with a V4 where w and z effect the XY plane range
 exampleHist :: [[V4 Double]] -> Chart' a
 exampleHist xys =
-    withAxes def (rangeRects xys) (hist histDefs) wideScreen xys
+    hists histDefs widescreen xys <>
+    axes 
+    ( chartRange .~ Just (rangeRects xys)
+    $ chartAspect .~ widescreen
+    $ def)
 
 mkHistData :: IO [[V4 Double]]
 mkHistData = do
@@ -94,28 +104,32 @@ mkHistData = do
     pure $ makeHist 30 <$> [xys,(1.5*) <$> xys1]
 
 exampleLabelledBar :: Chart' a
-exampleLabelledBar = hist
+exampleLabelledBar =
+    hists
     [ def
     , rectBorderColor .~ Color 0 0 0 0
-      $ rectColor .~ Color 0.333 0.333 0.333 0.4
-      $ def
-    ]
+       $ rectColor .~ Color 0.333 0.333 0.333 0.4
+       $ def
+     ]
     sixbyfour
-    xys <> axes
+    xys <>
+    axes
     ( chartAxes .~
       [ axisTickStyle .~
         TickLabels labels $ def
       ]
+      $ chartAspect .~ sixbyfour
+      $ chartRange .~ Just (rangeRects xys)
       $ def
-    ) sixbyfour [toCorners (rangeRects xys)]
+    )
   where
     labels = fmap pack <$> take 10 $ (:[]) <$> ['a'..]
     xys = [zipWith4 V4 [0..10] (replicate 11 0) [1..11] [1,2,3,5,8,0,-2,11,2,1]]
 
 exampleArrow :: [[V4 Double]] -> Chart' a
 exampleArrow xs =
-    arrow [def] (V4 one one one one) xs <>
-    axes def one [toCorners (rangeR2s xs)]
+    arrows [def] (V4 one one one one) xs <>
+    axes (chartRange .~ Just (rangeR2s xs) $ chartAspect .~ asquare $ def)
 
 -- clipping
 exampleClipping :: Chart a
@@ -130,18 +144,23 @@ exampleClipping =
     qs = fromIntegral <$> [0..4] :: [Double]
     qb = (\x -> (-0.5 + x*0.2) ... (-0.5 + (x+1.0)*0.2)) <$> qs
     clip ch1 sq = clipped (pathFromLocTrail $ box sq) ch1
-    ch = line lineDefs one lineData
-
+    ch = lines lineDefs asquare lineData
+ 
 -- compound charts
 exampleCompound :: IO [QChart a]
 exampleCompound = do
     xys <- mkScatterData
-    let qsc = QChart (scatter scatterDefs) (rangeR2s xys) xys
-    let xy = rangeR2s $ lineData <> xys
-    pure [qsc, qaxes xy, qline]
+    let qsc = QChart (scatters scatterDefs) (rangeR2s xys) xys
+    let xy0 = rangeR2s $ lineData <> xys
+    pure [qsc, qaxes xy0, qline]
   where
-      qline = QChart (line lineDefs) (rangeR2s lineData) lineData
-      qaxes xy = QChart (axes def) xy [toCorners xy]
+      qline = QChart (lines lineDefs) (rangeR2s lineData) lineData
+      qaxes xy =
+          QChart
+          (\a _ -> axes
+            ( chartRange .~ Just xy
+            $ chartAspect .~ a
+            $ def)) xy () 
 
 exampleScatterHist :: [[V2 Double]] -> Chart' a
 exampleScatterHist xys =
@@ -151,16 +170,16 @@ exampleScatterHist xys =
     (reflectY histx))
     (reflectY $ rotateBy (3/4) histy)
   where
-    sc1 = scatter [scatterColor .~ Color 0.365 0.647 0.855 0.1 $ def, def] one xys
-    histx = hist defHist xyHist hx
-    histy = hist defHist xyHist hy
+    sc1 = scatters [scatterColor .~ Color 0.365 0.647 0.855 0.1 $ def, def] asquare xys
+    histx = hists defHist xyHist hx
+    histy = hists defHist xyHist hy
     defHist =
         [ def
         , rectBorderColor .~ Color 0 0 0 0
           $ rectColor .~ Color 0.333 0.333 0.333 0.4
           $ def
         ]
-    xyHist = V2 one ((*0.2) <$> one)
+    xyHist = Aspect $ V2 one ((*0.2) <$> one)
     hx = makeHist 50 . fmap (view _x) <$> xys
     hy = makeHist 50 . fmap (view _y) <$> xys
     axes2 =
@@ -178,20 +197,39 @@ exampleScatterHist xys =
           def]
     axes1 =
         axes
-        (ChartConfig 1 axes2 (Color 0.5 0.5 1 0.04))
-        one
-        [toCorners (rangeR2s xys)]
+        (ChartConfig 1 axes2 (Just $ rangeR2s xys) asquare (Color 0.5 0.5 1 0.04))
 
 exampleGgplot :: Chart' a
 exampleGgplot =
-    line (repeat (LineConfig 0.002 (Color 0.98 0.98 0.98 1))) sixbyfour (gridX <> gridY) <>
-    blob (Color 0.92 0.92 0.92 1) (box sixbyfour) <>
-    axes ggdef sixbyfour [toCorners (V2 (0 ... 10) (0 ... 10))]
+    lines (repeat (LineConfig 0.002 (Color 0.98 0.98 0.98 1))) sixbyfour (gridX <> gridY) <>
+    blob (Color 0.92 0.92 0.92 1) (box (V2 ((1.5*) <$> one) one)) <>
+    axes ggdef
   where
     gridX = (\x -> [V2 0 x, V2 10 x]) . fromIntegral <$> [0..10]
     gridY = (\x -> [V2 x 0, V2 x 10]) . fromIntegral <$> [0..10]
-    ggdef = ChartConfig 1.1 [defx] (Color 1 1 1 0)
-    defx = AxisConfig 1.0 X AxisBottom 0 (Color 0 0 0 0.2) 0.018 (Color 0 0 0 1) 0 0.01 0.04 colorAxis3 (TickRound 5) 0.5 1
+    ggdef =
+        ChartConfig
+        1.1
+        [defx]
+        (Just $ V2 (0 ... 10) (0 ... 10))
+        sixbyfour
+        (Color 1 1 1 0)
+    defx =
+        AxisConfig
+        1.0
+        X
+        AxisBottom
+        0
+        (Color 0 0 0 0.2)
+        0.018
+        (Color 0 0 0 1)
+        0
+        0.01
+        0.04
+        (Color 0.2 0.2 0.2 0.7)
+        (TickRound 5)
+        0.5
+        1
 
 main :: IO ()
 main = do
@@ -201,10 +239,12 @@ main = do
 
   fileSvg "other/exampleBox.svg" s6by4 exampleBox
   fileSvg "other/exampleAxes.svg" s6by4 exampleAxes
+  fileSvg "other/exampleEmpty.svg" s6by4 exampleEmpty
   fileSvg "other/exampleGgplot.svg" sWide exampleGgplot
   fileSvg "other/exampleGrid.svg" sOne exampleGrid
   fileSvg "other/exampleLine.svg" s6by4 exampleLine
   fileSvg "other/exampleLineAxes.svg" s6by4 exampleLineAxes
+  fileSvg "other/exampleLineAxes2.svg" s6by4 exampleLineAxes2
   xys <- mkScatterData
   fileSvg "other/exampleScatter.svg" sOne (exampleScatter xys)
   fileSvg "other/exampleScatter2.svg" sOne (exampleScatter2 xys)
@@ -214,7 +254,7 @@ main = do
   fileSvg "other/exampleLabelledBar.svg" s6by4 exampleLabelledBar
   fileSvg "other/exampleArrow.svg" sOne (exampleArrow [arrowData])
   exc <- exampleCompound
-  fileSvg "other/exampleCompound.svg" s6by4 (pad 1.1 $ center $ combine goldenRatio exc)
+  fileSvg "other/exampleCompound.svg" s6by4 (pad 1.1 $ center $ combine golden exc)
   fileSvg "other/exampleClipping.svg" sOne exampleClipping
 
-  scratch $ combine sixbyfour exc
+  scratch $ pad 1.1 $ center $ exampleScatterHist xys

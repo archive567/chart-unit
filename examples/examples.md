@@ -35,20 +35,20 @@ A chart can be anything that is represented on an XY plane, and usually comes wi
 ![](other/exampleAxes.svg)
 
 ~~~
-axes def sixbyfour [toCorners (one::XY)]
+axes (chartAspect .~ sixbyfour $ chartRange .~ Just one $ def)
 ~~~
 
 `sixbyfour` is a value of type XY, and represents the rectangle that the chart will be rendered with.  As with any SVG element, the ultimate product is still subject to sizing on use, so think of `sixbyfour` as a relative aspect ratio rather than a concrete size.
 
-Note that there are two independent scales used:
+XY
+---
 
-- the aspect ratio of the chart, and
-- the axes scales, `[toCorners (one::XY)]` which computes to -0.5 to 0.5 for both the X and Y axes in the above chart
+chartRange is the range which we would like to plot.  chartRange .~ Nothing represents that the range should be whatever the data range is.
 
 customization
 ---
 
-Axes and most other things are highly customizable.  Here's an approximation of ggplot axes and canvas style:
+Axes and most other things are highly customizable.  Here's another style of chart:
 
 ![](other/exampleGgplot.svg)
 
@@ -60,22 +60,33 @@ Some actual, real-life lines to be plotted:
 ![](other/exampleLine.svg)
 
 ~~~
-line lineDefs sixbyfour lineData
+lines lineDefs sixbyfour lineData
 ~~~
 
 Breaking the code down:
 
-- `line` is a typical chart renderer, taking a
+- `lines` is a typical chart renderer, taking a
 - `[LineConfig]`, which is a list of configurations for each line, an
-- `XY`, which is the aspect ratio to render the chart, and, finally
+- `Aspect`, the aspect ratio to render the chart, and, finally
 - the data, a `(Traversable g, Traversable f, R2~r) => g (f (r a))`, or in this case, a `[[V2 Double]]`, which is a double container of the values to chart
 
-Adding axes:
+
+withChart
+---
+
+You don't have to do anything special to combine these lines with axes.
 
 ![](other/exampleLineAxes.svg)
 
 ~~~
-line lineDefs sixbyfour lineData <> axes def sixbyfour lineData
+lines lineDefs sixbyfour lineData <> 
+axes (chartRange .~ Just (rangeR2s lineData) $ def)
+~~~
+
+`withChart` is a convenience function for this common operation, and the code below is equivalent to the above code:
+
+~~~
+withChart def (lines lineDefs) lineData
 ~~~
 
 scatter
@@ -86,7 +97,8 @@ Other default chart types follow this same pattern:
 ![](other/exampleScatter.svg)
 
 ~~~
-scatter defs one xys <> axes def one xys
+xys <- mkScatterData
+withChart (chartAspect .~ asquare $ def) (scatters scatterDefs) xys
 ~~~
 
 As with `line`, `scatter` zips together multiple configurations and multiple containers of data.  It's often much easier to construct charts assuming multiple data sets. 
@@ -97,7 +109,7 @@ A major point of the chart-unit library is that the look-n-feel of a chart is in
 
 ~~~
 let xys1 = fmap (over _x (*1e8) . over _y (*1e-8)) <$> xys in
-scatter defs one xys1 <> axes def one xys1
+withChart (chartAspect .~ asquare $ def) (scatters scatterDefs) xys1
 ~~~
 
 histogram
@@ -106,17 +118,6 @@ histogram
 A histogram, in widescreen
 
 ![](other/exampleHist.svg)
-
-~~~
-hist
-    [ def
-    , rectBorderColor .~ Color 0 0 0 0
-      $ rectColor .~ Color 0.333 0.333 0.333 0.4
-      $ def
-    ]
-    wideScreen
-    xys
-~~~
 
 A labelled bar chart:
 
@@ -186,4 +187,4 @@ I tend to work in ghci a lot, using the above `scratch` to try code out, mashing
 
 recipe 2
 
-    stack build --copy-bins --exec  "chart-unit-examples" --exec "pandoc -f markdown -t html -i readme.md -o index.html --mathjax --filter pandoc-include" --file-watch
+    stack build --copy-bins --exec  "chart-unit-examples" --exec "pandoc -f markdown -t html -i examples/examples.md -o index.html --mathjax --filter pandoc-include" --file-watch

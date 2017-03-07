@@ -1,2 +1,3 @@
 /.stack-work/
 /src/.DS_Store
+/test/*.svg

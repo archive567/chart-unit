@@ -1,7 +1,25 @@
 {-# OPTIONS_GHC -Wall #-}
 {-# OPTIONS_GHC -fno-warn-type-defaults #-}
 
-module Chart.Unit where
+module Chart.Unit
+  ( scaleX
+  , scaleY
+  , blob
+  , line1
+  , scatter1
+  , rect1
+  , arrow1
+  , box
+  , lines
+  , scatters
+  , hists
+  , arrows
+  , withChart
+  , axes
+  , combine
+  , fileSvg
+  , bubble
+  ) where
 
 import Chart.Range
 import Chart.Types
@@ -9,16 +27,14 @@ import Chart.Types
 import Control.Lens hiding (beside, none, (#), at)
 import Data.Ord (max, min)
 import Diagrams.Backend.SVG (SVG, renderSVG)
-import Diagrams.Prelude hiding (width, unit, D, Color, scale, zero, scaleX, scaleY)
+import Diagrams.Prelude hiding (width, unit, D, Color, scale, zero, scaleX, scaleY, aspect)
 import Formatting
 import Linear hiding (zero, identity, unit)
-import Tower.Prelude hiding (min,max,from,to, (&))
+import Tower.Prelude hiding (min,max,from,to,(&))
 
 import qualified Control.Foldl as L
 import qualified Data.Text as Text
 import qualified Diagrams.Prelude as Diagrams
-import qualified Diagrams.TwoD.Text
-
 
 -- | avoiding the scaleX zero throw
 eps :: N [Point V2 Double]
@@ -91,13 +107,6 @@ arrowStyle cfg (V4 _ _ z w) =
            shaftStyle %~ (lwG sW & lcA (color $ cfg ^. arrowColor)) &
            headStyle %~ (lcA (color $ cfg ^. arrowColor) & fcA (color $ cfg ^. arrowColor))
 
-arrowLength :: ArrowConfig Double -> Double
-arrowLength cfg =
-    (0.667 * view arrowHeadSize cfg) +
-    min
-    (view arrowStaffLength cfg + view arrowMinStaffLength cfg)
-    (view arrowMaxStaffLength cfg)
-
 -- | convert from an XY to a polymorphic qdiagrams rectangle
 box ::
     ( Field (N t)
@@ -116,80 +125,93 @@ box a =
 
 -- * charts are recipes for constructing a QDiagram from a specification of the XY plane to be projected on to (XY), a list of traversable vector containers and a list of configurations.
 
-scatter ::
-    (Renderable (Path V2 Double) b, R2 r, Traversable f) =>
+scatters ::
+    (R2 r, Traversable f) =>
     [ScatterConfig] ->
-    XY ->
+    Aspect ->
     [f (r Double)] ->
-    QDiagram b V2 Double Any
-scatter defs xy xyss = mconcat $ zipWith scatter1 defs (scaleR2s xy xyss)
+    Chart a
+scatters defs (Aspect xy) xyss = mconcat $ zipWith scatter1 defs (scaleR2s xy xyss)
 
-line ::
-    (Renderable (Path V2 Double) b, R2 r, Traversable f) =>
+lines ::
+    (R2 r, Traversable f) =>
     [LineConfig] ->
-    XY ->
+    Aspect ->
     [f (r Double)] ->
-    QDiagram b V2 Double Any
-line defs xy xyss = mconcat $ zipWith line1 defs (scaleR2s xy xyss)
+    Chart a
+lines defs (Aspect xy) xyss = mconcat $ zipWith line1 defs (scaleR2s xy xyss)
 
-hist ::
-    (Renderable (Path V2 Double) b, Traversable f) =>
+hists ::
+    (Traversable f) =>
     [RectConfig] ->
-    XY ->
+    Aspect ->
     [f (V4 Double)] ->
-    QDiagram b V2 Double Any
-hist defs xy xs = centerXY . mconcat . zipWith rect1 defs $ scaleRects xy xs
+    Chart a
+hists defs (Aspect xy) xs =
+    centerXY . mconcat . zipWith rect1 defs $ scaleRects xy xs
 
-arrow ::
-    (Renderable (Path V2 Double) b, Traversable f) =>
+-- | arrow lengths and sizes also need to be scaled, and so arrows doesnt fit as neatly into the Aspect ideal
+arrows ::
+    (Traversable f) =>
     [ArrowConfig Double] ->
     V4 (Range Double) ->
     [f (V4 Double)] ->
-    QDiagram b V2 Double Any
-arrow defs xy xs =
-    centerXY . mconcat . zipWith arrow1 defs $ scaleV4s xy xs
+    Chart a
+arrows defs xywz xs =
+    centerXY . mconcat . zipWith arrow1 defs $ scaleV4s xywz xs
 
 -- * axis rendering
 
-withAxes ::
-    (Renderable (Path V2 Double) b
-    , (Renderable (Diagrams.TwoD.Text.Text Double) b)) =>
+-- | render with a chart configuration
+withChart ::
+    ( Traversable f
+    , R2 r) =>
     ChartConfig ->
-    XY ->
-    (XY -> [f (r Double)] -> QDiagram b V2 Double Any) ->
-    XY ->
+    (Aspect -> [f (r Double)] -> QDiagram a V2 Double Any) ->
     [f (r Double)] ->
-    QDiagram b V2 Double Any
-withAxes cc axesRange renderer xy d = renderer xy d <> axes cc xy [toCorners axesRange]
+    Chart' a
+withChart conf renderer d = case conf^.chartRange of
+  Nothing ->
+      renderer (conf^.chartAspect) d <>
+      axes (chartRange .~ Just (rangeR2s d) $ conf)
+  Just axesRange ->
+      combine (conf ^. chartAspect)
+      [ QChart renderer r d
+      , QChart
+        (\aspect _ ->
+           axes
+           ( chartAspect.~aspect
+           $ chartRange .~ Just axesRange
+           $ conf))
+        r
+        ()
+      ]
+    where
+      r = rangeR2s d
 
 axes ::
-    ( (Renderable (Diagrams.TwoD.Text.Text Double) b)
-    , Renderable (Path V2 Double) b
-    , R2 r
-    , Traversable f) =>
     ChartConfig ->
-    XY ->
-    [f (r Double)] ->
-    QDiagram b V2 Double Any
-axes (ChartConfig p a cc) xy xs = L.fold (L.Fold step begin (pad p)) a
+    Chart' a
+axes (ChartConfig p a r (Aspect aspect) cc) = L.fold (L.Fold step begin (pad p)) a
   where
-    begin = box xy # fcA (color cc) # lcA (withOpacity black 0) # lw none
+    begin = box aspect # fcA (color cc) # lcA (withOpacity black 0) # lw none
     step x cfg = beside dir x (mo $ axis1 cfg rendr tickr)
       where
         rendr = case view axisOrientation cfg of
+              X -> aspect^._x
+              Y -> aspect^._y
+        tickr = case view axisOrientation cfg of
               X -> xy^._x
               Y -> xy^._y
-        tickr = case view axisOrientation cfg of
-              X -> rangeR2s xs^._x
-              Y -> rangeR2s xs^._y
         dir   = case view axisPlacement cfg of
               AxisBottom -> r2 (0,-1)
               AxisTop -> r2 (0,1)
               AxisLeft -> r2 (-1,0)
               AxisRight -> r2 (1,0)
         mo    = case view axisOrientation cfg of
-              X -> moveOriginTo (p2 ((-xy^._x^.low)-(xy^._x^.width)/2,0))
-              Y -> moveOriginTo (p2 (0,(-xy^._x^.low)-(xy^._x^.width)/2))
+              X -> moveOriginTo (p2 ((-aspect^._x^.low)-(aspect^._x^.width)/2,0))
+              Y -> moveOriginTo (p2 (0,(-aspect^._x^.low)-(aspect^._x^.width)/2))
+        xy    = fromMaybe one r
 
 axis1 ::
     AxisConfig ->
@@ -287,10 +309,10 @@ mkLabel label cfg =
 
 -- * rendering
 -- | render a list of qcharts using a common scale
-combine :: ((Renderable (Diagrams.TwoD.Text.Text Double) a), Renderable (Path V2 Double) a) => XY -> [QChart a] -> QDiagram a V2 Double Any
-combine xy qcs = mconcat $
+combine :: Aspect -> [QChart a] -> Chart' a
+combine (Aspect xy) qcs = mconcat $
     (\(QChart c xy1 x) -> c
-          (xy `times` xy1 `times` recip xysum)
+          (Aspect $ xy `times` xy1 `times` recip xysum)
           x) <$> qcs
     where
       xysum = mconcat $ (\(QChart _ xy1 _) -> xy1) <$> qcs

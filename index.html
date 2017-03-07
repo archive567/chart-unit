@@ -22,15 +22,12 @@
 <img src="other/exampleAxes.svg" />
 
 </div>
-<pre><code>axes def sixbyfour [toCorners (one::XY)]</code></pre>
+<pre><code>axes (chartAspect .~ sixbyfour $ chartRange .~ Just one $ def)</code></pre>
 <p><code>sixbyfour</code> is a value of type XY, and represents the rectangle that the chart will be rendered with. As with any SVG element, the ultimate product is still subject to sizing on use, so think of <code>sixbyfour</code> as a relative aspect ratio rather than a concrete size.</p>
-<p>Note that there are two independent scales used:</p>
-<ul class="incremental">
-<li>the aspect ratio of the chart, and</li>
-<li>the axes scales, <code>[toCorners (one::XY)]</code> which computes to -0.5 to 0.5 for both the X and Y axes in the above chart</li>
-</ul>
+<h2 id="xy">XY</h2>
+<p>chartRange is the range which we would like to plot. chartRange .~ Nothing represents that the range should be whatever the data range is.</p>
 <h2 id="customization">customization</h2>
-<p>Axes and most other things are highly customizable. Here's an approximation of ggplot axes and canvas style:</p>
+<p>Axes and most other things are highly customizable. Here's another style of chart:</p>
 <div class="figure">
 <img src="other/exampleGgplot.svg" />
 
@@ -41,27 +38,32 @@
 <img src="other/exampleLine.svg" />
 
 </div>
-<pre><code>line lineDefs sixbyfour lineData</code></pre>
+<pre><code>lines lineDefs sixbyfour lineData</code></pre>
 <p>Breaking the code down:</p>
 <ul class="incremental">
-<li><code>line</code> is a typical chart renderer, taking a</li>
+<li><code>lines</code> is a typical chart renderer, taking a</li>
 <li><code>[LineConfig]</code>, which is a list of configurations for each line, an</li>
-<li><code>XY</code>, which is the aspect ratio to render the chart, and, finally</li>
+<li><code>Aspect</code>, the aspect ratio to render the chart, and, finally</li>
 <li>the data, a <code>(Traversable g, Traversable f, R2~r) =&gt; g (f (r a))</code>, or in this case, a <code>[[V2 Double]]</code>, which is a double container of the values to chart</li>
 </ul>
-<p>Adding axes:</p>
+<h2 id="withchart">withChart</h2>
+<p>You don't have to do anything special to combine these lines with axes.</p>
 <div class="figure">
 <img src="other/exampleLineAxes.svg" />
 
 </div>
-<pre><code>line lineDefs sixbyfour lineData &lt;&gt; axes def sixbyfour lineData</code></pre>
+<pre><code>lines lineDefs sixbyfour lineData &lt;&gt; 
+axes (chartRange .~ Just (rangeR2s lineData) $ def)</code></pre>
+<p><code>withChart</code> is a convenience function for this common operation, and the code below is equivalent to the above code:</p>
+<pre><code>withChart def (lines lineDefs) lineData</code></pre>
 <h2 id="scatter">scatter</h2>
 <p>Other default chart types follow this same pattern:</p>
 <div class="figure">
 <img src="other/exampleScatter.svg" />
 
 </div>
-<pre><code>scatter defs one xys &lt;&gt; axes def one xys</code></pre>
+<pre><code>xys &lt;- mkScatterData
+withChart (chartAspect .~ asquare $ def) (scatters scatterDefs) xys</code></pre>
 <p>As with <code>line</code>, <code>scatter</code> zips together multiple configurations and multiple containers of data. It's often much easier to construct charts assuming multiple data sets.</p>
 <p>A major point of the chart-unit library is that the look-n-feel of a chart is invariant to the data scale.</p>
 <div class="figure">
@@ -69,21 +71,13 @@
 
 </div>
 <pre><code>let xys1 = fmap (over _x (*1e8) . over _y (*1e-8)) &lt;$&gt; xys in
-scatter defs one xys1 &lt;&gt; axes def one xys1</code></pre>
+withChart (chartAspect .~ asquare $ def) (scatters scatterDefs) xys1</code></pre>
 <h2 id="histogram">histogram</h2>
 <p>A histogram, in widescreen</p>
 <div class="figure">
 <img src="other/exampleHist.svg" />
 
 </div>
-<pre><code>hist
-    [ def
-    , rectBorderColor .~ Color 0 0 0 0
-      $ rectColor .~ Color 0.333 0.333 0.333 0.4
-      $ def
-    ]
-    wideScreen
-    xys</code></pre>
 <p>A labelled bar chart:</p>
 <div class="figure">
 <img src="other/exampleLabelledBar.svg" />
@@ -132,4 +126,4 @@ scatter defs one xys1 &lt;&gt; axes def one xys1</code></pre>
 scratch <span class="fu">=</span> fileSvg <span class="st">&quot;other/scratchpad.svg&quot;</span> (<span class="dv">600</span>,<span class="dv">400</span>)</code></pre></div>
 <p>I tend to work in ghci a lot, using the above <code>scratch</code> to try code out, mashing the refresh button in the browser.</p>
 <p>recipe 2</p>
-<pre><code>stack build --copy-bins --exec  &quot;chart-unit-examples&quot; --exec &quot;pandoc -f markdown -t html -i readme.md -o index.html --mathjax --filter pandoc-include&quot; --file-watch</code></pre>
+<pre><code>stack build --copy-bins --exec  &quot;chart-unit-examples&quot; --exec &quot;pandoc -f markdown -t html -i examples/examples.md -o index.html --mathjax --filter pandoc-include&quot; --file-watch</code></pre>

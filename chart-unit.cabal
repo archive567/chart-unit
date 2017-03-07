@@ -29,6 +29,7 @@ library
   hs-source-dirs:
     src
   exposed-modules:
+    Chart,
     Chart.Unit,
     Chart.Types,
     Chart.Range
@@ -44,14 +45,14 @@ library
     diagrams-core,
     diagrams-lib,
     diagrams-svg,
-    diagrams-rasterific,
     foldl,
     formatting,
     lens,
     linear,
     protolude,
     text,
-    tower
+    tower,
+    QuickCheck
   default-language:
     Haskell2010
   default-extensions:
@@ -179,10 +180,12 @@ test-suite test
     smallcheck,
     tasty,
     tasty-hunit,
+    tasty-hspec,
     tasty-quickcheck,
     tasty-smallcheck,
-    tower
-
+    tower,
+    data-default,
+    diagrams-lib
   default-extensions:
     NoImplicitPrelude,
     UnicodeSyntax,

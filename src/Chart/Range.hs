@@ -1,6 +1,23 @@
 {-# OPTIONS_GHC -Wall #-}
 
-module Chart.Range where
+module Chart.Range
+  ( Range(..)
+  , (Chart.Range....)
+  , low
+  , high
+  , width
+  , range
+  , toCorners
+  , XY
+  , rescaleP
+  , rangeR2s
+  , scaleR2s
+  , rangeRects
+  , scaleRects
+  , scaleV4s
+  , ticksRound
+  , ticksExact
+  ) where
 
 import Tower.Prelude
 import Control.Category (id)
@@ -9,6 +26,7 @@ import Linear.V2
 import Linear.V4
 import qualified Control.Foldl as L
 import Data.Foldable
+import Test.QuickCheck
 
 newtype Range a = Range { range_ :: (a, a) }
   deriving (Eq, Ord, Show, Functor)
@@ -41,6 +59,14 @@ width =
     (\(Range (l,u)) r ->
        Range ((l+u)/two - r/two,
                 (l+u)/two + r/two))
+
+instance (Ord a, Arbitrary a) => Arbitrary (Range a) where
+    arbitrary = do
+        a <- arbitrary
+        b <- arbitrary
+        if a < b
+           then pure (Range (a, b))
+           else pure (Range (b, a))
 
 instance (Ord a) => AdditiveMagma (Range a) where
     plus (Range (l0,u0)) (Range (l1,u1)) = Range (min l0 l1, max u0 u1)
@@ -121,15 +147,6 @@ instance Monoid XY where
     mempty = V2 zero zero
     mappend = (<>)
 
-sixbyfour :: XY
-sixbyfour = V2 ((1.5*) <$> one) one
-
-goldenRatio :: XY
-goldenRatio = V2 ((1.61803398875*) <$> one) one
-
-wideScreen :: XY
-wideScreen = V2 ((3*) <$> one) one
-
 toCorners :: XY -> [V2 Double]
 toCorners xy = [V2 (view low . view _x $ xy)
                     (view low . view _y $ xy),
@@ -154,20 +171,6 @@ rangeR2s :: (BoundedField a, Traversable g, Traversable f, R2 r, Ord a) =>
     g (f (r a)) ->
     V2 (Range a)
 rangeR2s qss = foldl1 (\(V2 x y) (V2 x' y') -> V2 (x+x') (y+y')) $ rangeR2 <$> qss
-
--- | truncate values falling outside of a range
-truncate :: (Ord a) => Range a -> [a] -> [a]
-truncate (Range (l,u)) qs = filter (\q -> q < l || q > u) qs
-
--- | truncate an R2 list
-truncateR2 :: (Ord a, R2 r) => V2 (Range a) -> [r a] -> [r a]
-truncateR2 (V2 (Range (lx,ux)) (Range (ly,uy))) qs =
-    filter (\q -> view _x q >= lx && view _x q <= ux &&
-                 view _y q >= ly && view _y q <= uy
-           ) qs
--- | truncate an R2 double list
-truncateR2s :: (R2 r, Ord a) => V2 (Range a) -> [[r a]] -> [[r a]]
-truncateR2s r qss = fmap (truncateR2 r) qss
 
 -- | V2 range of a V4 rectangle
 rangeRect :: (BoundedField a, Traversable f, Ord a) => f (V4 a) -> V2 (Range a)

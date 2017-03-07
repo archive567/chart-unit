@@ -7,23 +7,19 @@ various fake data
 
 module FakeData where
 
-import Tower.Prelude hiding ((&))
-import qualified Protolude as P
-import Linear hiding (identity, unit, Additive)
-import Numeric.AD
-import Numeric.AD.Mode.Reverse
+import Chart
+import Tower.Prelude
+
+import Control.Monad.Primitive (PrimState)
+import Data.List
 import Data.Reflection
+import Numeric.AD
 import Numeric.AD.Internal.Reverse
 import System.Random.MWC
 import System.Random.MWC.Probability
-import qualified Data.Map.Strict as Map
-import Control.Monad.Primitive (PrimState)
 import qualified Control.Foldl as L
-import Data.List
--- import Chart.Unit
--- import Chart.Types
-import Chart.Range
-import Diagrams.Prelude hiding ((<>), unit, Additive)
+import qualified Data.Map.Strict as Map
+import qualified Protolude as P
 
 {-
 Standard normal random variates in one dimension.
@@ -58,7 +54,7 @@ arrowData = zipWith (\(V2 x y) (V2 z w) -> V4 x y z w) pos dir'
   where
     pos = locs (-1 ... 1) (-1 ... 1) 20
     dir' = gradF rosenbrock 0.01 <$> pos
-    
+
 locs :: Range Double -> Range Double -> Double -> [V2 Double]
 locs rx ry steps = [V2 x y | x <- grid rx steps, y <- grid ry steps]
 
