@@ -321,7 +321,7 @@ fileSvg ∷ FilePath → (Double, Double) → Chart SVG → IO ()
 fileSvg f s = renderSVG f (mkSizeSpec (Just <$> r2 s))
 
 -- outline of a chart
-bubble ∷ ∀ a. (MultiplicativeGroup (N a), RealFloat (N a), Traced a, V a ~ V2) ⇒ [a] → Int → [V a (N a)]
+bubble ∷ ∀ a. (Ring (N a), MultiplicativeGroup (N a), RealFloat (N a), Traced a, V a ~ V2) ⇒ [a] → Int → [V a (N a)]
 bubble chart' n = bubble'
   where
     bubble' = ps

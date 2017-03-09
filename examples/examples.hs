@@ -141,7 +141,7 @@ exampleClipping =
   where
     step x a = beside (r2 (1,0)) x (pad 1.05 $ center $ blob (Color 0 0 0 0.02) box a <> clip ch a)
     step1 x a = beside (r2 (0,1)) x (pad 1.05 $ center a)
-    qs = fromIntegral <$> [0..4] :: [Double]
+    qs = fromIntegral <$> ([0..4] :: [Int]) :: [Double]
     qb = (\x -> (-0.5 + x*0.2) ... (-0.5 + (x+1.0)*0.2)) <$> qs
     clip ch1 sq = clipped (pathFromLocTrail $ box sq) ch1
     ch = lines lineDefs asquare lineData
@@ -205,8 +205,8 @@ exampleGgplot =
     blob (Color 0.92 0.92 0.92 1) (box (V2 ((1.5*) <$> one) one)) <>
     axes ggdef
   where
-    gridX = (\x -> [V2 0 x, V2 10 x]) . fromIntegral <$> [0..10]
-    gridY = (\x -> [V2 x 0, V2 x 10]) . fromIntegral <$> [0..10]
+    gridX = (\x -> [V2 0 x, V2 10 x]) . fromIntegral <$> ([0..10] :: [Int])
+    gridY = (\x -> [V2 x 0, V2 x 10]) . fromIntegral <$> ([0..10] :: [Int])
     ggdef =
         ChartConfig
         1.1

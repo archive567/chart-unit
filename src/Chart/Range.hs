@@ -258,7 +258,7 @@ scaleV4s :: (Traversable g, Traversable f) =>
 scaleV4s r qss = rescaleV4 (rangeV4s qss) r <$> qss
 
 -- tick construction
-ticksRound :: (ExpRing a, MultiplicativeGroup a, Floating a, RealFrac a) => Range a -> Int -> [a]
+ticksRound :: (Fractional a, Ord a, QuotientField a Int, ExpRing a, MultiplicativeGroup a) => Range a -> Int -> [a]
 ticksRound (Range (l, u)) n = (first' +) . (step *) . fromIntegral <$> [0..n']
   where
     span' = u - l
@@ -273,7 +273,7 @@ ticksRound (Range (l, u)) n = (first' +) . (step *) . fromIntegral <$> [0..n']
     last' = step * fromIntegral (floor (u/step) :: Int)
     n' = round ((last' - first')/step) :: Int
 
-ticksExact :: (MultiplicativeGroup a, AdditiveGroup a, Fractional a) => Range a -> Int -> [a]
+ticksExact :: (Field a) => Range a -> Int -> [a]
 ticksExact (Range (l, u)) n = (l +) . (step *) . fromIntegral <$> [0..n]
   where
     step = (u - l)/fromIntegral n

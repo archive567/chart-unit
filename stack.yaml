@@ -4,7 +4,7 @@ packages:
 - '.'
 - location:
     git: https://github.com/tonyday567/tower.git
-    commit: ff36e3028c84d45329b6dc928150f317e598ee1c
+    commit: c32a23dfab3b1fe3c16bf587f6eac773e9e530dd
   extra-dep: true
 - location:
     git: https://github.com/dequbed/polynomial.git
