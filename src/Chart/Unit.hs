@@ -8,12 +8,16 @@ module Chart.Unit
   , line1
   , scatter1
   , rect1
+  , pixel1
   , arrow1
   , box
   , lines
   , scatters
   , hists
   , arrows
+  , toPixels
+  , rescalePixels
+  , pixels
   , withChart
   , axes
   , combine
@@ -123,6 +127,21 @@ box a =
     Diagrams.scaleY (if a^._y^.width==zero then eps else a^._y^.width)
     unitSquare
 
+-- | a pixel is a rectangle with a color.
+pixel1 :: (Traversable f) => f (V4 Double, Color) -> Chart b
+pixel1 qs = mconcat $ toList $
+    (\(V4 x y z w, c) ->
+       (unitSquare #
+        moveTo (p2 (0.5,0.5)) #
+        Diagrams.scaleX (if z==zero then eps else z) #
+        Diagrams.scaleY (if w==zero then eps else w) #
+        moveTo (p2 (x,y)) #
+        fcA (color c) #
+        lcA transparent #
+        lw 0 #
+        showOrigin 
+       )) <$> qs
+
 -- * charts are recipes for constructing a QDiagram from a specification of the XY plane to be projected on to (XY), a list of traversable vector containers and a list of configurations.
 
 scatters ::
@@ -149,6 +168,32 @@ hists ::
     Chart a
 hists defs (Aspect xy) xs =
     centerXY . mconcat . zipWith rect1 defs $ scaleRects xy xs
+
+toPixels :: XY -> (V2 Double -> Double) -> PixelConfig -> [(V4 Double, Color)]
+toPixels xy f cfg = zip g cs
+    where
+      g = gridRectXY xy (view pixelGrain cfg)
+      xs = f . toV2 . fromV4 <$> g
+      (Range (lx,ux)) = range xs
+      (Range (lc0,uc0)) = view pixelGradient cfg
+      cs = uncolor . (\x -> blend ((x - lx)/(ux - lx)) (color lc0) (color uc0)) <$> xs
+
+rescalePixels :: XY -> [[(V4 Double, Color)]] -> [[(V4 Double, Color)]]
+rescalePixels xy xys = zipWith zip vs cs
+  where
+    vs = scaleRects xy (fmap fst <$> xys)
+    cs = fmap snd <$> xys
+
+-- | pixels over an XY using a function
+pixels ::
+    [PixelConfig] ->
+    Aspect ->
+    XY ->
+    [V2 Double -> Double] ->
+    Chart a
+pixels defs (Aspect aspect) xy fs =
+    centerXY . mconcat $
+    pixel1 <$> rescalePixels aspect (zipWith (toPixels xy) fs defs)
 
 -- | arrow lengths and sizes also need to be scaled, and so arrows doesnt fit as neatly into the Aspect ideal
 arrows ::

@@ -9,6 +9,9 @@ module Chart.Range
   , range
   , toCorners
   , XY
+  , toV2
+  , toV4
+  , fromV4
   , rescaleP
   , rangeR2s
   , scaleR2s
@@ -17,6 +20,10 @@ module Chart.Range
   , scaleV4s
   , ticksRound
   , ticksExact
+  , GridPoints(..)
+  , grid
+  , gridXY
+  , gridRectXY
   ) where
 
 import Tower.Prelude
@@ -153,8 +160,21 @@ toCorners xy = [V2 (view low . view _x $ xy)
                 V2 (view high . view _x $ xy)
                     (view high . view _y $ xy)]
 
--- * computing Ranges
+toV2 :: XY -> V2 Double
+toV2 xy = V2 (view mid $ view _x xy) (view mid $ view _y xy)
 
+toV4 :: XY -> V4 Double
+toV4 xy =
+    V4
+    (view low $ view _x xy)
+    (view low $ view _y xy)
+    (view width $ view _x xy)
+    (view width $ view _y xy)
+
+fromV4 :: V4 Double -> XY
+fromV4 (V4 x y z w) = V2 (Range (x,x+z)) (Range (y,y+w))
+
+-- * computing Ranges
 -- | range of a foldable
 range :: (BoundedField a, Foldable f, Ord a) => f a -> Range a
 range = L.fold (L.Fold (\x a -> x + singleton a) zero id)
@@ -277,3 +297,31 @@ ticksExact :: (Field a) => Range a -> Int -> [a]
 ticksExact (Range (l, u)) n = (l +) . (step *) . fromIntegral <$> [0..n]
   where
     step = (u - l)/fromIntegral n
+
+data GridPoints = OuterPoints | LowerPoints | MidPoints
+
+grid :: GridPoints -> Range Double -> Int -> [Double]
+grid OuterPoints (Range (l,u)) steps =
+    (\a -> l + (u - l) / fromIntegral steps * a) .
+    fromIntegral <$>
+    [0..steps]
+grid LowerPoints (Range (l,u)) steps =
+    (\a -> l + (u - l) / fromIntegral steps * a) .
+    fromIntegral <$>
+    [0..(steps - 1)]
+grid MidPoints (Range (l,u)) steps =
+    (\a -> 1 / 2 * fromIntegral steps + l + (u - l) / fromIntegral steps * a) .
+    fromIntegral <$>
+    [0..(steps - 1)]
+
+gridXY :: GridPoints -> XY -> V2 Int -> [V2 Double]
+gridXY gp (V2 rX rY) (V2 stepX stepY) =
+    [V2 x y | x <- grid gp rX stepX, y <- grid gp rY stepY]
+
+gridRectXY :: XY -> V2 Int -> [V4 Double]
+gridRectXY (V2 rX rY) (V2 stepX stepY) =
+    [V4 x y sx sy | x <- grid LowerPoints rX stepX, y <- grid LowerPoints rY stepY]
+  where
+    sx = view width rX / fromIntegral stepX
+    sy = view width rY / fromIntegral stepY
+

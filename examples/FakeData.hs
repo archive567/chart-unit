@@ -56,10 +56,10 @@ arrowData = zipWith (\(V2 x y) (V2 z w) -> V4 x y z w) pos dir'
     dir' = gradF rosenbrock 0.01 <$> pos
 
 locs :: Range Double -> Range Double -> Double -> [V2 Double]
-locs rx ry steps = [V2 x y | x <- grid rx steps, y <- grid ry steps]
+locs rx ry steps = [V2 x y | x <- grid' rx steps, y <- grid' ry steps]
 
-grid :: forall b. (Field b, Fractional b, Enum b) => Range b -> b -> [b]
-grid (Range (x,x')) steps = (\a -> x + (x'-x)/steps * a) <$> [0..steps]
+grid' :: forall b. (Field b, Fractional b, Enum b) => Range b -> b -> [b]
+grid' (Range (x,x')) steps = (\a -> x + (x'-x)/steps * a) <$> [0..steps]
 
 gradF ::
     (forall s. (Reifies s Tape) => [Reverse s Double] -> Reverse s Double) ->

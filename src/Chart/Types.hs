@@ -17,6 +17,7 @@ module Chart.Types
   , TickStyle(..)
   , Color(..)
   , color
+  , uncolor
   , opac
   , opacs
   , palette
@@ -62,12 +63,16 @@ module Chart.Types
   , arrowMaxStaffWidth
   , arrowStaffWidth
   , arrowColor
+  , PixelConfig(..)
+  , pixelGradient
+  , pixelGrain
   ) where
 
 import Tower.Prelude
 import Diagrams.Prelude hiding (Color(..))
 import qualified Diagrams.TwoD.Text
 import Chart.Range
+import Data.Colour
 
 -- | a Chart has a concrete scale, and combinatory options amount to mappend (on top of) and beside
 type Chart a =
@@ -114,10 +119,22 @@ data Placement = AxisLeft | AxisRight | AxisTop | AxisBottom
 
 data TickStyle = TickNone | TickLabels [Text] | TickRound Int | TickExact Int
 
-data Color = Color { _red :: Double, _green :: Double, _blue :: Double, _aaa :: Double}
+data Color =
+    Color
+    { _red :: Double
+    , _green :: Double
+    , _blue :: Double
+    , _aaa :: Double
+    } deriving (Eq, Show)
 
 color ∷ Color → AlphaColour Double
 color (Color r g b a)= withOpacity (sRGB r g b) a
+
+uncolor ∷ AlphaColour Double → Color
+uncolor c = Color r g b a
+  where
+    a = alphaChannel c
+    (RGB r g b) = toSRGB (Data.Colour.over c black)
 
 palette ∷ [Color]
 palette =
@@ -196,7 +213,7 @@ instance Default ChartConfig where
         Nothing
         sixbyfour
         (Color 1 1 1 0.02)
-    
+
 makeLenses ''ChartConfig
 
 data LineConfig = LineConfig
@@ -248,5 +265,19 @@ instance Default (ArrowConfig Double) where
           (Color 0.333 0.333 0.888 0.8)
 
 makeLenses ''ArrowConfig
+
+data PixelConfig =
+    PixelConfig
+    { _pixelGradient :: Range Color
+    , _pixelGrain :: V2 Int
+    }
+
+instance Default PixelConfig where
+    def = PixelConfig
+        (Range ( Color 1 1 1 1
+               , Color 0 0 0 1))
+        (V2 20 20)
+
+makeLenses ''PixelConfig
 
 

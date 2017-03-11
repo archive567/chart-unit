@@ -231,6 +231,17 @@ exampleGgplot =
         0.5
         1
 
+examplePixels :: Chart' a
+examplePixels =
+    pixels
+    [pixelGrain .~ V2 50 50 $ def]
+    asquare (V2 (-1 ... 1) (-1 ... 1))
+    [\(V2 x y) -> x*y+x*x] <>
+    axes
+    ( chartRange .~ Just (V2 (-1 ... 1) (-1 ... 1))
+    $ chartAspect .~ asquare
+    $ def)
+
 main :: IO ()
 main = do
   let sOne = (400,400)
@@ -256,5 +267,6 @@ main = do
   exc <- exampleCompound
   fileSvg "other/exampleCompound.svg" s6by4 (pad 1.1 $ center $ combine golden exc)
   fileSvg "other/exampleClipping.svg" sOne exampleClipping
+  fileSvg "other/examplePixels.svg" sOne examplePixels
 
-  scratch $ pad 1.1 $ center $ exampleScatterHist xys
+  scratch $ pad 1.1 $ center examplePixels

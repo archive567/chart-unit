@@ -124,6 +124,14 @@ A labelled bar chart:
 ![](other/exampleLabelledBar.svg)
 
 
+pixel chart
+---
+
+A chart with a color for each XY point in a plane.  Close synonyms are probably an area chart, a surface chart.  A contour chart must be close.
+
+![](other/examplePixels.svg)
+
+
 Compound charts
 ---
 
