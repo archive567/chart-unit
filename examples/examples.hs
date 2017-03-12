@@ -8,8 +8,8 @@ import FakeData
 
 import qualified Control.Foldl as L
 import Data.List ((!!))
-import Data.Text (pack)
-import System.Random.MWC (create)
+import Data.Text (pack, unpack)
+import Diagrams.Backend.SVG
 
 scratch :: Chart SVG -> IO ()
 scratch = fileSvg "other/scratchpad.svg" (600,400)
@@ -71,14 +71,6 @@ exampleScatter2 xys =
   where
     xys1 = fmap (over _x (*1e8) . over _y (*1e-8)) <$> xys
 
-mkScatterData :: IO [[V2 Double]]
-mkScatterData = do
-    g <- create
-    xys <- rvsCorr g 1000 0.7
-    xys1 <- rvsCorr g 1000 -0.5
-    pure [ over _y (+1) . over _x (\x -> x^2 + 3*x - 1) <$> xys
-         , over _x (\x -> x^2 + 3*x + 1) <$> xys1]
-
 histDefs :: [RectConfig]
 histDefs =
     [ def
@@ -96,12 +88,52 @@ exampleHist xys =
     $ chartAspect .~ widescreen
     $ def)
 
-mkHistData :: IO [[V4 Double]]
-mkHistData = do
-    g <- create
-    xys <- rvs g 1000
-    xys1 <- rvs g 1000
-    pure $ makeHist 30 <$> [xys,(1.5*) <$> xys1]
+exampleHistGrey :: [V4 Double] -> Chart' a
+exampleHistGrey xys =
+    hists [histDefs!!1] widescreen [xys] <>
+    axes 
+    ( chartRange .~ Just (rangeRects [xys])
+    $ chartAspect .~ widescreen
+    $ def)
+
+exampleHistCompare :: DealOvers -> Histogram -> Histogram -> Chart' a
+exampleHistCompare o h1 h2 =
+    let h = fromHist o h1
+        h' = fromHist o h2
+        h'' = zipWith (\(V4 x y z w) (V4 _ _ _ w') -> V4 x y z (w-w')) h h'
+        flat = Aspect $ V2 (Range (-0.75,0.75)) (Range (-0.25,0.25))
+    in
+      pad 1.1 $ 
+        beside (r2 (0,-1)) (hists
+        [ def
+        , rectBorderColor .~ Color 0 0 0 0
+        $ rectColor .~ Color 0.333 0.333 0.333 0.1
+        $ def ] sixbyfour [h,h'] <>
+        axes (ChartConfig 1.1
+              [def]
+              (Just (rangeRects [h,h']))
+              sixbyfour (uncolor transparent)))
+        (hists
+        [ rectBorderColor .~ Color 0 0 0 0
+        $ rectColor .~ Color 0.888 0.333 0.333 0.8
+        $ def ] flat [h''] <>
+        axes (ChartConfig 1.1
+              [ axisAlignedTextBottom .~ 0.65 $
+                axisAlignedTextRight .~ 1 $
+                axisOrientation .~ Y $
+                axisPlacement .~ AxisLeft $
+                def
+              ]
+              (Just (rangeRects [h'']))
+              flat (uncolor transparent)))
+
+exampleHistGrey2 :: [V4 Double] -> Chart' a
+exampleHistGrey2 xys =
+    lines lineDefs widescreen [rectsToLine xys] <>
+    axes 
+    ( chartRange .~ Just (rangeRects [xys])
+    $ chartAspect .~ widescreen
+    $ def)
 
 exampleLabelledBar :: Chart' a
 exampleLabelledBar =
@@ -242,6 +274,21 @@ examplePixels =
     $ chartAspect .~ asquare
     $ def)
 
+makeOneDim :: IO [[(Double,Text)]]
+makeOneDim = do
+    qs <- makeQuantiles 20
+    qs5 <- makeQuantiles 4
+    let labels5 = ["min","3rd Q","median","1st Q","max"]
+    pure [zip qs5 labels5, zip qs (repeat "")]
+
+exampleOneDim :: [[(Double,Text)]] -> Chart' a
+exampleOneDim qss =
+    axes (ChartConfig 1.1 [def] (Just (V2 (range $ fst <$> (qss!!0)) (Range (0,0)))) skinny (uncolor transparent)) <>
+    axes (ChartConfig 1.1 [axisColor .~ uncolor transparent $ axisMarkSize .~ 0.05 $ axisMarkColor .~ uncolor (withOpacity red 0.3) $ axisTickStyle .~ TickPlaced (qss!!1) $ def] (Just (V2 (range $ fst <$> (qss!!1)) (Range (0,0)))) skinny (uncolor transparent)) <>
+    axes (ChartConfig 1.1 [axisColor .~ uncolor transparent $ axisMarkSize .~ 0.1 $ axisTextSize .~ 0.08 $ axisMarkColor .~ uncolor (withOpacity black 0.5) $ axisTickStyle .~ TickPlaced (qss!!0) $ def] (Just (V2 (range $ fst <$> (qss!!0)) (Range (0,0)))) skinny (uncolor transparent))
+  where
+    skinny = Aspect (V2 ((5*) <$> one) one)
+
 main :: IO ()
 main = do
   let sOne = (400,400)
@@ -261,6 +308,11 @@ main = do
   fileSvg "other/exampleScatter2.svg" sOne (exampleScatter2 xys)
   xs <- mkHistData
   fileSvg "other/exampleHist.svg" sWide (exampleHist xs)
+  rectqs <- makeRectQuantiles 50
+  fileSvg "other/exampleHistUnequal.svg" sWide (exampleHistGrey rectqs)
+  fileSvg "other/exampleHistUnequal2.svg" sWide (exampleHistGrey2 rectqs)
+  hs <- mkHistogramData
+  fileSvg "other/exampleHistCompare.svg" s6by4 (exampleHistCompare (IncludeOvers 1) (hs!!0) (hs!!1))
   fileSvg "other/exampleScatterHist.svg" sOne (pad 1.1 $ center $ exampleScatterHist xys)
   fileSvg "other/exampleLabelledBar.svg" s6by4 exampleLabelledBar
   fileSvg "other/exampleArrow.svg" sOne (exampleArrow [arrowData])
@@ -268,5 +320,8 @@ main = do
   fileSvg "other/exampleCompound.svg" s6by4 (pad 1.1 $ center $ combine golden exc)
   fileSvg "other/exampleClipping.svg" sOne exampleClipping
   fileSvg "other/examplePixels.svg" sOne examplePixels
+  qss <- makeOneDim
+  fileSvg "other/exampleOneDim.svg" (750,150) (exampleOneDim qss)
 
-  scratch $ pad 1.1 $ center examplePixels
+  fileSvg "other/scratchpad.svg" (600,150) $ pad 1.1 $
+      showOrigin $ exampleOneDim qss

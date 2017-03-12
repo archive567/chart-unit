@@ -78,6 +78,16 @@ withChart (chartAspect .~ asquare $ def) (scatters scatterDefs) xys1</code></pre
 <img src="other/exampleHist.svg" />
 
 </div>
+<p>A histogram, with unequal bin sizes (based on quantiles)</p>
+<div class="figure">
+<img src="other/exampleHistUnequal.svg" />
+
+</div>
+<p>... converted to a line chart</p>
+<div class="figure">
+<img src="other/exampleHistUnequal2.svg" />
+
+</div>
 <p>A labelled bar chart:</p>
 <div class="figure">
 <img src="other/exampleLabelledBar.svg" />
@@ -89,8 +99,19 @@ withChart (chartAspect .~ asquare $ def) (scatters scatterDefs) xys1</code></pre
 <img src="other/examplePixels.svg" />
 
 </div>
+<h2 id="one-dim-chart">One-dim chart</h2>
+<p>axes technology can be re-purposed to create skinny charts:</p>
+<div class="figure">
+<img src="other/exampleOneDim.svg" />
+
+</div>
 <h2 id="compound-charts">Compound charts</h2>
-<p><code>chart-unit</code> is a fairly thin wrapper over diagrams that establishes the basics of what a chart is, and provides some sane defaults. From this starting point, production of high-quality charting is easy and pleasant. Two examples:</p>
+<p><code>chart-unit</code> is a fairly thin wrapper over diagrams that establishes the basics of what a chart is, and provides some sane defaults. From this starting point, production of high-quality charting is easy and pleasant. Some examples:</p>
+<p>Comparing two histograms.</p>
+<div class="figure">
+<img src="other/exampleHistCompare.svg" />
+
+</div>
 <p>A scatter chart with histograms of the data along the x &amp; y dimensions.</p>
 <div class="figure">
 <img src="other/exampleScatterHist.svg" />

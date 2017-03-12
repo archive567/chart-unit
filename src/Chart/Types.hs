@@ -66,6 +66,14 @@ module Chart.Types
   , PixelConfig(..)
   , pixelGradient
   , pixelGrain
+  , TextConfig
+  , textPad
+  , textOrientation
+  , textPlacement
+  , textSize
+  , textColor
+  , textRight
+  , textBottom
   ) where
 
 import Tower.Prelude
@@ -117,7 +125,7 @@ data Orientation = X | Y
 
 data Placement = AxisLeft | AxisRight | AxisTop | AxisBottom
 
-data TickStyle = TickNone | TickLabels [Text] | TickRound Int | TickExact Int
+data TickStyle = TickNone | TickLabels [Text] | TickRound Int | TickExact Int | TickPlaced [(Double,Text)]
 
 data Color =
     Color
@@ -280,4 +288,26 @@ instance Default PixelConfig where
 
 makeLenses ''PixelConfig
 
+data TextConfig = TextConfig
+    { _textPad :: Double
+    , _textOrientation :: Orientation
+    , _textPlacement :: Placement
+    , _textSize :: Double
+    , _textColor :: Color
+    , _textRight :: Double
+    , _textBottom :: Double
+    }
+
+instance Default TextConfig where
+    def =
+        TextConfig
+        1
+        X
+        AxisBottom
+        0.08
+        (Color 0.333 0.333 0.333 0.2)
+        0.5
+        1
+
+makeLenses ''TextConfig
 

@@ -21,6 +21,6 @@ to do
 ---
 
 - legends, text (titles, etc)
-- one-dimensional charts, based on an axis
-- DONE pixel chart (rectangles filling the XY plane)
-- variable-width histogram (aka quantile-based histogram)
+- [x] one-dimensional charts, based on an axis
+- [x] pixel chart (rectangles filling the XY plane)
+- [x] variable-width histogram (aka quantile-based histogram)

@@ -52,7 +52,8 @@ library
     protolude,
     text,
     tower,
-    QuickCheck
+    QuickCheck,
+    SVGFonts
   default-language:
     Haskell2010
   default-extensions:
@@ -116,14 +117,15 @@ executable chart-unit-examples
     text,
     tower,
     formatting,
-
+    SVGFonts,
     -- for data examples
     mwc-random,
     mwc-probability,
     primitive,
     ad,
     ListLike,
-    reflection
+    reflection,
+    tdigest
 
     -- diagrams-rasterific
 

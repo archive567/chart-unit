@@ -24,6 +24,7 @@ module Chart.Range
   , grid
   , gridXY
   , gridRectXY
+  , rectsToLine
   ) where
 
 import Tower.Prelude
@@ -325,3 +326,5 @@ gridRectXY (V2 rX rY) (V2 stepX stepY) =
     sx = view width rX / fromIntegral stepX
     sy = view width rY / fromIntegral stepY
 
+rectsToLine :: [V4 Double] -> [V2 Double]
+rectsToLine xs = (\(V4 x _ z w) -> V2 ((x+z)/2) w) <$> xs

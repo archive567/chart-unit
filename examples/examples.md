@@ -119,10 +119,18 @@ A histogram, in widescreen
 
 ![](other/exampleHist.svg)
 
+A histogram, with unequal bin sizes (based on quantiles)
+
+![](other/exampleHistUnequal.svg)
+
+... converted to a line chart
+
+![](other/exampleHistUnequal2.svg)
+
+
 A labelled bar chart:
 
 ![](other/exampleLabelledBar.svg)
-
 
 pixel chart
 ---
@@ -131,11 +139,21 @@ A chart with a color for each XY point in a plane.  Close synonyms are probably 
 
 ![](other/examplePixels.svg)
 
+One-dim chart
+---
+
+axes technology can be re-purposed to create skinny charts:
+
+![](other/exampleOneDim.svg)
 
 Compound charts
 ---
 
-`chart-unit` is a fairly thin wrapper over diagrams that establishes the basics of what a chart is, and provides some sane defaults.  From this starting point, production of high-quality charting is easy and pleasant. Two examples:
+`chart-unit` is a fairly thin wrapper over diagrams that establishes the basics of what a chart is, and provides some sane defaults.  From this starting point, production of high-quality charting is easy and pleasant. Some examples:
+
+Comparing two histograms.
+
+![](other/exampleHistCompare.svg)
 
 A scatter chart with histograms of the data along the x & y dimensions.
 
@@ -195,4 +213,8 @@ I tend to work in ghci a lot, using the above `scratch` to try code out, mashing
 
 recipe 2
 
-    stack build --copy-bins --exec  "chart-unit-examples" --exec "pandoc -f markdown -t html -i examples/examples.md -o index.html --mathjax --filter pandoc-include" --file-watch
+~~~
+stack build --copy-bins --exec  "chart-unit-examples" --exec "pandoc -f markdown -t html -i examples/examples.md -o index.html --mathjax --filter pandoc-include" --file-watch
+~~~
+
+

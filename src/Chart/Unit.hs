@@ -23,6 +23,7 @@ module Chart.Unit
   , combine
   , fileSvg
   , bubble
+  , text1
   ) where
 
 import Chart.Range
@@ -288,6 +289,7 @@ axis1 cfg rendr tickr = pad (cfg ^. axisPad) $ strut2 $ centerXY $
       TickRound n -> ticksRound tickr n
       TickExact n -> ticksExact tickr n
       TickLabels _ -> []
+      TickPlaced xs -> fst <$> xs
     tickLocations = case cfg ^. axisTickStyle of
       TickNone -> []
       {- To Do:
@@ -302,11 +304,13 @@ axis1 cfg rendr tickr = pad (cfg ^. axisPad) $ strut2 $ centerXY $
           (Range (0, fromIntegral $ length ls))
           rendr <$>
           ((\x -> x - 0.5) . fromIntegral <$> [1..length ls])
+      TickPlaced _ -> rescaleP tickr rendr <$> ticks
     tickLabels = case cfg ^. axisTickStyle of
       TickNone -> []
       TickRound _ -> tickFormat <$> ticks
       TickExact _ -> tickFormat <$> ticks
       TickLabels ls -> ls
+      TickPlaced xs -> snd <$> xs
     tickFormat = sformat (prec 2)
     axisRect h (Range (l,u)) = case cfg ^. axisOrientation of
       X -> moveTo (p2 (u,0)) .
@@ -351,6 +355,21 @@ mkLabel label cfg =
       X -> strutY (cfg ^. axisLabelStrut)
       Y -> strutX (cfg ^. axisLabelStrut)
 
+text1 ::
+    TextConfig ->
+    Text ->
+    Chart' b
+text1 cfg label =
+  Diagrams.Prelude.alignedText
+    (cfg ^. textRight)
+    (cfg ^. textBottom)
+    (Text.unpack label) #
+  Diagrams.scale (cfg ^. textSize) #
+  fcA (color $ cfg ^.textColor)
+  where
+    dir = case cfg ^. textOrientation of
+      X -> r2 (0,-1)
+      Y -> r2 (-1,0)
 
 -- * rendering
 -- | render a list of qcharts using a common scale

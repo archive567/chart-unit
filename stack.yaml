@@ -10,6 +10,10 @@ packages:
     git: https://github.com/dequbed/polynomial.git
     commit: 8f78235e6fe6e34624547e25049e916ad4c6e401
   extra-dep: true
+- location:
+    git: https://github.com/futurice/haskell-tdigest
+    commit: 7b16d730b84b1fca2f97dfa3862d5781856d19e9
+  extra-dep: true
 
 extra-deps:
 - erf-native-1.0.0.1
