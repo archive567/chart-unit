@@ -7,6 +7,7 @@ module Chart.Types
   ( Chart
   , Chart'
   , Aspect(..)
+  , aspect
   , asquare
   , sixbyfour
   , golden
@@ -76,10 +77,11 @@ module Chart.Types
   , textBottom
   ) where
 
-import Tower.Prelude
-import Diagrams.Prelude hiding (Color(..))
+import NumHask.Prelude
+import Diagrams.Prelude hiding (Color(..), aspect)
 import qualified Diagrams.TwoD.Text
-import Chart.Range
+import NumHask.Range
+import NumHask.Rect
 import Data.Colour
 
 -- | a Chart has a concrete scale, and combinatory options amount to mappend (on top of) and beside
@@ -87,7 +89,7 @@ type Chart a =
     ( Renderable (Path V2 Double) a
     ) =>
     QDiagram a V2 Double Any
-
+ 
 -- | an alternative synonym where text is involved.
 type Chart' a =
     ( Renderable (Path V2 Double) a
@@ -96,26 +98,29 @@ type Chart' a =
     QDiagram a V2 Double Any
 
 -- | the rendering aspect (or plane) of the chart.  Wrapped to distinguish this from a plain XY
-data Aspect = Aspect { unAspect :: XY}
+data Aspect = Aspect { unAspect :: Rect Double}
+
+aspect :: Double -> Aspect
+aspect a = Aspect (Rect (V2 ((a*) <$> one) one))
 
 asquare :: Aspect
-asquare = Aspect one
+asquare = aspect 1
 
 sixbyfour :: Aspect
-sixbyfour = Aspect (V2 ((1.5*) <$> one) one)
+sixbyfour = aspect 1.5
 
 golden :: Aspect
-golden = Aspect (V2 ((1.61803398875*) <$> one) one)
+golden = aspect 1.61803398875
 
 widescreen :: Aspect
-widescreen = Aspect (V2 ((3*) <$> one) one)
+widescreen = aspect 3
 
 -- | The concrete nature of a QDiagram, and a desire to scale data and hud items naturally, a QChart is mostly a late binding of the Aspect that the chart is to be projected on to and the data.
 data QChart a = forall b. QChart
     { _qChart :: ( ( Renderable (Diagrams.TwoD.Text.Text Double) a)
                   , Renderable (Path V2 Double) a) =>
                 Aspect -> b -> QDiagram a V2 Double Any
-    , _qXY :: XY
+    , _qXY :: Rect Double
     , _qData :: b
     }
 
@@ -203,7 +208,7 @@ makeLenses ''AxisConfig
 data ChartConfig = ChartConfig
     { _chartPad :: Double
     , _chartAxes :: [AxisConfig]
-    , _chartRange :: Maybe XY
+    , _chartRange :: Maybe (Rect Double)
     , _chartAspect :: Aspect
     , _chartCanvasColor :: Color
     }

@@ -153,4 +153,4 @@ withChart (chartAspect .~ asquare $ def) (scatters scatterDefs) xys1</code></pre
 scratch <span class="fu">=</span> fileSvg <span class="st">&quot;other/scratchpad.svg&quot;</span> (<span class="dv">600</span>,<span class="dv">400</span>)</code></pre></div>
 <p>I tend to work in ghci a lot, using the above <code>scratch</code> to try code out, mashing the refresh button in the browser.</p>
 <p>recipe 2</p>
-<pre><code>stack build --copy-bins --exec  &quot;chart-unit-examples&quot; --exec &quot;pandoc -f markdown -t html -i examples/examples.md -o index.html --mathjax --filter pandoc-include&quot; --file-watch</code></pre>
+<pre><code>stack build --copy-bins --test --exec  &quot;chart-unit-examples&quot; --exec &quot;pandoc -f markdown -t html -i examples/examples.md -o index.html --mathjax --filter pandoc-include&quot; --file-watch</code></pre>

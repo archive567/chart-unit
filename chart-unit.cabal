@@ -31,8 +31,7 @@ library
   exposed-modules:
     Chart,
     Chart.Unit,
-    Chart.Types,
-    Chart.Range
+    Chart.Types
   ghc-options:
     -funbox-strict-fields
     -fforce-recomp          
@@ -49,9 +48,10 @@ library
     formatting,
     lens,
     linear,
+    numhask,
+    numhask-range,
     protolude,
     text,
-    tower,
     QuickCheck,
     SVGFonts
   default-language:
@@ -115,9 +115,10 @@ executable chart-unit-examples
     foldl,
     lens,
     text,
-    tower,
     formatting,
     SVGFonts,
+    numhask,
+    numhask-range,
     -- for data examples
     mwc-random,
     mwc-probability,
@@ -185,7 +186,8 @@ test-suite test
     tasty-hspec,
     tasty-quickcheck,
     tasty-smallcheck,
-    tower,
+    numhask,
+    numhask-range,
     data-default,
     diagrams-lib
   default-extensions:

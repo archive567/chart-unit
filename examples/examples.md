@@ -70,7 +70,6 @@ Breaking the code down:
 - `Aspect`, the aspect ratio to render the chart, and, finally
 - the data, a `(Traversable g, Traversable f, R2~r) => g (f (r a))`, or in this case, a `[[V2 Double]]`, which is a double container of the values to chart
 
-
 withChart
 ---
 
@@ -214,7 +213,7 @@ I tend to work in ghci a lot, using the above `scratch` to try code out, mashing
 recipe 2
 
 ~~~
-stack build --copy-bins --exec  "chart-unit-examples" --exec "pandoc -f markdown -t html -i examples/examples.md -o index.html --mathjax --filter pandoc-include" --file-watch
+stack build --copy-bins --test --exec  "chart-unit-examples" --exec "pandoc -f markdown -t html -i examples/examples.md -o index.html --mathjax --filter pandoc-include" --file-watch
 ~~~
 
 

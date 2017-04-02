@@ -11,31 +11,37 @@ module Chart.Unit
   , pixel1
   , arrow1
   , box
-  , lines
-  , scatters
-  , hists
-  , arrows
+  , lineChart
+  , scatterChart
+  , histChart
+  , arrowChart
+  , rangeV4
+  , rangeV42Rect
+  , scaleV4s
   , toPixels
   , rescalePixels
-  , pixels
+  , pixelf
   , withChart
   , axes
   , combine
   , fileSvg
   , bubble
-  , text1
+  -- , text1
+  , histCompare
   ) where
 
-import Chart.Range
+import NumHask.Range
+import NumHask.Rect
+import NumHask.Histogram
 import Chart.Types
 
 import Control.Lens hiding (beside, none, (#), at)
 import Data.Ord (max, min)
 import Diagrams.Backend.SVG (SVG, renderSVG)
-import Diagrams.Prelude hiding (width, unit, D, Color, scale, zero, scaleX, scaleY, aspect)
+import Diagrams.Prelude hiding (width, unit, D, Color, scale, zero, scaleX, scaleY, aspect, rect)
 import Formatting
 import Linear hiding (zero, identity, unit)
-import Tower.Prelude hiding (min,max,from,to,(&))
+import NumHask.Prelude hiding (min,max,from,to,(&),V(..))
 
 import qualified Control.Foldl as L
 import qualified Data.Text as Text
@@ -60,7 +66,7 @@ blob c = fcA (color c) # lcA (withOpacity black 0) # lw none
 -- a line is just a scatter chart rendered with a line
 -- (and with a usually stable x-value series)
 line1 ∷ (Traversable f, R2 r) => LineConfig → f (r Double) → Chart b
-line1 (LineConfig s c) ps = case Tower.Prelude.head ps of
+line1 (LineConfig s c) ps = case NumHask.Prelude.head ps of
   Nothing -> mempty
   Just p0 -> stroke (trailFromVertices (toList $ (p2 . unr2) . view _xy <$> ps)
               `at`
@@ -76,11 +82,10 @@ scatter1 (ScatterConfig s c) ps =
 
 -- | rectangles specified using a V4 x y z w where
 -- (x,y) is location of lower left corner
--- z is width, and
--- w is height
-rect1 :: (Traversable f) => RectConfig -> f (V4 Double) -> Chart b
-rect1 cfg qs = mconcat $ toList $
-    (\(V4 x y z w) ->
+-- (z,w) is location of upper right corner
+rect1 :: (Traversable f) => RectConfig -> f (Rect Double) -> Chart b
+rect1 cfg rs = mconcat $ toList $
+    (\(Rect (V2 (Range (x,z)) (Range (y,w)))) ->
        (unitSquare #
         moveTo (p2 (0.5,0.5)) #
         Diagrams.scaleX (if z-x==zero then eps else z-x) #
@@ -89,7 +94,7 @@ rect1 cfg qs = mconcat $ toList $
         fcA (color $ cfg ^. rectColor) #
         lcA (color $ cfg ^. rectBorderColor) #
         lw 1
-       )) <$> qs
+       )) <$> rs
 
 arrow1 :: (Traversable f) => ArrowConfig Double -> f (V4 Double) -> Chart b
 arrow1 cfg qs =
@@ -120,91 +125,120 @@ box ::
     , HasOrigin t
     , Transformable t
     , TrailLike t) =>
-    XY -> t
-box a =
-    moveOriginTo (p2 ( -a^._x^.low - (a^._x^.width/2)
-                     , -a^._y^.low - (a^._y^.width/2))) $
-    Diagrams.scaleX (if a^._x^.width==zero then eps else a^._x^.width) $
-    Diagrams.scaleY (if a^._y^.width==zero then eps else a^._y^.width)
+    Rect Double -> t
+box (Rect (V2 x y)) =
+    moveOriginTo (p2 ( -x^.low - (x^.width/2)
+                     , -y^.low - (y^.width/2))) $
+    Diagrams.scaleX (if x^.width==zero then eps else x^.width) $
+    Diagrams.scaleY (if y^.width==zero then eps else y^.width)
     unitSquare
 
 -- | a pixel is a rectangle with a color.
-pixel1 :: (Traversable f) => f (V4 Double, Color) -> Chart b
-pixel1 qs = mconcat $ toList $
-    (\(V4 x y z w, c) ->
+pixel1 :: (Traversable f) => f (Rect Double, Color) -> Chart b
+pixel1 rs = mconcat $ toList $
+    (\(Rect (V2 (Range (x,z)) (Range (y,w))), c) ->
        (unitSquare #
         moveTo (p2 (0.5,0.5)) #
-        Diagrams.scaleX (if z==zero then eps else z) #
-        Diagrams.scaleY (if w==zero then eps else w) #
+        Diagrams.scaleX (if z-x==zero then eps else z-x) #
+        Diagrams.scaleY (if w-y==zero then eps else w-y) #
         moveTo (p2 (x,y)) #
         fcA (color c) #
         lcA transparent #
-        lw 0 #
-        showOrigin 
-       )) <$> qs
+        lw 0
+       )) <$> rs
 
 -- * charts are recipes for constructing a QDiagram from a specification of the XY plane to be projected on to (XY), a list of traversable vector containers and a list of configurations.
 
-scatters ::
+scatterChart ::
     (R2 r, Traversable f) =>
     [ScatterConfig] ->
     Aspect ->
     [f (r Double)] ->
     Chart a
-scatters defs (Aspect xy) xyss = mconcat $ zipWith scatter1 defs (scaleR2s xy xyss)
+scatterChart defs (Aspect xy) xyss = mconcat $ zipWith scatter1 defs (scaleR2s xy xyss)
 
-lines ::
+lineChart ::
     (R2 r, Traversable f) =>
     [LineConfig] ->
     Aspect ->
     [f (r Double)] ->
     Chart a
-lines defs (Aspect xy) xyss = mconcat $ zipWith line1 defs (scaleR2s xy xyss)
+lineChart defs (Aspect xy) xyss = mconcat $ zipWith line1 defs (scaleR2s xy xyss)
 
-hists ::
+histChart ::
     (Traversable f) =>
     [RectConfig] ->
     Aspect ->
-    [f (V4 Double)] ->
+    [f (Rect Double)] ->
     Chart a
-hists defs (Aspect xy) xs =
-    centerXY . mconcat . zipWith rect1 defs $ scaleRects xy xs
+histChart defs (Aspect xy) rs =
+    centerXY . mconcat . zipWith rect1 defs $ scaleRectss xy rs
 
-toPixels :: XY -> (V2 Double -> Double) -> PixelConfig -> [(V4 Double, Color)]
+toPixels :: Rect Double -> (V2 Double -> Double) -> PixelConfig -> [(Rect Double, Color)]
 toPixels xy f cfg = zip g cs
     where
-      g = gridRectXY xy (view pixelGrain cfg)
-      xs = f . toV2 . fromV4 <$> g
+      g = grid xy (view pixelGrain cfg)
+      xs = f . midRect <$> g
       (Range (lx,ux)) = range xs
       (Range (lc0,uc0)) = view pixelGradient cfg
       cs = uncolor . (\x -> blend ((x - lx)/(ux - lx)) (color lc0) (color uc0)) <$> xs
 
-rescalePixels :: XY -> [[(V4 Double, Color)]] -> [[(V4 Double, Color)]]
-rescalePixels xy xys = zipWith zip vs cs
+rescalePixels :: Rect Double -> [(Rect Double, Color)] -> [(Rect Double, Color)]
+rescalePixels xy xys = zip vs cs
   where
-    vs = scaleRects xy (fmap fst <$> xys)
-    cs = fmap snd <$> xys
+    vs = scaleRects xy (fst <$> xys)
+    cs = snd <$> xys
 
 -- | pixels over an XY using a function
-pixels ::
-    [PixelConfig] ->
+pixelf ::
+    PixelConfig ->
     Aspect ->
-    XY ->
-    [V2 Double -> Double] ->
+    Rect Double ->
+    (V2 Double -> Double) ->
     Chart a
-pixels defs (Aspect aspect) xy fs =
-    centerXY . mconcat $
-    pixel1 <$> rescalePixels aspect (zipWith (toPixels xy) fs defs)
+pixelf cfg (Aspect asp) xy f =
+    pixel1 $ rescalePixels asp (toPixels xy f cfg)
 
--- | arrow lengths and sizes also need to be scaled, and so arrows doesnt fit as neatly into the Aspect ideal
-arrows ::
+-- | arrow lengths and sizes also need to be scaled, and so arrows doesnt fit as neatly into the whole scaling idea
+arrowChart ::
     (Traversable f) =>
-    [ArrowConfig Double] ->
+    ArrowConfig Double ->
     V4 (Range Double) ->
-    [f (V4 Double)] ->
+    f (V4 Double) ->
     Chart a
-arrows defs xywz xs =
-    centerXY . mconcat . zipWith arrow1 defs $ scaleV4s xywz xs
+arrowChart cfg xy xs =
+    arrow1 cfg $ scaleV4s xy xs
+
+-- | rescale a V4 from rold to rnew
+rescaleV4P :: V4 (Range Double) -> V4 (Range Double) -> V4 Double -> V4 Double
+rescaleV4P rold rnew q =
+    over _x (rescaleP (rold^._x) (rnew^._x)) $
+    over _y (rescaleP (rold^._y) (rnew^._y)) $
+    over _z (rescaleP (rold^._z) (rnew^._z)) $
+    over _w (rescaleP (rold^._w) (rnew^._w))
+    q
+
+-- | rescale a container of V4s
+rescaleV4 :: (Functor f) =>
+    V4 (Range Double) -> V4 (Range Double) -> f (V4 Double) -> f (V4 Double)
+rescaleV4 rold rnew qs = rescaleV4P rold rnew <$> qs
+
+-- | scale a double container of V4s from the current range
+scaleV4s :: (Traversable f) =>
+    V4 (Range Double) -> f (V4 Double) -> f (V4 Double)
+scaleV4s r f = rescaleV4 (rangeV4 f) r f
+
+-- | V4 range of a V4 container
+rangeV4 :: (Traversable f) => f (V4 Double) -> V4 (Range Double)
+rangeV4 qs = V4 rx ry rz rw
+  where
+    rx = range $ toList (view _x <$> qs)
+    ry = range $ toList (view _y <$> qs)
+    rz = range $ toList (view _z <$> qs)
+    rw = range $ toList (view _w <$> qs)
+
+rangeV42Rect :: V4 (Range Double) -> Rect Double
+rangeV42Rect (V4 x y z w) = Rect (V2 (x<>z) (y<>w))
 
 -- * axis rendering
 
@@ -224,9 +258,9 @@ withChart conf renderer d = case conf^.chartRange of
       combine (conf ^. chartAspect)
       [ QChart renderer r d
       , QChart
-        (\aspect _ ->
+        (\asp _ ->
            axes
-           ( chartAspect.~aspect
+           ( chartAspect.~asp
            $ chartRange .~ Just axesRange
            $ conf))
         r
@@ -238,26 +272,27 @@ withChart conf renderer d = case conf^.chartRange of
 axes ::
     ChartConfig ->
     Chart' a
-axes (ChartConfig p a r (Aspect aspect) cc) = L.fold (L.Fold step begin (pad p)) a
+axes (ChartConfig p a r (Aspect asp@(Rect (V2 ax ay))) cc) =
+    L.fold (L.Fold step begin (pad p)) a
   where
-    begin = box aspect # fcA (color cc) # lcA (withOpacity black 0) # lw none
+    begin = box asp # fcA (color cc) # lcA (withOpacity black 0) # lw none
     step x cfg = beside dir x (mo $ axis1 cfg rendr tickr)
       where
         rendr = case view axisOrientation cfg of
-              X -> aspect^._x
-              Y -> aspect^._y
+              X -> ax
+              Y -> ay
         tickr = case view axisOrientation cfg of
-              X -> xy^._x
-              Y -> xy^._y
+              X -> rx
+              Y -> ry
         dir   = case view axisPlacement cfg of
               AxisBottom -> r2 (0,-1)
               AxisTop -> r2 (0,1)
               AxisLeft -> r2 (-1,0)
               AxisRight -> r2 (1,0)
         mo    = case view axisOrientation cfg of
-              X -> moveOriginTo (p2 ((-aspect^._x^.low)-(aspect^._x^.width)/2,0))
-              Y -> moveOriginTo (p2 (0,(-aspect^._x^.low)-(aspect^._x^.width)/2))
-        xy    = fromMaybe one r
+              X -> moveOriginTo (p2 ((-ax^.low)-(ax^.width)/2,0))
+              Y -> moveOriginTo (p2 (0,(-ay^.low)-(ay^.width)/2))
+        (Rect (V2 rx ry)) = fromMaybe one r
 
 axis1 ::
     AxisConfig ->
@@ -284,10 +319,10 @@ axis1 cfg rendr tickr = pad (cfg ^. axisPad) $ strut2 $ centerXY $
     t = case cfg ^. axisOrientation of
       X -> \x -> p2 (x, 0)
       Y -> \y -> p2 (-(cfg ^. axisMarkSize), y)
-    ticks = case cfg ^. axisTickStyle of
+    ticks0 = case cfg ^. axisTickStyle of
       TickNone -> []
-      TickRound n -> ticksRound tickr n
-      TickExact n -> ticksExact tickr n
+      TickRound n -> ticksSensible OuterPos tickr n
+      TickExact n -> ticks OuterPos tickr n
       TickLabels _ -> []
       TickPlaced xs -> fst <$> xs
     tickLocations = case cfg ^. axisTickStyle of
@@ -297,18 +332,18 @@ axis1 cfg rendr tickr = pad (cfg ^. axisPad) $ strut2 $ centerXY $
         if this happens, it should really be fed into the chart rendering as a new,
         revised range.
       -}
-      TickRound _ -> rescaleP tickr rendr <$> ticks
-      TickExact _ -> rescaleP tickr rendr <$> ticks
+      TickRound _ -> rescaleP tickr rendr <$> ticks0
+      TickExact _ -> rescaleP tickr rendr <$> ticks0
       TickLabels ls ->
           rescaleP
           (Range (0, fromIntegral $ length ls))
           rendr <$>
           ((\x -> x - 0.5) . fromIntegral <$> [1..length ls])
-      TickPlaced _ -> rescaleP tickr rendr <$> ticks
+      TickPlaced _ -> rescaleP tickr rendr <$> ticks0
     tickLabels = case cfg ^. axisTickStyle of
       TickNone -> []
-      TickRound _ -> tickFormat <$> ticks
-      TickExact _ -> tickFormat <$> ticks
+      TickRound _ -> tickFormat <$> ticks0
+      TickExact _ -> tickFormat <$> ticks0
       TickLabels ls -> ls
       TickPlaced xs -> snd <$> xs
     tickFormat = sformat (prec 2)
@@ -355,6 +390,7 @@ mkLabel label cfg =
       X -> strutY (cfg ^. axisLabelStrut)
       Y -> strutX (cfg ^. axisLabelStrut)
 
+{-
 text1 ::
     TextConfig ->
     Text ->
@@ -370,6 +406,7 @@ text1 cfg label =
     dir = case cfg ^. textOrientation of
       X -> r2 (0,-1)
       Y -> r2 (-1,0)
+-}
 
 -- * rendering
 -- | render a list of qcharts using a common scale
@@ -385,7 +422,7 @@ fileSvg ∷ FilePath → (Double, Double) → Chart SVG → IO ()
 fileSvg f s = renderSVG f (mkSizeSpec (Just <$> r2 s))
 
 -- outline of a chart
-bubble ∷ ∀ a. (Ring (N a), MultiplicativeGroup (N a), RealFloat (N a), Traced a, V a ~ V2) ⇒ [a] → Int → [V a (N a)]
+bubble ∷ ∀ a. (FromInteger (N a), MultiplicativeGroup (N a), RealFloat (N a), Traced a, V a ~ V2) ⇒ [a] → Int → [V a (N a)]
 bubble chart' n = bubble'
   where
     bubble' = ps
@@ -393,3 +430,34 @@ bubble chart' n = bubble'
         ((\x -> view (Diagrams.Prelude.from r2PolarIso) (1, x @@ rad)) .
          (\x -> fromIntegral x/10.0) <$> [0..n]) <*>
         chart'
+
+histCompare :: DealOvers -> Histogram -> Histogram -> Chart' a
+histCompare o h1 h2 =
+    let h = fromHist o h1
+        h' = fromHist o h2
+        h'' = zipWith (\(Rect (V2 (Range (x,y)) (Range (z,w)))) (Rect (V2 _ (Range (_,w')))) -> Rect (V2 (Range (x,y)) (Range (z,w-w')))) h h'
+        flat = Aspect $ Rect (V2 (Range (-0.75,0.75)) (Range (-0.25,0.25)))
+    in
+      pad 1.1 $
+        beside (r2 (0,-1)) (histChart
+        [ def
+        , rectBorderColor .~ Color 0 0 0 0
+        $ rectColor .~ Color 0.333 0.333 0.333 0.1
+        $ def ] sixbyfour [h,h'] <>
+        axes (ChartConfig 1.1
+              [def]
+              (Just (fold $ fold [h,h']))
+              sixbyfour (uncolor transparent)))
+        (histChart
+        [ rectBorderColor .~ Color 0 0 0 0
+        $ rectColor .~ Color 0.888 0.333 0.333 0.8
+        $ def ] flat [h''] <>
+        axes (ChartConfig 1.1
+              [ axisAlignedTextBottom .~ 0.65 $
+                axisAlignedTextRight .~ 1 $
+                axisOrientation .~ Y $
+                axisPlacement .~ AxisLeft $
+                def
+              ]
+              (Just (fold h''))
+              flat (uncolor transparent)))
