@@ -30,6 +30,8 @@ module Chart.Unit
   , histCompare
   ) where
 
+import NumHask.Prelude hiding (min,max,from,to,(&))
+
 import NumHask.Range
 import NumHask.Rect
 import NumHask.Histogram
@@ -38,10 +40,9 @@ import Chart.Types
 import Control.Lens hiding (beside, none, (#), at)
 import Data.Ord (max, min)
 import Diagrams.Backend.SVG (SVG, renderSVG)
-import Diagrams.Prelude hiding (width, unit, D, Color, scale, zero, scaleX, scaleY, aspect, rect)
+import Diagrams.Prelude hiding (width, unit, D, Color, scale, zero, scaleX, scaleY, aspect, rect, project)
 import Formatting
-import Linear hiding (zero, identity, unit)
-import NumHask.Prelude hiding (min,max,from,to,(&),V(..))
+import Linear hiding (zero, identity, unit, project)
 
 import qualified Control.Foldl as L
 import qualified Data.Text as Text
@@ -212,10 +213,10 @@ arrowChart cfg xy xs =
 -- | rescale a V4 from rold to rnew
 rescaleV4P :: V4 (Range Double) -> V4 (Range Double) -> V4 Double -> V4 Double
 rescaleV4P rold rnew q =
-    over _x (rescaleP (rold^._x) (rnew^._x)) $
-    over _y (rescaleP (rold^._y) (rnew^._y)) $
-    over _z (rescaleP (rold^._z) (rnew^._z)) $
-    over _w (rescaleP (rold^._w) (rnew^._w))
+    over _x (project (rold^._x) (rnew^._x)) $
+    over _y (project (rold^._y) (rnew^._y)) $
+    over _z (project (rold^._z) (rnew^._z)) $
+    over _w (project (rold^._w) (rnew^._w))
     q
 
 -- | rescale a container of V4s
@@ -321,8 +322,8 @@ axis1 cfg rendr tickr = pad (cfg ^. axisPad) $ strut2 $ centerXY $
       Y -> \y -> p2 (-(cfg ^. axisMarkSize), y)
     ticks0 = case cfg ^. axisTickStyle of
       TickNone -> []
-      TickRound n -> ticksSensible OuterPos tickr n
-      TickExact n -> ticks OuterPos tickr n
+      TickRound n -> linearSpaceSensible OuterPos tickr n
+      TickExact n -> linearSpace OuterPos tickr n
       TickLabels _ -> []
       TickPlaced xs -> fst <$> xs
     tickLocations = case cfg ^. axisTickStyle of
@@ -332,14 +333,14 @@ axis1 cfg rendr tickr = pad (cfg ^. axisPad) $ strut2 $ centerXY $
         if this happens, it should really be fed into the chart rendering as a new,
         revised range.
       -}
-      TickRound _ -> rescaleP tickr rendr <$> ticks0
-      TickExact _ -> rescaleP tickr rendr <$> ticks0
+      TickRound _ -> project tickr rendr <$> ticks0
+      TickExact _ -> project tickr rendr <$> ticks0
       TickLabels ls ->
-          rescaleP
+          project
           (Range (0, fromIntegral $ length ls))
           rendr <$>
           ((\x -> x - 0.5) . fromIntegral <$> [1..length ls])
-      TickPlaced _ -> rescaleP tickr rendr <$> ticks0
+      TickPlaced _ -> project tickr rendr <$> ticks0
     tickLabels = case cfg ^. axisTickStyle of
       TickNone -> []
       TickRound _ -> tickFormat <$> ticks0
@@ -446,12 +447,12 @@ histCompare o h1 h2 =
         $ def ] sixbyfour [h,h'] <>
         axes (ChartConfig 1.1
               [def]
-              (Just (fold $ fold [h,h']))
+              (Just (fold $ fold [abs <$> h,abs <$> h']))
               sixbyfour (uncolor transparent)))
         (histChart
         [ rectBorderColor .~ Color 0 0 0 0
         $ rectColor .~ Color 0.888 0.333 0.333 0.8
-        $ def ] flat [h''] <>
+        $ def ] flat [abs <$> h''] <>
         axes (ChartConfig 1.1
               [ axisAlignedTextBottom .~ 0.65 $
                 axisAlignedTextRight .~ 1 $
@@ -459,5 +460,5 @@ histCompare o h1 h2 =
                 axisPlacement .~ AxisLeft $
                 def
               ]
-              (Just (fold h''))
+              (Just (fold $ abs <$> h''))
               flat (uncolor transparent)))

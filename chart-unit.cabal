@@ -1,11 +1,11 @@
 name:
   chart-unit
 version:
-  0.2.1
+  0.3.1
 synopsis:
   A set of native haskell charts.
 description:
-  readme.lhs
+  See https://tonyday567.github.io/chart-unit/index.html for some description.
 category:
   charts
 homepage:
@@ -48,8 +48,8 @@ library
     formatting,
     lens,
     linear,
-    numhask,
-    numhask-range,
+    numhask >= 0.0.4 && < 1,
+    numhask-range >= 0.0.2 && < 1,
     protolude,
     text,
     QuickCheck,
@@ -127,9 +127,7 @@ executable chart-unit-examples
     ListLike,
     reflection,
     tdigest
-
     -- diagrams-rasterific
-
 
   default-extensions:
     NoImplicitPrelude,

@@ -1,22 +1,11 @@
-resolver: lts-7.19
+resolver: lts-8.9
 
 packages:
 - '.'
-- location:
-    git: https://github.com/dequbed/polynomial.git
-    commit: 8f78235e6fe6e34624547e25049e916ad4c6e401
-  extra-dep: true
-- location:
-    git: https://github.com/futurice/haskell-tdigest
-    commit: 7b16d730b84b1fca2f97dfa3862d5781856d19e9
-  extra-dep: true
-- location:
-    git: https://github.com/tonyday567/numhask-range
-    commit: e14be79ed1a52a580c6b16ceecc168e11bccf0e5
-  extra-dep: true
 
 extra-deps:
 - erf-native-1.0.0.1
 - polynomial-0.7.2
-- numhask-0.0.1
-# - numhask-range-0.0.1
+- tdigest-0.1
+- numhask-0.0.4
+- numhask-range-0.0.2

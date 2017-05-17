@@ -144,16 +144,16 @@ exampleLabelledBar =
     axes
     ( chartAxes .~
       [ axisTickStyle .~
-        TickLabels labels $ def
+        TickLabels labels' $ def
       ]
       $ chartAspect .~ sixbyfour
       $ chartRange .~ Just (fold rs)
       $ def
     )
   where
-    labels = fmap pack <$> take 10 $ (:[]) <$> ['a'..]
+    labels' = fmap pack <$> take 10 $ (:[]) <$> ['a'..]
     rs :: [Rect Double]
-    rs = positRect . view rect <$>
+    rs = abs . view rect <$>
         zipWith4 V4 [0..10] (replicate 11 0) [1..11] [1,2,3,5,8,0,-2,11,2,1]
 
 exampleArrow :: [V4 Double] -> Chart' a
@@ -323,5 +323,6 @@ main = do
   qss <- makeOneDim
   fileSvg "other/exampleOneDim.svg" (750,150) (exampleOneDim qss)
 
-  fileSvg "other/scratchpad.svg" (600,150) $ pad 1.1 $
-      showOrigin $ exampleOneDim qss
+  scratch (exampleHistCompare (IncludeOvers 1) (hs!!0) (hs!!1))
+  -- fileSvg "other/scratchpad.svg" (600,150) $ pad 1.1 $
+  --     showOrigin $ exampleOneDim qss

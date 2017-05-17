@@ -44,14 +44,14 @@ mkScatterData = do
     g <- create
     xys <- rvsCorr g 1000 0.7
     xys1 <- rvsCorr g 1000 -0.5
-    pure [ over _y (+1) . over _x (\x -> x^2 + 3*x - 1) <$> xys
-         , over _x (\x -> x^2 + 3*x + 1) <$> xys1]
+    pure [ over _y (+1) . over _x (\x -> x^^2 + 3*x - 1) <$> xys
+         , over _x (\x -> x^^2 + 3*x + 1) <$> xys1]
 
 makeHist :: Int -> [Double] -> [Rect Double]
 makeHist n xs = fromHist (IncludeOvers 1) (fill cuts xs)
   where
     r = Chart.range xs
-    cuts = ticks OuterPos r n
+    cuts = linearSpace OuterPos r n
 
 makeRvs :: IO [[Double]]
 makeRvs = do
@@ -68,7 +68,7 @@ mkHistData = do
 mkHistogramData :: IO [Histogram]
 mkHistogramData = do
     d0 <- makeRvs
-    let cuts = ticks OuterPos (Range (-3.0,3.0)) 6
+    let cuts = linearSpace OuterPos (Range (-3.0,3.0)) 6
     pure $ fill cuts  <$> d0
 
 makeRectQuantiles :: Double -> IO [Rect Double]
