@@ -265,7 +265,7 @@ withChart conf renderer d = case conf^.chartRange of
            $ chartRange .~ Just axesRange
            $ conf))
         r
-        ()
+        []
       ]
     where
       r = rangeR2s d
@@ -411,7 +411,7 @@ text1 cfg label =
 
 -- * rendering
 -- | render a list of qcharts using a common scale
-combine :: Aspect -> [QChart a] -> Chart' a
+combine :: Aspect -> [QChart a b] -> Chart' a
 combine (Aspect xy) qcs = mconcat $
     (\(QChart c xy1 x) -> c
           (Aspect $ xy `times` xy1 `times` recip xysum)

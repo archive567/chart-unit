@@ -1,7 +1,7 @@
 name:
   chart-unit
 version:
-  0.3.1
+  0.3.2
 synopsis:
   A set of native haskell charts.
 description:
@@ -38,10 +38,6 @@ library
   build-depends:
     base >= 4.7 && < 5,
     colour,
-    containers,
-    data-default,
-    diagrams,
-    diagrams-core,
     diagrams-lib,
     diagrams-svg,
     foldl,
@@ -50,10 +46,7 @@ library
     linear,
     numhask >= 0.0.4 && < 1,
     numhask-range >= 0.0.2 && < 1,
-    protolude,
-    text,
-    QuickCheck,
-    SVGFonts
+    text
   default-language:
     Haskell2010
   default-extensions:
@@ -106,28 +99,16 @@ executable chart-unit-examples
     base >= 4.7 && < 5,
     chart-unit,
     protolude,
-    containers,
-    diagrams,
-    diagrams-core,
-    diagrams-lib,
-    diagrams-svg,
-    linear,
     foldl,
-    lens,
     text,
-    formatting,
-    SVGFonts,
     numhask,
-    numhask-range,
     -- for data examples
     mwc-random,
     mwc-probability,
     primitive,
     ad,
-    ListLike,
     reflection,
     tdigest
-    -- diagrams-rasterific
 
   default-extensions:
     NoImplicitPrelude,
@@ -174,20 +155,10 @@ test-suite test
     test.hs
   build-depends:
     base >= 4.7 && < 5,
-    HUnit,
-    QuickCheck,
     chart-unit,
-    protolude,
-    smallcheck,
     tasty,
-    tasty-hunit,
     tasty-hspec,
-    tasty-quickcheck,
-    tasty-smallcheck,
-    numhask,
-    numhask-range,
-    data-default,
-    diagrams-lib
+    numhask
   default-extensions:
     NoImplicitPrelude,
     UnicodeSyntax,

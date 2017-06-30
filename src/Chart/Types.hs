@@ -13,6 +13,9 @@ module Chart.Types
   , golden
   , widescreen
   , QChart(..)
+  , qXY
+  , qChart
+  , qData
   , Orientation(..)
   , Placement(..)
   , TickStyle(..)
@@ -116,7 +119,7 @@ widescreen :: Aspect
 widescreen = aspect 3
 
 -- | The concrete nature of a QDiagram, and a desire to scale data and hud items naturally, a QChart is mostly a late binding of the Aspect that the chart is to be projected on to and the data.
-data QChart a = forall b. QChart
+data QChart a b = QChart
     { _qChart :: ( ( Renderable (Diagrams.TwoD.Text.Text Double) a)
                   , Renderable (Path V2 Double) a) =>
                 Aspect -> b -> QDiagram a V2 Double Any

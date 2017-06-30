@@ -179,7 +179,7 @@ exampleClipping =
     ch = lineChart lineDefs asquare lineData
 
 -- compound charts
-exampleCompound :: IO [QChart a]
+exampleCompound :: IO [QChart a [[V2 Double]]]
 exampleCompound = do
     xys <- mkScatterData
     let qsc = QChart (scatterChart scatterDefs) (rangeR2s xys) xys
@@ -192,7 +192,7 @@ exampleCompound = do
           (\a _ -> axes
             ( chartRange .~ Just xy
             $ chartAspect .~ a
-            $ def)) xy ()
+            $ def)) xy []
 
 exampleScatterHist :: [[V2 Double]] -> Chart' a
 exampleScatterHist xys =
