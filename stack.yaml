@@ -8,4 +8,4 @@ extra-deps:
 - polynomial-0.7.2
 - tdigest-0.1
 - numhask-0.0.4
-- numhask-range-0.0.2
+- numhask-range-0.0.3
