@@ -132,6 +132,8 @@ withChart (chartAspect .~ asquare $ def) (scatters scatterDefs) xys1</code></pre
 <img src="other/exampleClipping.svg" />
 
 </div>
+<h2 id="animation">animation</h2>
+<p><img style="border:5px solid grey" src="other/anim.gif"></p>
 <h2 id="data">data</h2>
 <p>Double-containered dimensioned data covers what a chart charts - one or more data sets with at least an x and y dimension (called R2 in the linear library).</p>
 <p>Most chart variations are about what to do with the extra dimensions in the data. A rectangle, for example, is built from 4 dimensions, an anchoring of position in XY space, with a width (W) and height (Z). A contour map is three dimensional data (V3 in linear), with placement as XY and color as Z.</p>
@@ -151,6 +153,6 @@ withChart (chartAspect .~ asquare $ def) (scatters scatterDefs) xys1</code></pre
 <p>recipe 1</p>
 <div class="sourceCode"><pre class="sourceCode literate haskell"><code class="sourceCode haskell"><span class="ot">scratch ::</span> <span class="dt">Chart</span> <span class="dt">SVG</span> <span class="ot">-&gt;</span> <span class="dt">IO</span> ()
 scratch <span class="fu">=</span> fileSvg <span class="st">&quot;other/scratchpad.svg&quot;</span> (<span class="dv">600</span>,<span class="dv">400</span>)</code></pre></div>
-<p>I tend to work in ghci a lot, using the above <code>scratch</code> to try code out, mashing the refresh button in the browser.</p>
+<p>I tend to work in ghci a lot, using the above <code>scratch</code> to try code out, mashing the refresh button in the browser. Or I switch on stacks --file-watch ...</p>
 <p>recipe 2</p>
-<pre><code>stack build --copy-bins --test --exec  &quot;chart-unit-examples&quot; --exec &quot;pandoc -f markdown -t html -i examples/examples.md -o index.html --mathjax --filter pandoc-include&quot; --file-watch</code></pre>
+<pre><code>stack build --test --exec &quot;$(stack path --local-install-root)/bin/chart-unit-examples&quot; --exec &quot;$(stack path --local-bin)/pandoc -f markdown+lhs -i app/examples.hs -t html -o index.html --filter pandoc-include --mathjax&quot; --file-watch</code></pre>

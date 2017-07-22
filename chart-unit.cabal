@@ -3,9 +3,20 @@ name:
 version:
   0.4.0
 synopsis:
-  A set of native haskell charts.
+  Native haskell charts.
 description:
-  See https://tonyday567.github.io/chart-unit/index.html for some description.
+  See <https://tonyday567.github.io/chart-unit/index.html chart-unit> for chart bling and usage.
+  .
+  .
+  <<https://tonyday567.github.io/other/examplePixels.svg>>
+  .
+  These charts are designed to be scale independent and amenable to combinatory busywork (hence the unit suffix).
+  .
+  .
+extra-source-files:
+  readme.md
+  index.html
+  stack.yaml
 category:
   charts
 homepage:
@@ -89,6 +100,9 @@ executable chart-unit-examples
   ghc-options:
     -funbox-strict-fields
     -fforce-recomp
+    -threaded
+    -rtsopts
+    -with-rtsopts=-N
   hs-source-dirs:
     examples
   main-is:
@@ -111,7 +125,8 @@ executable chart-unit-examples
     tdigest,
     -- for animation example
     diagrams-rasterific,
-    JuicyPixels
+    JuicyPixels,
+    diagrams-lib
 
   default-extensions:
     NoImplicitPrelude,

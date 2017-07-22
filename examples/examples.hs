@@ -3,6 +3,9 @@
 
 import Chart
 import NumHask.Prelude
+import Codec.Picture.Gif (GifDelay)
+import Diagrams.Backend.Rasterific.CmdLine (B, GifOpts(..))
+import Diagrams.Backend.CmdLine (DiagramOpts(..), mainRender)
 
 import FakeData
 
@@ -289,6 +292,33 @@ exampleOneDim qss =
   where
     skinny = Aspect (Rect (V2 ((5*) <$> one) one))
 
+displayHeader :: FilePath -> [(Diagram B, GifDelay)] -> IO ()
+displayHeader fn =
+  mainRender ( DiagramOpts (Just 900) (Just 700) fn
+             , GifOpts {_dither = False, _noLooping = False, _loopRepeat = Just 2}
+             )
+
+chartRange' :: [[Rect Double]] -> Rect Double
+chartRange' = fold . fold
+
+exampleHistAnim :: Rect Double -> Aspect -> [[Rect Double]] -> Chart' a
+exampleHistAnim cr asp rs =
+    histChartWithRange cr histDefs asp rs <>
+    axes
+    ( chartRange .~ Just cr
+    $ chartAspect .~ asp
+    $ def)
+
+exampleAnimation :: FilePath -> IO ()
+exampleAnimation f = do
+    xs <- mkHistData
+    let yss = inits (xs!!0)
+    let cr = chartRange' yss
+    let us :: [Diagram B ]
+        us = exampleHistAnim cr widescreen . pure <$> yss
+
+    displayHeader f $ zip us (repeat (10 :: Int))
+
 main :: IO ()
 main = do
   let sOne = (400,400)
@@ -322,6 +352,7 @@ main = do
   fileSvg "other/examplePixels.svg" sOne examplePixels
   qss <- makeOneDim
   fileSvg "other/exampleOneDim.svg" (750,150) (exampleOneDim qss)
+  exampleAnimation "other/anim.gif"
 
   scratch (exampleHistCompare (IncludeOvers 1) (hs!!0) (hs!!1))
   -- fileSvg "other/scratchpad.svg" (600,150) $ pad 1.1 $
