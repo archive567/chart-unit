@@ -14,13 +14,10 @@ compile recipe
 --------
 
 ~~~
-stack build --test --copy-bins --exec  "chart-unit-examples" --exec "pandoc -f markdown -t html -i examples/examples.md -o index.html" --file-watch
+stack build --test --exec "$(stack path --local-install-root)/bin/chart-unit-examples" --exec "$(stack path --local-bin)/pandoc -f markdown+lhs -i app/examples.hs -t html -o index.html --filter pandoc-include --mathjax" --file-watch
 ~~~
 
 to do
 ---
 
 - legends, text (titles, etc)
-- [x] one-dimensional charts, based on an axis
-- [x] pixel chart (rectangles filling the XY plane)
-- [x] variable-width histogram (aka quantile-based histogram)

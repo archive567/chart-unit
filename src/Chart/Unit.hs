@@ -11,10 +11,14 @@ module Chart.Unit
   , pixel1
   , arrow1
   , box
-  , lineChart
   , scatterChart
+  , scatterChartWithRange
+  , lineChart
+  , lineChartWithRange
   , histChart
+  , histChartWithRange
   , arrowChart
+  , arrowChartWithRange
   , rangeV4
   , rangeV42Rect
   , scaleV4s
@@ -148,32 +152,69 @@ pixel1 rs = mconcat $ toList $
         lw 0
        )) <$> rs
 
--- * charts are recipes for constructing a QDiagram from a specification of the XY plane to be projected on to (XY), a list of traversable vector containers and a list of configurations.
-
+-- * charts are recipes for constructing a QDiagram from a specification of the XY plane to be projected on to (XY), a list of traversable vector containers and a list of configurations.  The charts are self-scaling.
+-- | a chart of scattered dot points scaled to its own range
 scatterChart ::
     (R2 r, Traversable f) =>
     [ScatterConfig] ->
     Aspect ->
     [f (r Double)] ->
     Chart a
-scatterChart defs (Aspect xy) xyss = mconcat $ zipWith scatter1 defs (scaleR2s xy xyss)
+scatterChart defs asp xyss =
+    scatterChartWithRange (foldMap rangeR2 xyss) defs asp xyss
 
+-- | a chart of scattered dot points with a specific range
+scatterChartWithRange ::
+    (R2 r, Traversable f) =>
+    Rect Double ->
+    [ScatterConfig] ->
+    Aspect ->
+    [f (r Double)] ->
+    Chart a
+scatterChartWithRange cr defs (Aspect xy) xyss =
+    mconcat $ zipWith scatter1 defs (projectR2 cr xy <$> xyss)
+
+-- | a chart of lines scaled to its own range
 lineChart ::
     (R2 r, Traversable f) =>
     [LineConfig] ->
     Aspect ->
     [f (r Double)] ->
     Chart a
-lineChart defs (Aspect xy) xyss = mconcat $ zipWith line1 defs (scaleR2s xy xyss)
+lineChart defs asp xyss =
+    lineChartWithRange (foldMap rangeR2 xyss) defs asp xyss
 
+-- | a chart of lines with a specific range
+lineChartWithRange ::
+    (R2 r, Traversable f) =>
+    Rect Double ->
+    [LineConfig] ->
+    Aspect ->
+    [f (r Double)] ->
+    Chart a
+lineChartWithRange cr defs (Aspect xy) xyss =
+    mconcat $ zipWith line1 defs (projectR2 cr xy <$> xyss)
+
+-- | a chart of histograms scaled to its own range
 histChart ::
     (Traversable f) =>
     [RectConfig] ->
     Aspect ->
     [f (Rect Double)] ->
     Chart a
-histChart defs (Aspect xy) rs =
-    centerXY . mconcat . zipWith rect1 defs $ scaleRectss xy rs
+histChart defs asp rs =
+    histChartWithRange (fold $ fold <$> rs) defs asp rs
+
+-- | a chart of histograms with a specific range
+histChartWithRange ::
+    (Traversable f) =>
+    Rect Double ->
+    [RectConfig] ->
+    Aspect ->
+    [f (Rect Double)] ->
+    Chart a
+histChartWithRange cr defs (Aspect xy) rs =
+    mconcat . zipWith rect1 defs $ fmap (projectRect cr xy) <$> rs
 
 toPixels :: Rect Double -> (V2 Double -> Double) -> PixelConfig -> [(Rect Double, Color)]
 toPixels xy f cfg = zip g cs
@@ -187,10 +228,10 @@ toPixels xy f cfg = zip g cs
 rescalePixels :: Rect Double -> [(Rect Double, Color)] -> [(Rect Double, Color)]
 rescalePixels xy xys = zip vs cs
   where
-    vs = scaleRects xy (fst <$> xys)
+    vs = projectRect (fold $ fst <$> xys) xy . fst <$> xys
     cs = snd <$> xys
 
--- | pixels over an XY using a function
+-- | pixels over an XY plane using a function
 pixelf ::
     PixelConfig ->
     Aspect ->
@@ -201,6 +242,16 @@ pixelf cfg (Aspect asp) xy f =
     pixel1 $ rescalePixels asp (toPixels xy f cfg)
 
 -- | arrow lengths and sizes also need to be scaled, and so arrows doesnt fit as neatly into the whole scaling idea
+arrowChartWithRange ::
+    (Traversable f) =>
+    V4 (Range Double) ->
+    ArrowConfig Double ->
+    V4 (Range Double) ->
+    f (V4 Double) ->
+    Chart a
+arrowChartWithRange cr cfg xy xs =
+    arrow1 cfg $ rescaleV4P cr xy <$> xs
+
 arrowChart ::
     (Traversable f) =>
     ArrowConfig Double ->
@@ -208,7 +259,7 @@ arrowChart ::
     f (V4 Double) ->
     Chart a
 arrowChart cfg xy xs =
-    arrow1 cfg $ scaleV4s xy xs
+    arrow1 cfg $ rescaleV4P (rangeV4 xs) xy <$> xs
 
 -- | rescale a V4 from rold to rnew
 rescaleV4P :: V4 (Range Double) -> V4 (Range Double) -> V4 Double -> V4 Double
@@ -254,7 +305,7 @@ withChart ::
 withChart conf renderer d = case conf^.chartRange of
   Nothing ->
       renderer (conf^.chartAspect) d <>
-      axes (chartRange .~ Just (rangeR2s d) $ conf)
+      axes (chartRange .~ Just (foldMap rangeR2 d) $ conf)
   Just axesRange ->
       combine (conf ^. chartAspect)
       [ QChart renderer r d
@@ -268,7 +319,7 @@ withChart conf renderer d = case conf^.chartRange of
         []
       ]
     where
-      r = rangeR2s d
+      r = foldMap rangeR2 d
 
 axes ::
     ChartConfig ->

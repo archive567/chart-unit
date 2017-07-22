@@ -170,6 +170,12 @@ Clipping charts
 
 ![](other/exampleClipping.svg)
 
+animation
+---
+
+<img style="border:5px solid grey" src="other/anim.gif">
+
+
 
 data
 ---
@@ -207,13 +213,13 @@ scratch :: Chart SVG -> IO ()
 scratch = fileSvg "other/scratchpad.svg" (600,400)
 ```
 
-I tend to work in ghci a lot, using the above `scratch` to try code out, mashing the refresh button in the browser.  
+I tend to work in ghci a lot, using the above `scratch` to try code out, mashing the refresh button in the browser.  Or I switch on stacks --file-watch ...
 
 
 recipe 2
 
 ~~~
-stack build --copy-bins --test --exec  "chart-unit-examples" --exec "pandoc -f markdown -t html -i examples/examples.md -o index.html --mathjax --filter pandoc-include" --file-watch
+stack build --test --exec "$(stack path --local-install-root)/bin/chart-unit-examples" --exec "$(stack path --local-bin)/pandoc -f markdown+lhs -i app/examples.hs -t html -o index.html --filter pandoc-include --mathjax" --file-watch
 ~~~
 
 
