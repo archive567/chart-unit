@@ -1,7 +1,5 @@
-name:
-  chart-unit
-version:
-  0.4.0
+name: chart-unit
+version: 0.4.1
 synopsis:
   Native haskell charts.
 description:
