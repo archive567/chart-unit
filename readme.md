@@ -4,7 +4,7 @@
 
 [![Build Status](https://travis-ci.org/tonyday567/chart-unit.svg)](https://travis-ci.org/tonyday567/chart-unit) [![Hackage](https://img.shields.io/hackage/v/chart-unit.svg)](https://hackage.haskell.org/package/chart-unit) [![lts](https://www.stackage.org/package/chart-unit/badge/lts)](http://stackage.org/lts/package/chart-unit) [![nightly](https://www.stackage.org/package/chart-unit/badge/nightly)](http://stackage.org/nightly/package/chart-unit)
 
-[repo](https://tonyday567.github.com/chart-unit)
+[repo](https://github.com/tonyday567/chart-unit)
 
 `chart-unit` is an experimental haskell chart library.  
 
@@ -18,6 +18,16 @@ bling
 line chart
 
 ![](other/exampleLine.svg)
+
+blog version
+
+<img src="https://tonyday567.github.io/other/examplePixels.svg" width="100%">
+
+repo version
+
+<img src="https://github.com/tonyday567/chart-unit/blob/master/other/exampleLine.svg" width="100%">
+
+
 
 scatter chart
 
