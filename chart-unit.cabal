@@ -55,7 +55,7 @@ library
     formatting,
     lens,
     linear,
-    numhask >= 0.0.4 && < 1,
+    numhask >= 0.0.5 && < 1,
     numhask-range >= 0.0.3 && < 1,
     text
   default-language:

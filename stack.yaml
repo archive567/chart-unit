@@ -1,11 +1,8 @@
-resolver: lts-8.9
+resolver: lts-8.23
 
 packages:
 - '.'
 
 extra-deps:
-- erf-native-1.0.0.1
-- polynomial-0.7.2
-- tdigest-0.1
-- numhask-0.0.4
+- numhask-0.0.5
 - numhask-range-0.0.3
