@@ -2,8 +2,9 @@
 <script type="text/javascript" async
   src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-MML-AM_CHTML">
 </script>
-<h1 id="chart-unit-build-status"><a href="https://tonyday567.github.io/chart-unit">chart-unit</a> <a href="https://travis-ci.org/tonyday567/chart-unit"><img src="https://travis-ci.org/tonyday567/chart-unit.png" alt="Build Status" /></a></h1>
-<p><a href="https://tonyday567.github.com/chart-unit">repo</a></p>
+<h1 id="chart-unit"><a href="https://tonyday567.github.io/chart-unit">chart-unit</a></h1>
+<p><a href="https://travis-ci.org/tonyday567/chart-unit"><img src="https://travis-ci.org/tonyday567/chart-unit.svg" alt="Build Status" /></a> <a href="https://hackage.haskell.org/package/chart-unit"><img src="https://img.shields.io/hackage/v/chart-unit.svg" alt="Hackage" /></a> <a href="http://stackage.org/lts/package/chart-unit"><img src="https://www.stackage.org/package/chart-unit/badge/lts" alt="lts" /></a> <a href="http://stackage.org/nightly/package/chart-unit"><img src="https://www.stackage.org/package/chart-unit/badge/nightly" alt="nightly" /></a></p>
+<p><a href="https://github.com/tonyday567/chart-unit">repo</a></p>
 <p><code>chart-unit</code> is an experimental haskell chart library.</p>
 <p>scratchpad</p>
 <p><img style="border:5px solid grey" src="other/scratchpad.svg"></p>
@@ -155,4 +156,4 @@ withChart (chartAspect .~ asquare $ def) (scatters scatterDefs) xys1</code></pre
 scratch <span class="fu">=</span> fileSvg <span class="st">&quot;other/scratchpad.svg&quot;</span> (<span class="dv">600</span>,<span class="dv">400</span>)</code></pre></div>
 <p>I tend to work in ghci a lot, using the above <code>scratch</code> to try code out, mashing the refresh button in the browser. Or I switch on stacks --file-watch ...</p>
 <p>recipe 2</p>
-<pre><code>stack build --test --exec &quot;$(stack path --local-install-root)/bin/chart-unit-examples&quot; --exec &quot;$(stack path --local-bin)/pandoc -f markdown+lhs -i app/examples.hs -t html -o index.html --filter pandoc-include --mathjax&quot; --file-watch</code></pre>
+<pre><code>stack build --test --exec &quot;$(stack path --local-install-root)/bin/chart-unit-examples&quot; --exec &quot;$(stack path --local-bin)/pandoc -f markdown -i examples/examples.md -t html -o index.html --filter pandoc-include --mathjax&quot; --file-watch</code></pre>

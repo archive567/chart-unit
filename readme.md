@@ -8,72 +8,43 @@
 
 `chart-unit` is an experimental haskell chart library.  
 
-At the moment, only SVG is supported, and github markdown doesn't include support for svg images.
-
 See https://tonyday567.github.io/chart-unit for an extended description.
 
-bling
+chart bling
 ===
 
 line chart
-
-![](other/exampleLine.svg)
-
-blog version
-
-<img src="https://tonyday567.github.io/other/examplePixels.svg" width="100%">
-
-repo version
-
-<img src="https://github.com/tonyday567/chart-unit/blob/master/other/exampleLine.svg" width="100%">
-
-
+<img src="https://tonyday567.github.io/other/exampleLine.svg">
 
 scatter chart
-
-![](other/exampleScatter.svg)
+<img src="https://tonyday567.github.io/other/exampleScatter.svg">
 
 histogram
-
-![](other/exampleHist.svg)
+<img src="https://tonyday567.github.io/other/exampleHist.svg">
 
 pixel chart
-
-![](other/examplePixels.svg)
+<img src="https://tonyday567.github.io/other/examplePixels.svg">
 
 skinny
-
-![](other/exampleOneDim.svg)
+<img src="https://tonyday567.github.io/other/exampleOneDim.svg">
 
 histogram diff
-
-![](other/exampleHistCompare.svg)
+<img src="https://tonyday567.github.io/other/exampleHistCompare.svg">
 
 arrow chart
-
-![](other/exampleArrow.svg)
+<img src="https://tonyday567.github.io/other/exampleArrow.svg">
 
 compound
-
-![](other/exampleCompound.svg)
+<img src="https://tonyday567.github.io/other/exampleCompound.svg">
 
 animation
-
-<img style="border:5px solid grey" src="other/anim.gif">
-
-
-
-
-
-
-
-
+<img src="https://tonyday567.github.io/other/anim.gif">
 
 compile recipe
 --------
 
 ~~~
-stack build --test --exec "$(stack path --local-install-root)/bin/chart-unit-examples" --exec "$(stack path --local-bin)/pandoc -f markdown+lhs -i app/examples.hs -t html -o index.html --filter pandoc-include --mathjax" --file-watch
+stack build --test --exec "$(stack path --local-install-root)/bin/chart-unit-examples" --exec "$(stack path --local-bin)/pandoc -f markdown -i examples/examples.md -t html -o index.html --filter pandoc-include --mathjax" --file-watch
 ~~~
 
 to do
