@@ -14,30 +14,35 @@ chart bling
 ===
 
 line chart
+---
 <img src="https://tonyday567.github.io/other/exampleLine.svg">
 
 scatter chart
+---
 <img src="https://tonyday567.github.io/other/exampleScatter.svg">
 
 histogram
+---
 <img src="https://tonyday567.github.io/other/exampleHist.svg">
 
 pixel chart
+---
 <img src="https://tonyday567.github.io/other/examplePixels.svg">
 
-skinny
-<img src="https://tonyday567.github.io/other/exampleOneDim.svg">
-
 histogram diff
+---
 <img src="https://tonyday567.github.io/other/exampleHistCompare.svg">
 
 arrow chart
+---
 <img src="https://tonyday567.github.io/other/exampleArrow.svg">
 
 compound
+---
 <img src="https://tonyday567.github.io/other/exampleCompound.svg">
 
 animation
+---
 <img src="https://tonyday567.github.io/other/anim.gif">
 
 compile recipe
