@@ -1,10 +1,10 @@
-{-
-various fake data
--}
-
+{-# LANGUAGE CPP #-}
+{-# LANGUAGE DataKinds #-}
 {-# OPTIONS_GHC -Wall #-}
 {-# OPTIONS_GHC -fno-warn-type-defaults #-}
-{-# LANGUAGE DataKinds #-}
+#if ( __GLASGOW_HASKELL__ < 820 )
+{-# OPTIONS_GHC -fno-warn-incomplete-patterns #-}
+#endif
 
 module FakeData where
 
@@ -32,14 +32,14 @@ rvs gen n = samples n standard gen
 This generates n V2 random variates where the x and y parts are correlated.
 -}
 
-rvsCorr :: Gen (PrimState IO) -> Int -> Double -> IO [V2 Double]
+rvsCorr :: Gen (PrimState IO) -> Int -> Double -> IO [Pair Double]
 rvsCorr gen n c = do
   s0 <- rvs gen n
   s1 <- rvs gen n
   let s1' = zipWith (\x y -> c * x + sqrt (1 - c * c) * y) s0 s1
-  pure $ zipWith V2 s0 s1'
+  pure $ zipWith Pair s0 s1'
 
-mkScatterData :: IO [[V2 Double]]
+mkScatterData :: IO [[Pair Double]]
 mkScatterData = do
     g <- create
     xys <- rvsCorr g 1000 0.7
@@ -50,7 +50,7 @@ mkScatterData = do
 makeHist :: Int -> [Double] -> [Rect Double]
 makeHist n xs = fromHist (IncludeOvers 1) (fill cuts xs)
   where
-    r = Chart.range xs
+    r = space xs
     cuts = linearSpace OuterPos r n
 
 makeRvs :: IO [[Double]]
@@ -68,7 +68,7 @@ mkHistData = do
 mkHistogramData :: IO [Histogram]
 mkHistogramData = do
     d0 <- makeRvs
-    let cuts = linearSpace OuterPos (Range (-3.0,3.0)) 6
+    let cuts = linearSpace OuterPos (Range -3.0 3.0) 6
     pure $ fill cuts  <$> d0
 
 makeRectQuantiles :: Double -> IO [Rect Double]
@@ -79,7 +79,7 @@ makeRectQuantiles n = do
         step (_,   Nothing) a = ([], Just a)
         step (acc, Just l)  a = (acc <> [V4 l 0 a (0.1/(a-l))], Just a)
     let h = L.fold (L.Fold step begin fst) vs
-    pure $ view rect <$> h
+    pure $ (\(V4 a b c d) -> Rect a b c d) <$> h
 
 makeQuantiles :: Double -> IO [Double]
 makeQuantiles n = do
@@ -97,18 +97,18 @@ tDigestQuantiles qs = L.Fold step begin done
     done x = fromMaybe nan . (`quantile` compress x) <$> qs
 
 arrowData :: [V4 Double]
-arrowData = zipWith (\(V2 x y) (V2 z w) -> V4 x y z w) pos dir'
+arrowData = zipWith (\(Pair x y) (Pair z w) -> V4 x y z w) pos dir'
   where
-    pos = gridP OuterPos (Rect (V2 (-1 ... 1) (-1 ... 1))) (V2 20 20)
+    pos = gridP OuterPos (Ranges (-1 ... 1) (-1 ... 1)) (Pair 20 20)
     dir' = gradF rosenbrock 0.01 <$> pos
 
 gradF ::
     (forall s. (Reifies s Tape) => [Reverse s Double] -> Reverse s Double) ->
     Double ->
-    V2 Double ->
-    V2 Double
-gradF f step (V2 x y) =
-    - r2 ((\[x',y'] -> (x',y')) $
+    Pair Double ->
+    Pair Double
+gradF f step (Pair x y) =
+    fmap negate ((\[x',y'] -> Pair x' y') $
           gradWith (\x0 x1 -> x0 + (x1 - x0) * step) f [x,y])
 
 rosenbrock :: (Num a) => [a] -> a

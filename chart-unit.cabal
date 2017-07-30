@@ -1,5 +1,5 @@
 name: chart-unit
-version: 0.4.1
+version: 0.5.0
 synopsis:
   Native haskell charts.
 description:
@@ -121,6 +121,7 @@ executable chart-unit-examples
     ad,
     reflection,
     tdigest,
+    numhask-range,
     -- for animation example
     diagrams-rasterific,
     JuicyPixels,

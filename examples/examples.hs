@@ -1,5 +1,10 @@
+{-# LANGUAGE CPP #-}
+{-# LANGUAGE DataKinds #-}
 {-# OPTIONS_GHC -Wall #-}
 {-# OPTIONS_GHC -Wno-type-defaults #-}
+#if ( __GLASGOW_HASKELL__ < 820 )
+{-# OPTIONS_GHC -fno-warn-incomplete-patterns #-}
+#endif
 
 import Chart
 import NumHask.Prelude
@@ -31,7 +36,7 @@ exampleGrid =
     scatterChart
     [ScatterConfig 0.01 (palette!!4)]
     sixbyfour
-    [V2 <$> [0..10] <*> [0..10]]
+    [Pair <$> [0..10] <*> [0..10]]
 
 lineDefs :: [LineConfig]
 lineDefs =
@@ -40,9 +45,9 @@ lineDefs =
     , LineConfig 0.005 (Color 0.5 0.5 0.5 1.0)
     ]
 
-lineData :: [[V2 Double]]
+lineData :: [[Pair Double]]
 lineData =
-    fmap r2 <$>
+    fmap (uncurry Pair) <$>
     [ [(0.0,1.0),(1.0,1.0),(2.0,5.0)]
     , [(0.0,0.0),(3.0,3.0)]
     , [(0.5,4.0),(0.5,0)]
@@ -63,11 +68,11 @@ exampleLineAxes2 =
 scatterDefs :: [ScatterConfig]
 scatterDefs = zipWith ScatterConfig [0.01,0.02,0.03] (opacs 0.5 palette)
 
-exampleScatter :: [[V2 Double]] -> Chart' a
+exampleScatter :: [[Pair Double]] -> Chart' a
 exampleScatter xys =
     withChart (chartAspect .~ asquare $ def) (scatterChart scatterDefs) xys
 
-exampleScatter2 :: [[V2 Double]] -> Chart' a
+exampleScatter2 :: [[Pair Double]] -> Chart' a
 exampleScatter2 xys =
     withChart (chartAspect .~ asquare $ def) (scatterChart scatterDefs) xys1
   where
@@ -102,8 +107,8 @@ exampleHistCompare :: DealOvers -> Histogram -> Histogram -> Chart' a
 exampleHistCompare o h1 h2 =
     let h = fromHist o h1
         h' = fromHist o h2
-        h'' = zipWith (\(Rect (V2 (Range (x,y)) (Range (z,w)))) (Rect (V2 _ (Range (_,w')))) -> Rect (V2 (Range (x,y)) (Range (z,w-w')))) h h'
-        flat = Aspect $ Rect (V2 (Range (-0.75,0.75)) (Range (-0.25,0.25)))
+        h'' = zipWith (\(Rect x y z w) (Rect _ _ _ w') -> Rect x y z (w-w')) h h'
+        flat = Aspect $ Rect -0.75 0.75 -0.25 0.25
     in
       pad 1.1 $
         beside (r2 (0,-1)) (histChart
@@ -132,8 +137,7 @@ exampleHistCompare o h1 h2 =
 exampleHistGrey2 :: [Rect Double] -> Chart' a
 exampleHistGrey2 rs =
     lineChart lineDefs widescreen
-    [(\(Rect (V2 (Range (x,z)) (Range (_,w)))) -> V2 ((x+z)/(one+one)) w) <$>
-      rs] <>
+    [(\(Rect x z _ w) -> Pair ((x+z)/(one+one)) w) <$> rs] <>
     axes
     ( chartRange .~ Just (fold rs)
     $ chartAspect .~ widescreen
@@ -156,8 +160,7 @@ exampleLabelledBar =
   where
     labels' = fmap pack <$> take 10 $ (:[]) <$> ['a'..]
     rs :: [Rect Double]
-    rs = abs . view rect <$>
-        zipWith4 V4 [0..10] (replicate 11 0) [1..11] [1,2,3,5,8,0,-2,11,2,1]
+    rs = abs <$> zipWith4 Rect [0..10] (replicate 11 0) [1..11] [1,2,3,5,8,0,-2,11,2,1]
 
 exampleArrow :: [V4 Double] -> Chart' a
 exampleArrow xs =
@@ -171,8 +174,7 @@ exampleClipping :: Chart a
 exampleClipping =
     L.fold (L.Fold step1 mempty identity) $
     (\y -> L.fold (L.Fold step mempty identity)
-      (Rect . (`V2` y) <$> qb)) <$>
-    qb
+      ((`Ranges` y) <$> qb)) <$> qb
   where
     step x a = beside (r2 (1,0)) x (pad 1.05 $ center $ blob (Color 0 0 0 0.02) box a <> clip ch a)
     step1 x a = beside (r2 (0,1)) x (pad 1.05 $ center a)
@@ -182,7 +184,7 @@ exampleClipping =
     ch = lineChart lineDefs asquare lineData
 
 -- compound charts
-exampleCompound :: IO [QChart a [[V2 Double]]]
+exampleCompound :: IO [QChart a [[Pair Double]]]
 exampleCompound = do
     xys <- mkScatterData
     let qsc = QChart (scatterChart scatterDefs) (rangeR2s xys) xys
@@ -197,7 +199,7 @@ exampleCompound = do
             $ chartAspect .~ a
             $ def)) xy []
 
-exampleScatterHist :: [[V2 Double]] -> Chart' a
+exampleScatterHist :: [[Pair Double]] -> Chart' a
 exampleScatterHist xys =
     beside (r2 (1,0))
     (beside (r2 (0,-1))
@@ -214,7 +216,7 @@ exampleScatterHist xys =
           $ rectColor .~ Color 0.333 0.333 0.333 0.4
           $ def
         ]
-    xyHist = Aspect (Rect (V2 one ((0.2*)<$>one)))
+    xyHist = Aspect (Ranges one ((0.2*)<$>one))
     hx = makeHist 50 . fmap (view _x) <$> xys
     hy = makeHist 50 . fmap (view _y) <$> xys
     axes2 =
@@ -237,16 +239,16 @@ exampleScatterHist xys =
 exampleGgplot :: Chart' a
 exampleGgplot =
     lineChart (repeat (LineConfig 0.002 (Color 0.98 0.98 0.98 1))) sixbyfour (gridX <> gridY) <>
-    blob (Color 0.92 0.92 0.92 1) (box (Rect (V2 ((1.5*) <$> one) one))) <>
+    blob (Color 0.92 0.92 0.92 1) (box (Ranges ((1.5*) <$> one) one)) <>
     axes ggdef
   where
-    gridX = (\x -> [V2 0 x, V2 10 x]) . fromIntegral <$> ([0..10] :: [Int])
-    gridY = (\x -> [V2 x 0, V2 x 10]) . fromIntegral <$> ([0..10] :: [Int])
+    gridX = (\x -> [Pair 0 x, Pair 10 x]) . fromIntegral <$> ([0..10] :: [Int])
+    gridY = (\x -> [Pair x 0, Pair x 10]) . fromIntegral <$> ([0..10] :: [Int])
     ggdef =
         ChartConfig
         1.1
         [defx]
-        (Just $ Rect (V2 (0 ... 10) (0 ... 10)))
+        (Just $ Ranges (0 ... 10) (0 ... 10))
         sixbyfour
         (Color 1 1 1 0)
     defx =
@@ -269,11 +271,11 @@ exampleGgplot =
 examplePixels :: Chart' a
 examplePixels =
     pixelf
-    (pixelGrain .~ V2 10 10 $ def)
-    asquare (Rect (V2 (-1 ... 1) (-1 ... 1)))
-    (\(V2 x y) -> x*y+x*x) <>
+    (pixelGrain .~ Pair 10 10 $ def)
+    asquare (Ranges (-1 ... 1) (-1 ... 1))
+    (\(Pair x y) -> x*y+x*x) <>
     axes
-    ( chartRange .~ Just (Rect (V2 (-1 ... 1) (-1 ... 1)))
+    ( chartRange .~ Just (Ranges (-1 ... 1) (-1 ... 1))
     $ chartAspect .~ asquare
     $ def)
 
@@ -286,11 +288,11 @@ makeOneDim = do
 
 exampleOneDim :: [[(Double,Text)]] -> Chart' a
 exampleOneDim qss =
-    axes (ChartConfig 1.1 [def] (Just (Rect (V2 (range $ fst <$> (qss!!0)) (Range (0,0))))) skinny (uncolor transparent)) <>
-    axes (ChartConfig 1.1 [axisColor .~ uncolor transparent $ axisMarkSize .~ 0.05 $ axisMarkColor .~ uncolor (withOpacity red 0.3) $ axisTickStyle .~ TickPlaced (qss!!1) $ def] (Just (Rect (V2 (range $ fst <$> (qss!!1)) (Range (0,0))))) skinny (uncolor transparent)) <>
-    axes (ChartConfig 1.1 [axisColor .~ uncolor transparent $ axisMarkSize .~ 0.1 $ axisTextSize .~ 0.08 $ axisMarkColor .~ uncolor (withOpacity black 0.5) $ axisTickStyle .~ TickPlaced (qss!!0) $ def] (Just (Rect (V2 (range $ fst <$> (qss!!0)) (Range (0,0))))) skinny (uncolor transparent))
+    axes (ChartConfig 1.1 [def] (Just (Ranges (space $ fst <$> (qss!!0)) (Range 0 0))) skinny (uncolor transparent)) <>
+    axes (ChartConfig 1.1 [axisColor .~ uncolor transparent $ axisMarkSize .~ 0.05 $ axisMarkColor .~ uncolor (withOpacity red 0.3) $ axisTickStyle .~ TickPlaced (qss!!1) $ def] (Just (Ranges (space $ fst <$> (qss!!1)) (Range 0 0))) skinny (uncolor transparent)) <>
+    axes (ChartConfig 1.1 [axisColor .~ uncolor transparent $ axisMarkSize .~ 0.1 $ axisTextSize .~ 0.08 $ axisMarkColor .~ uncolor (withOpacity black 0.5) $ axisTickStyle .~ TickPlaced (qss!!0) $ def] (Just (Ranges (space $ fst <$> (qss!!0)) (Range 0 0))) skinny (uncolor transparent))
   where
-    skinny = Aspect (Rect (V2 ((5*) <$> one) one))
+    skinny = Aspect (Ranges ((5*) <$> one) one)
 
 displayHeader :: FilePath -> [(Diagram B, GifDelay)] -> IO ()
 displayHeader fn =

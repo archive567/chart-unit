@@ -38,9 +38,9 @@ testWithChart = describe "withChart" $ do
             , LineConfig 0.02 (Color 0.698 0.569 0.184 0.5)
             , LineConfig 0.005 (Color 0.5 0.5 0.5 1.0)
             ]
-        lineData :: [[V2 Double]]
+        lineData :: [[Pair Double]]
         lineData =
-            fmap r2 <$>
+            fmap (uncurry Pair) <$>
             [ [(0.0,1.0),(1.0,1.0),(2.0,5.0)]
             , [(0.0,0.0),(3.0,3.0)]
             , [(0.5,4.0),(0.5,0)]

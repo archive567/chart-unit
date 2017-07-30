@@ -85,6 +85,7 @@ import Diagrams.Prelude hiding (Color(..), aspect)
 import qualified Diagrams.TwoD.Text
 import NumHask.Range
 import NumHask.Rect
+import NumHask.Pair
 import Data.Colour
 
 -- | a Chart has a concrete scale, and combinatory options amount to mappend (on top of) and beside
@@ -104,8 +105,7 @@ type Chart' a =
 data Aspect = Aspect { unAspect :: Rect Double}
 
 aspect :: Double -> Aspect
-aspect a = Aspect (Rect (V2 ((a*) <$> one) one))
-
+aspect a = Aspect (Ranges ((a*) <$> one) one)
 asquare :: Aspect
 asquare = aspect 1
 
@@ -285,14 +285,13 @@ makeLenses ''ArrowConfig
 data PixelConfig =
     PixelConfig
     { _pixelGradient :: Range Color
-    , _pixelGrain :: V2 Int
+    , _pixelGrain :: Pair Int
     }
 
 instance Default PixelConfig where
     def = PixelConfig
-        (Range ( Color 1 1 1 1
-               , Color 0 0 0 1))
-        (V2 20 20)
+        (Range (Color 1 1 1 1) (Color 0 0 0 1))
+        (Pair 20 20)
 
 makeLenses ''PixelConfig
 
