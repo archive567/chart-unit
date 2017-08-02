@@ -5,15 +5,12 @@ module Chart
   , SVG
   , V4(..)
   , zipWith4
-  , module Diagrams.Prelude
   , Pair(..)
   , pattern Pair
   ) where
 
 import Data.List (zipWith4)
 import Diagrams.Backend.SVG (SVG)
-import Diagrams.Prelude hiding
-    ((<>), arrow, Color(..), lineColor, scaleX, scaleY, width, zero, unsnoc, uncons, Additive, Loop, Magma, Metric, getLast, getFirst, normalize, inv, First, Last, (&), Strict, unit, from, to, size, distance, (.-.), (-~), (*.), rect, element, aspect, project, intersection)
 import Linear (V4(..))
 
 import NumHask.Pair

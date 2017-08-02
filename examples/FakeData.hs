@@ -44,8 +44,8 @@ mkScatterData = do
     g <- create
     xys <- rvsCorr g 1000 0.7
     xys1 <- rvsCorr g 1000 -0.5
-    pure [ over _y (+1) . over _x (\x -> x^^2 + 3*x - 1) <$> xys
-         , over _x (\x -> x^^2 + 3*x + 1) <$> xys1]
+    pure [ (\(Pair x y) -> Pair ( x^^2 + 3*x - 1) (y+1)) <$> xys
+         , (\(Pair x y) -> Pair ( x^^2 + 3*x + 1) y) <$> xys1]
 
 makeHist :: Int -> [Double] -> [Rect Double]
 makeHist n xs = fromHist (IncludeOvers 1) (fill cuts xs)
@@ -75,11 +75,11 @@ makeRectQuantiles :: Double -> IO [Rect Double]
 makeRectQuantiles n = do
     vs <- makeQuantiles n
     let begin = ([],Nothing)
-    let step :: ([V4 Double],Maybe Double) -> Double -> ([V4 Double],Maybe Double)
+    let step :: ([Rect Double],Maybe Double) -> Double -> ([Rect Double],Maybe Double)
         step (_,   Nothing) a = ([], Just a)
-        step (acc, Just l)  a = (acc <> [V4 l 0 a (0.1/(a-l))], Just a)
+        step (acc, Just l)  a = (acc <> [Rect l a 0 (0.1/(a-l))], Just a)
     let h = L.fold (L.Fold step begin fst) vs
-    pure $ (\(V4 a b c d) -> Rect a b c d) <$> h
+    pure h
 
 makeQuantiles :: Double -> IO [Double]
 makeQuantiles n = do
@@ -96,11 +96,13 @@ tDigestQuantiles qs = L.Fold step begin done
     begin = tdigest ([]::[Double]) :: TDigest 25
     done x = fromMaybe nan . (`quantile` compress x) <$> qs
 
-arrowData :: [V4 Double]
-arrowData = zipWith (\(Pair x y) (Pair z w) -> V4 x y z w) pos dir'
+arrowData :: Double -> [Rect Double]
+arrowData maxArrowLen = zipWith (\(Pair x y) (Pair z w) -> Rect x (x+z) y (y+w)) pos d'
   where
-    pos = gridP OuterPos (Ranges (-1 ... 1) (-1 ... 1)) (Pair 20 20)
-    dir' = gradF rosenbrock 0.01 <$> pos
+    pos = gridP OuterPos (Rect -1 1 -1 1) (Pair 20 20)
+    d = gradF rosenbrock 0.01 <$> pos
+    (Range _ maxd) = space $ (\(Pair x y) -> sqrt(x**2+y**2)) <$> d
+    d' = (fmap (\x -> x*maxArrowLen/maxd)) <$> d
 
 gradF ::
     (forall s. (Reifies s Tape) => [Reverse s Double] -> Reverse s Double) ->

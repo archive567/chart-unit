@@ -37,6 +37,8 @@ module Chart.Unit
   , bubble
   -- , text1
   , histCompare
+  , arrowStyle'
+  , arrow1'
   ) where
 
 import NumHask.Prelude hiding (min,max,from,to,(&))
@@ -100,7 +102,7 @@ scatter1 (ScatterConfig s c) ps =
      blob c
     )
 
--- | rectangles specified using a V4 x y z w where
+-- | rectangles specified using a Rect x z y w where
 -- (x,y) is location of lower left corner
 -- (z,w) is location of upper right corner
 rect1 :: (Traversable f) => RectConfig -> f (Rect Double) -> Chart b
@@ -116,19 +118,63 @@ rect1 cfg rs = mconcat $ toList $
         lw 1
        )) <$> rs
 
-arrow1 :: (Traversable f) => ArrowConfig Double -> f (V4 Double) -> Chart b
+
+-- | an arrow specified as a Rect x z y w where
+-- Pair x y is the location of the arrow tail
+-- Pair z w is the location of the arrow head
+arrow1 :: (Traversable f) => ArrowConfig Double -> f (Rect Double) -> Chart b
 arrow1 cfg qs =
     fcA (color $ cfg ^. arrowColor) $ position $
     zip
-    ((\(V4 x y _ _) -> p2 (x,y)) <$> toList qs)
-    (arrowStyle cfg <$> toList qs)
+    ((\(Rect x _ y _) -> p2 (x,y)) <$> toList qs)
+    (arrowStyle cfg maxNorm <$> arr)
+  where
+    arr = (\(Rect x z y w) -> Pair (z-x) (w-y)) <$> toList qs
+    (Range _ maxNorm) = space $ (\(Pair x y) -> sqrt(x**2+y**2)) <$> arr
 
-arrowStyle :: ArrowConfig Double -> V4 Double -> Chart b
-arrowStyle cfg (V4 _ _ z w) =
-    arrowAt' opts (p2 (0, 0)) (sL *^ V2 z w)
+
+normArrowLength :: ArrowConfig Double -> [Rect Double] -> [Rect Double]
+normArrowLength cfg xs = zipWith (\(Pair x y) (Pair z w) -> Rect x (x+z) y (y+w)) pos v'
+  where
+    pos = (\(Rect x _ y _) -> Pair x y) <$> xs
+    v = (\(Rect x z y w) -> Pair (z-x) (w-y)) <$> toList xs
+    l = (\(Pair x y) -> sqrt(x**2+y**2)) <$> v
+    (Range _ maxL) = space l
+    l' = (\x -> (cfg^.arrowStaffLength) * (min (cfg ^. arrowMinStaffLength) x)) <$> (/maxL) <$> l
+    r = width (space pos :: Rect Double)
+    rpos = width (space v :: Rect Double)
+    v' = zipWith (NumHask.Prelude.*.) l' ((\x -> x * (r / rpos)) <$> v)
+
+    
+-- | arrow styles from diagrams
+arrowStyle :: ArrowConfig Double -> Double -> Pair Double -> Chart b
+arrowStyle cfg maxNorm (Pair z w) =
+    arrowAt' opts (p2 (0, 0)) (V2 z w)
   where
     trunc minx maxx a = min (max minx a) maxx
-    m = norm (V2 z w)
+    m = norm (V2 z w) / maxNorm
+    hs = trunc (cfg ^. arrowMinHeadSize) (cfg ^. arrowMaxHeadSize) (cfg ^. arrowHeadSize * m)
+    sW = trunc (cfg ^. arrowMinStaffWidth) (cfg ^. arrowMaxStaffWidth) (cfg ^. arrowStaffWidth * m)
+    sL = trunc (cfg ^. arrowMinStaffLength) (cfg ^. arrowMaxStaffLength) (cfg ^. arrowStaffLength * m)
+    opts = with & arrowHead .~ tri &
+           headLength .~ global (cfg ^. arrowHeadSize) &
+           shaftStyle %~ (lwG (cfg ^. arrowStaffWidth) & lcA (color $ cfg ^. arrowColor)) &
+           headStyle %~ (lcA (withOpacity yellow 0.5) & fcA (withOpacity yellow 0.5))
+
+
+arrow1' cfg qs =
+    (arrowStyle' cfg maxNorm <$> arr)
+  where
+    arr = (\(Rect x z y w) -> Pair (z-x) (w-y)) <$> toList qs
+    (Range _ maxNorm) = space $ (\(Pair x y) -> sqrt(x**2+y**2)) <$> arr
+
+
+-- arrowStyle' :: ArrowConfig Double -> Double -> Pair Double -> (Double, Double, Double, Double)
+arrowStyle' cfg maxNorm (Pair z w) =
+    (m,hs,sW,sL,z,w)
+  where
+    trunc minx maxx a = min (max minx a) maxx
+    m = norm (V2 z w) / maxNorm
     hs = trunc (cfg ^. arrowMinHeadSize) (cfg ^. arrowMaxHeadSize) (cfg ^. arrowHeadSize * m)
     sW = trunc (cfg ^. arrowMinStaffWidth) (cfg ^. arrowMaxStaffWidth) (cfg ^. arrowStaffWidth * m)
     sL = trunc (cfg ^. arrowMinStaffLength) (cfg ^. arrowMaxStaffLength) (cfg ^. arrowStaffLength * m)
@@ -136,6 +182,8 @@ arrowStyle cfg (V4 _ _ z w) =
            headLength .~ global hs &
            shaftStyle %~ (lwG sW & lcA (color $ cfg ^. arrowColor)) &
            headStyle %~ (lcA (color $ cfg ^. arrowColor) & fcA (color $ cfg ^. arrowColor))
+
+
 
 -- | convert from an XY to a polymorphic qdiagrams rectangle
 box ::
@@ -259,22 +307,22 @@ pixelf cfg (Aspect asp) xy f =
 -- | arrow lengths and sizes also need to be scaled, and so arrows doesnt fit as neatly into the whole scaling idea
 arrowChartWithRange ::
     (Traversable f) =>
-    V4 (Range Double) ->
+    Rect Double ->
     ArrowConfig Double ->
-    V4 (Range Double) ->
-    f (V4 Double) ->
+    Aspect ->
+    f (Rect Double) ->
     Chart a
-arrowChartWithRange cr cfg xy xs =
-    arrow1 cfg $ rescaleV4P cr xy <$> xs
+arrowChartWithRange cr cfg (Aspect xy) xs =
+    arrow1 cfg $ (projectRect cr xy) <$> xs
 
 arrowChart ::
     (Traversable f) =>
     ArrowConfig Double ->
-    V4 (Range Double) ->
-    f (V4 Double) ->
+    Aspect ->
+    f (Rect Double) ->
     Chart a
 arrowChart cfg xy xs =
-    arrow1 cfg $ rescaleV4P (rangeV4 xs) xy <$> xs
+    arrowChartWithRange (fold xs) cfg xy xs
 
 -- | rescale a V4 from rold to rnew
 rescaleV4P :: V4 (Range Double) -> V4 (Range Double) -> V4 Double -> V4 Double

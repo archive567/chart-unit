@@ -277,7 +277,7 @@ data ArrowConfig a = ArrowConfig
     }
 
 instance Default (ArrowConfig Double) where
-    def = ArrowConfig 0.01 0.05 0.03 0.1 0.1 0.1 0.01 0.005 0.2
+    def = ArrowConfig 0.01 0.05 0.03 0.2 0.2 0.2 0.01 0.01 0.01
           (Color 0.333 0.333 0.888 0.8)
 
 makeLenses ''ArrowConfig

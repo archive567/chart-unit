@@ -8,6 +8,8 @@
 
 import Chart
 import NumHask.Prelude
+import Diagrams.Prelude
+ 
 import Codec.Picture.Gif (GifDelay)
 import Diagrams.Backend.Rasterific.CmdLine (B, GifOpts(..))
 import Diagrams.Backend.CmdLine (DiagramOpts(..), mainRender)
@@ -160,13 +162,13 @@ exampleLabelledBar =
   where
     labels' = fmap pack <$> take 10 $ (:[]) <$> ['a'..]
     rs :: [Rect Double]
-    rs = abs <$> zipWith4 Rect [0..10] (replicate 11 0) [1..11] [1,2,3,5,8,0,-2,11,2,1]
+    rs = (\(Ranges a b) -> Ranges (abs a) (abs b)) <$> zipWith4 Rect [0..10] [1..11] (replicate 11 0) [1,2,3,5,8,0,-2,11,2,1]
 
-exampleArrow :: [V4 Double] -> Chart' a
+exampleArrow :: [Rect Double] -> Chart' a
 exampleArrow xs =
-    arrowChart def (V4 one one one one) xs <>
+    arrowChart def (Aspect one) xs <>
     axes ( chartRange .~ Just
-           ( rangeV42Rect $ rangeV4 $ scaleV4s (V4 one one one one) xs)
+           (fold $ (\(Ranges a b) -> Ranges (abs a) (abs b)) <$> xs)
            $ chartAspect .~ asquare $ def)
 
 -- clipping
@@ -318,7 +320,7 @@ exampleAnimation f = do
     let cr = chartRange' yss
     let us :: [Diagram B ]
         us = exampleHistAnim cr widescreen . pure <$> yss
-
+ 
     displayHeader f $ zip us (repeat (10 :: Int))
 
 main :: IO ()
@@ -347,7 +349,7 @@ main = do
   fileSvg "other/exampleHistCompare.svg" s6by4 (exampleHistCompare (IncludeOvers 1) (hs!!0) (hs!!1))
   fileSvg "other/exampleScatterHist.svg" sOne (pad 1.1 $ center $ exampleScatterHist xys)
   fileSvg "other/exampleLabelledBar.svg" s6by4 exampleLabelledBar
-  fileSvg "other/exampleArrow.svg" sOne (exampleArrow arrowData)
+  fileSvg "other/exampleArrow.svg" sOne (exampleArrow (arrowData 0.2))
   exc <- exampleCompound
   fileSvg "other/exampleCompound.svg" s6by4 (pad 1.1 $ center $ combine golden exc)
   fileSvg "other/exampleClipping.svg" sOne exampleClipping
