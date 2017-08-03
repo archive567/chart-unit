@@ -19,6 +19,7 @@ import System.Random.MWC
 import System.Random.MWC.Probability
 import qualified Control.Foldl as L
 import qualified Protolude as P
+import Data.Functor.Compose
 import Data.TDigest
 
 {-
@@ -96,13 +97,11 @@ tDigestQuantiles qs = L.Fold step begin done
     begin = tdigest ([]::[Double]) :: TDigest 25
     done x = fromMaybe nan . (`quantile` compress x) <$> qs
 
-arrowData :: Double -> [Rect Double]
-arrowData maxArrowLen = zipWith (\(Pair x y) (Pair z w) -> Rect x (x+z) y (y+w)) pos d'
+arrowData :: [Compose Pair Pair Double]
+arrowData = zipWith (\p a -> (Compose (Pair p a))) positions arrows
   where
-    pos = gridP OuterPos (Rect -1 1 -1 1) (Pair 20 20)
-    d = gradF rosenbrock 0.01 <$> pos
-    (Range _ maxd) = space $ (\(Pair x y) -> sqrt(x**2+y**2)) <$> d
-    d' = (fmap (\x -> x*maxArrowLen/maxd)) <$> d
+    positions = gridP OuterPos (Rect -1 1 -1 1) (Pair 4 4)
+    arrows = gradF rosenbrock 0.01 <$> positions
 
 gradF ::
     (forall s. (Reifies s Tape) => [Reverse s Double] -> Reverse s Double) ->

@@ -19,6 +19,7 @@ import FakeData
 import qualified Control.Foldl as L
 import Data.List ((!!))
 import Data.Text (pack)
+import Data.Functor.Compose
 
 scratch :: Chart SVG -> IO ()
 scratch = fileSvg "other/scratchpad.svg" (600,400)
@@ -164,12 +165,14 @@ exampleLabelledBar =
     rs :: [Rect Double]
     rs = (\(Ranges a b) -> Ranges (abs a) (abs b)) <$> zipWith4 Rect [0..10] [1..11] (replicate 11 0) [1,2,3,5,8,0,-2,11,2,1]
 
-exampleArrow :: [Rect Double] -> Chart' a
+exampleArrow :: [Compose Pair Pair Double] -> Chart' a
 exampleArrow xs =
     arrowChart def (Aspect one) xs <>
-    axes ( chartRange .~ Just
-           (fold $ (\(Ranges a b) -> Ranges (abs a) (abs b)) <$> xs)
+    axes ( chartRange .~ Just r
            $ chartAspect .~ asquare $ def)
+  where
+    xs' = normArrows xs
+    r = space (\(Compose (Pair d _)) -> d) <$> xs'
 
 -- clipping
 exampleClipping :: Chart a
@@ -349,7 +352,7 @@ main = do
   fileSvg "other/exampleHistCompare.svg" s6by4 (exampleHistCompare (IncludeOvers 1) (hs!!0) (hs!!1))
   fileSvg "other/exampleScatterHist.svg" sOne (pad 1.1 $ center $ exampleScatterHist xys)
   fileSvg "other/exampleLabelledBar.svg" s6by4 exampleLabelledBar
-  fileSvg "other/exampleArrow.svg" sOne (exampleArrow (arrowData 0.2))
+  fileSvg "other/exampleArrow.svg" sOne (exampleArrow arrowData)
   exc <- exampleCompound
   fileSvg "other/exampleCompound.svg" s6by4 (pad 1.1 $ center $ combine golden exc)
   fileSvg "other/exampleClipping.svg" sOne exampleClipping
