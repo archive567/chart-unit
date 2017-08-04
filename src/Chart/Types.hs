@@ -57,16 +57,14 @@ module Chart.Types
   , rectBorderColor
   , rectColor
   , ArrowConfig(..)
-  , arrowMinHeadSize
-  , arrowMaxHeadSize
-  , arrowHeadSize
-  , arrowMinStaffLength
-  , arrowMaxStaffLength
-  , arrowStaffLength
+  , arrowMaxLength
+  , arrowMinLength
+  , arrowMinHeadLength
+  , arrowMaxHeadLength
   , arrowMinStaffWidth
   , arrowMaxStaffWidth
-  , arrowStaffWidth
   , arrowColor
+  , arrowHeadStyle
   , PixelConfig(..)
   , pixelGradient
   , pixelGrain
@@ -264,21 +262,18 @@ instance Default RectConfig where
 makeLenses ''RectConfig
 
 data ArrowConfig a = ArrowConfig
-    { _arrowMinHeadSize :: a
-    , _arrowMaxHeadSize :: a
-    , _arrowHeadSize :: a
-    , _arrowMinStaffLength :: a
-    , _arrowMaxStaffLength :: a
-    , _arrowStaffLength :: a
+    { _arrowMinLength :: a
+    , _arrowMaxLength :: a
+    , _arrowMinHeadLength :: a
+    , _arrowMaxHeadLength :: a
     , _arrowMinStaffWidth :: a
     , _arrowMaxStaffWidth :: a
-    , _arrowStaffWidth :: a
     , _arrowColor :: Color
+    , _arrowHeadStyle :: ArrowHT a
     }
 
 instance Default (ArrowConfig Double) where
-    def = ArrowConfig 0.01 0.05 0.03 0.2 0.2 0.2 0.01 0.01 0.01
-          (Color 0.333 0.333 0.888 0.8)
+    def = ArrowConfig 0.02 0.2 0.01 0.1 0.002 0.005 (Color 0.333 0.333 0.888 0.8) dart
 
 makeLenses ''ArrowConfig
 

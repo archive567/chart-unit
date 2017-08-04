@@ -37,9 +37,8 @@ module Chart.Unit
   , bubble
   -- , text1
   , histCompare
-  , arrowStyle'
-  , arrow1'
-  , normArrowLength
+  , Arrow(..)
+  , normArrows
   ) where
 
 import NumHask.Prelude hiding (min,max,from,to,(&))
@@ -51,7 +50,7 @@ import NumHask.Pair
 import Chart.Types
 
 import Control.Lens hiding (beside, none, (#), at, singular)
-import Data.Ord (max, min)
+import Data.Ord (max)
 import Diagrams.Backend.SVG (SVG, renderSVG)
 import Diagrams.Prelude hiding (width, unit, D, Color, scale, zero, scaleX, scaleY, aspect, rect, project)
 import Formatting
@@ -60,8 +59,7 @@ import Linear hiding (zero, identity, unit, project)
 import qualified Control.Foldl as L
 import qualified Data.Text as Text
 import qualified Diagrams.Prelude as Diagrams
-import Data.List (zipWith3, zipWith4, zipWith5)
-import Data.Functor.Compose
+import Data.List (zipWith5)
 
 import NumHask.Naperian()
 
@@ -122,118 +120,76 @@ rect1 cfg rs = mconcat $ toList $
        )) <$> rs
 
 
--- | an arrow specified as a Rect x z y w where
--- Pair x y is the location of the arrow tail
--- Pair z w is the location of the arrow head
-arrow1 :: (Traversable f) => ArrowConfig Double -> f (Compose Pair Pair Double) -> Chart b
-arrow1 cfg qs =
-    fcA (color $ cfg ^. arrowColor) $ position $
-    zipWith5 (\xy wz lh lw' ls -> (xy, arrowAt' (opts lh lw') (p2 (0, 0)) (ls *^ wz)))
-    ((\(Pair x y) -> p2 (x,y)) <$> ds)
-    ((\(Pair x y) -> V2 x y) <$> as)
-    habs
-    wabs
-    sabs
+-- | data structure for an arrow chart
+data Arrow = Arrow
+    { pos :: Pair Double -- position of arrow tail
+    , arr :: Pair Double -- direction and strength of arrow
+    } deriving (Eq, Show)
+
+-- | an arrow chart specified as an Arrow pos arr where
+-- pos is the location of the arrow tail
+-- arr is the location of the arrow head
+arrow1 :: ArrowConfig Double -> [Arrow] -> Chart b
+arrow1 cfg xs = c
   where
-    -- data points
-    ds = ((\(Compose (Pair d _)) -> d) <$> toList qs)
+    c = fcA (color $ cfg ^. arrowColor) $ position $
+        zipWith5 (\ps' as' hrel' wrel' srel' -> (ps', arrowAt' (opts hrel' wrel') (p2 (0, 0)) ((srel'/norm(as')) *^ as')))
+        ((\(Pair x y) -> p2 (x,y)) <$> ps)
+        ((\(Pair x y) -> V2 x y) <$> as)
+        hrel
+        wrel
+        srel
+    ps = pos <$> xs
     -- arrow vectors
-    as = ((\(Compose (Pair _ a)) -> a) <$> toList qs)
+    as = arr <$> xs
     -- width of the data space
-    (Pair dx dy) = width ((space ds) :: Rect Double)
+    (Pair dx dy) = width ((space ps) :: Rect Double)
     -- norm of arrow vectors relative to the data space metric
     anorm = (\(Pair x y) -> sqrt((x/dx)**2+(y/dy)**2)) <$> as
-    -- norm of the data space relative to each arrow vector
-    invanorm = (\(Pair x y) -> sqrt((dx/x)**2+(dy/y)**2)) <$> as
     -- the maximum arrow vector norm
     (Range _ anormMax) = space anorm
     -- the overall size of the arrows, as a proportion to the data space
-    arel = (\x -> x * (cfg ^. arrowMaxStaffLength) / anormMax) <$> anorm
+    arel = (\x -> (max (anormMax * (cfg ^. arrowMinLength)) (x / anormMax * (cfg ^. arrowMaxLength)))) <$> anorm
     -- size of the head (as a proportion of the data space)
-    hrel = (\x -> min (cfg ^. arrowMinHeadSize) ((cfg^.arrowHeadSize) * x)) <$> arel
+    hrel = (\x -> max (cfg ^. arrowMinHeadLength) ((cfg^.arrowMaxHeadLength) * x)) <$> arel
     -- widt of the staff
-    wrel = (\x -> min (cfg ^. arrowMinStaffWidth) ((cfg^.arrowStaffWidth) * x)) <$> arel
+    wrel = (\x -> max (cfg ^. arrowMinStaffWidth) ((cfg^.arrowMaxStaffWidth) * x)) <$> arel
     -- length of the staff (taking into account the head length)
-    srel = zipWith (\la lh -> max 0 (la - lh)) arel hrel
-    -- absolute size of the heads
-    habs = zipWith (*) hrel invanorm
-    -- absolute width of the staff
-    wabs = zipWith (*) wrel invanorm
-    -- absolute size of the staff
-    sabs = zipWith (*) srel invanorm
+    srel = zipWith (\la lh -> max 1e-12 (la - lh)) arel hrel
     -- diagrams arrow options
-    opts lh lw'' = with & arrowHead .~ tri &
+    opts lh lw'' = with & arrowHead .~ (cfg ^. arrowHeadStyle) &
                  headLength .~ global lh &
                  shaftStyle %~ (lwG lw'' & lcA (color $ cfg ^. arrowColor)) &
                  headStyle %~ (lcA (color $ cfg ^. arrowColor) & fcA (color $ cfg ^. arrowColor))
 
-normArrows :: (Traversable f) => f (Compose Pair Pair Double) -> [Compose Pair Pair Double]
-normArrows qs =
-    zipWith (\xy wz -> Compose (Pair xy wz))
-    xy
-    wz'
+{-
+let xs = normArrows $ arrowData (Pair 3 3)
+let ps = pos <$> xs
+let as = arr <$> xs
+let (Pair dx dy) = Chart.width ((space ps) :: Rect Double)
+let anorm = (\(Pair x y) -> sqrt((x/dx)**2+(y/dy)**2)) <$> as
+let cfg = def :: ArrowConfig Double
+let arel = (\x -> (max (anormMax * (cfg ^. arrowMinLength)) (x / anormMax * (cfg ^. arrowMaxLength)))) <$> anorm
+let opts lh lw'' = with NumHask.Prelude.& arrowHead .~ (cfg ^. arrowHeadStyle) NumHask.Prelude.& headLength .~ global lh NumHask.Prelude.& shaftStyle %~ (lwG lw'' NumHask.Prelude.& lcA (color $ cfg ^. arrowColor)) NumHask.Prelude.& headStyle %~ (lcA (color $ cfg ^. arrowColor) NumHask.Prelude.& fcA (color $ cfg ^. arrowColor))
+
+let c = fcA (color $ cfg ^. arrowColor) $ position $ zipWith5 (\ps' as' hrel' wrel' srel' -> (ps', arrowAt' (opts hrel' wrel') (p2 (0, 0)) (srel' *^ as'))) ((\(Pair x y) -> p2 (x,y)) <$> ps) ((\(Pair x y) -> V2 x y) <$> as) hrel wrel srel
+-}
+
+
+-- | equalize the arrow space width with the data space one.
+normArrows :: [Arrow] -> [Arrow]
+normArrows xs =
+    zipWith Arrow ps as'
   where
     -- data points
-    xy = ((\(Compose (Pair d _)) -> d) <$> toList qs)
+    ps = pos <$> xs
     -- arrow vectors
-    wz = ((\(Compose (Pair _ a)) -> a) <$> toList qs)
-    wz' = project (space wz :: Rect Double) (space xy) <$> wz
-
-normArrowLength :: ArrowConfig Double -> [Compose Pair Pair Double] -> [Compose Pair Pair Double]
-normArrowLength cfg xs = zipWith (\d a -> Compose (Pair d a)) pos v'
-  where
-    pos = (\(Compose (Pair d _)) -> d) <$> xs
-    v = (\(Compose (Pair _ a)) -> a) <$> toList xs
-    l = (\(Pair x y) -> sqrt(x**2+y**2)) <$> v
-    (Range _ maxL) = space l
-    l' = (\x -> (cfg^.arrowStaffLength) * (min (cfg ^. arrowMinStaffLength) x)) <$> (/maxL) <$> l
-    r = width (space pos :: Rect Double)
-    rpos = width (space v :: Rect Double)
-    v' = zipWith (NumHask.Prelude.*.) l' ((\x -> x * (r / rpos)) <$> v)
-    opts = with & arrowHead .~ tri &
-           headLength .~ global (cfg ^. arrowHeadSize) &
-           shaftStyle %~ (lwG (cfg ^. arrowStaffWidth) & lcA (color $ cfg ^. arrowColor)) &
-           headStyle %~ (lcA (withOpacity yellow 0.5) & fcA (withOpacity yellow 0.5))
-
-
--- | arrow styles from diagrams
-arrowStyle :: ArrowConfig Double -> Double -> Pair Double -> Chart b
-arrowStyle cfg maxNorm (Pair z w) =
-    arrowAt' opts (p2 (0, 0)) (V2 z w)
-  where
-    trunc minx maxx a = min (max minx a) maxx
-    m = norm (V2 z w) / maxNorm
-    hs = trunc (cfg ^. arrowMinHeadSize) (cfg ^. arrowMaxHeadSize) (cfg ^. arrowHeadSize * m)
-    sW = trunc (cfg ^. arrowMinStaffWidth) (cfg ^. arrowMaxStaffWidth) (cfg ^. arrowStaffWidth * m)
-    sL = trunc (cfg ^. arrowMinStaffLength) (cfg ^. arrowMaxStaffLength) (cfg ^. arrowStaffLength * m)
-    opts = with & arrowHead .~ tri &
-           headLength .~ global (cfg ^. arrowHeadSize) &
-           shaftStyle %~ (lwG (cfg ^. arrowStaffWidth) & lcA (color $ cfg ^. arrowColor)) &
-           headStyle %~ (lcA (withOpacity yellow 0.5) & fcA (withOpacity yellow 0.5))
-
-
-arrow1' cfg qs =
-    (arrowStyle' cfg maxNorm <$> arr)
-  where
-    arr = (\(Rect x z y w) -> Pair (z-x) (w-y)) <$> toList qs
-    (Range _ maxNorm) = space $ (\(Pair x y) -> sqrt(x**2+y**2)) <$> arr
-
-
--- arrowStyle' :: ArrowConfig Double -> Double -> Pair Double -> (Double, Double, Double, Double)
-arrowStyle' cfg maxNorm (Pair z w) =
-    (m,hs,sW,sL,z,w)
-  where
-    trunc minx maxx a = min (max minx a) maxx
-    m = norm (V2 z w) / maxNorm
-    hs = trunc (cfg ^. arrowMinHeadSize) (cfg ^. arrowMaxHeadSize) (cfg ^. arrowHeadSize * m)
-    sW = trunc (cfg ^. arrowMinStaffWidth) (cfg ^. arrowMaxStaffWidth) (cfg ^. arrowStaffWidth * m)
-    sL = trunc (cfg ^. arrowMinStaffLength) (cfg ^. arrowMaxStaffLength) (cfg ^. arrowStaffLength * m)
-    opts = with & arrowHead .~ tri &
-           headLength .~ global hs &
-           shaftStyle %~ (lwG sW & lcA (color $ cfg ^. arrowColor)) &
-           headStyle %~ (lcA (color $ cfg ^. arrowColor) & fcA (color $ cfg ^. arrowColor))
-
-
+    as = arr <$> xs
+    as' = (\x ->
+             x *
+             width (space $ pos <$> xs :: Rect Double) /
+             width (space $ arr <$> xs :: Rect Double)) <$>
+          as
 
 -- | convert from an XY to a polymorphic qdiagrams rectangle
 box ::
@@ -356,25 +312,22 @@ pixelf cfg (Aspect asp) xy f =
 
 -- | arrow lengths and sizes also need to be scaled, and so arrows doesnt fit as neatly into the whole scaling idea
 arrowChartWithRange ::
-    (Traversable f) =>
     Rect Double ->
     ArrowConfig Double ->
     Aspect ->
-    f (Compose Pair Pair Double) ->
+    [Arrow] ->
     Chart a
 arrowChartWithRange cr cfg (Aspect xy) xs =
-    arrow1 cfg $ (\(Compose (Pair d a)) -> Compose (Pair (project cr xy d) ((project cr xy a)))) <$> xs
+    arrow1 cfg $ (\(Arrow d a) -> Arrow (project cr xy d) (project cr xy a)) <$> xs
 
 arrowChart ::
-    (Traversable f) =>
     ArrowConfig Double ->
     Aspect ->
-    f (Compose Pair Pair Double) ->
+    [Arrow] ->
     Chart a
 arrowChart cfg xy xs =
     arrowChartWithRange
-    ((space $ (\(Compose (Pair d _)) -> d) <$> xs) `mappend`
-     (space $ (\(Compose (Pair _ a)) -> a) <$> xs))
+    (space (pos <$> xs))
     cfg xy xs
 
 -- | rescale a V4 from rold to rnew
