@@ -14,6 +14,8 @@ module Chart.Unit
   , scatter1
   , rect1
   , pixel1
+  , Arrow(..)
+  , normArrows
   , arrow1
   , box
   , scatterChart
@@ -24,9 +26,6 @@ module Chart.Unit
   , histChartWithRange
   , arrowChart
   , arrowChartWithRange
-  , rangeV4
-  , rangeV42Rect
-  , scaleV4s
   , toPixels
   , rescalePixels
   , pixelf
@@ -37,8 +36,6 @@ module Chart.Unit
   , bubble
   -- , text1
   , histCompare
-  , Arrow(..)
-  , normArrows
   ) where
 
 import NumHask.Prelude hiding (min,max,from,to,(&))
@@ -119,6 +116,20 @@ rect1 cfg rs = mconcat $ toList $
         lw 1
        )) <$> rs
 
+-- | equalize the arrow space width with the data space one.
+normArrows :: [Arrow] -> [Arrow]
+normArrows xs =
+    zipWith Arrow ps as'
+  where
+    -- data points
+    ps = pos <$> xs
+    -- arrow vectors
+    as = arr <$> xs
+    as' = (\x ->
+             x *
+             width (space $ pos <$> xs :: Rect Double) /
+             width (space $ arr <$> xs :: Rect Double)) <$>
+          as
 
 -- | data structure for an arrow chart
 data Arrow = Arrow
@@ -126,9 +137,10 @@ data Arrow = Arrow
     , arr :: Pair Double -- direction and strength of arrow
     } deriving (Eq, Show)
 
--- | an arrow chart specified as an Arrow pos arr where
+-- | an arrow chart specified as an `Arrow pos arr` where
 -- pos is the location of the arrow tail
 -- arr is the location of the arrow head
+-- The resulting chart is robust to scale changes across the x and y dimensions, and between the position and arrow coordinates
 arrow1 :: ArrowConfig Double -> [Arrow] -> Chart b
 arrow1 cfg xs = c
   where
@@ -161,35 +173,6 @@ arrow1 cfg xs = c
                  headLength .~ global lh &
                  shaftStyle %~ (lwG lw'' & lcA (color $ cfg ^. arrowColor)) &
                  headStyle %~ (lcA (color $ cfg ^. arrowColor) & fcA (color $ cfg ^. arrowColor))
-
-{-
-let xs = normArrows $ arrowData (Pair 3 3)
-let ps = pos <$> xs
-let as = arr <$> xs
-let (Pair dx dy) = Chart.width ((space ps) :: Rect Double)
-let anorm = (\(Pair x y) -> sqrt((x/dx)**2+(y/dy)**2)) <$> as
-let cfg = def :: ArrowConfig Double
-let arel = (\x -> (max (anormMax * (cfg ^. arrowMinLength)) (x / anormMax * (cfg ^. arrowMaxLength)))) <$> anorm
-let opts lh lw'' = with NumHask.Prelude.& arrowHead .~ (cfg ^. arrowHeadStyle) NumHask.Prelude.& headLength .~ global lh NumHask.Prelude.& shaftStyle %~ (lwG lw'' NumHask.Prelude.& lcA (color $ cfg ^. arrowColor)) NumHask.Prelude.& headStyle %~ (lcA (color $ cfg ^. arrowColor) NumHask.Prelude.& fcA (color $ cfg ^. arrowColor))
-
-let c = fcA (color $ cfg ^. arrowColor) $ position $ zipWith5 (\ps' as' hrel' wrel' srel' -> (ps', arrowAt' (opts hrel' wrel') (p2 (0, 0)) (srel' *^ as'))) ((\(Pair x y) -> p2 (x,y)) <$> ps) ((\(Pair x y) -> V2 x y) <$> as) hrel wrel srel
--}
-
-
--- | equalize the arrow space width with the data space one.
-normArrows :: [Arrow] -> [Arrow]
-normArrows xs =
-    zipWith Arrow ps as'
-  where
-    -- data points
-    ps = pos <$> xs
-    -- arrow vectors
-    as = arr <$> xs
-    as' = (\x ->
-             x *
-             width (space $ pos <$> xs :: Rect Double) /
-             width (space $ arr <$> xs :: Rect Double)) <$>
-          as
 
 -- | convert from an XY to a polymorphic qdiagrams rectangle
 box ::
@@ -330,39 +313,7 @@ arrowChart cfg xy xs =
     (space (pos <$> xs))
     cfg xy xs
 
--- | rescale a V4 from rold to rnew
-rescaleV4P :: V4 (Range Double) -> V4 (Range Double) -> V4 Double -> V4 Double
-rescaleV4P rold rnew q =
-    over _x (project (rold^._x) (rnew^._x)) $
-    over _y (project (rold^._y) (rnew^._y)) $
-    over _z (project (rold^._z) (rnew^._z)) $
-    over _w (project (rold^._w) (rnew^._w))
-    q
-
--- | rescale a container of V4s
-rescaleV4 :: (Functor f) =>
-    V4 (Range Double) -> V4 (Range Double) -> f (V4 Double) -> f (V4 Double)
-rescaleV4 rold rnew qs = rescaleV4P rold rnew <$> qs
-
--- | scale a double container of V4s from the current range
-scaleV4s :: (Traversable f) =>
-    V4 (Range Double) -> f (V4 Double) -> f (V4 Double)
-scaleV4s r f = rescaleV4 (rangeV4 f) r f
-
--- | V4 range of a V4 container
-rangeV4 :: (Traversable f) => f (V4 Double) -> V4 (Range Double)
-rangeV4 qs = V4 rx ry rz rw
-  where
-    rx = space $ toList (view _x <$> qs)
-    ry = space $ toList (view _y <$> qs)
-    rz = space $ toList (view _z <$> qs)
-    rw = space $ toList (view _w <$> qs)
-
-rangeV42Rect :: V4 (Range Double) -> Rect Double
-rangeV42Rect (V4 x y z w) = Ranges (x `mappend` z) (y `mappend` w)
-
 -- * axis rendering
-
 -- | render with a chart configuration
 withChart ::
     ( Traversable f ) =>
