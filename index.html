@@ -39,13 +39,14 @@
 <img src="other/exampleLine.svg" />
 
 </div>
-<pre><code>lines lineDefs sixbyfour lineData</code></pre>
+<pre><code>lineChart lineDefs (range lineData) sixbyfour lineData</code></pre>
 <p>Breaking the code down:</p>
 <ul class="incremental">
-<li><code>lines</code> is a typical chart renderer, taking a</li>
-<li><code>[LineConfig]</code>, which is a list of configurations for each line, an</li>
-<li><code>Aspect</code>, the aspect ratio to render the chart, and, finally</li>
-<li>the data, a <code>(Traversable g, Traversable f, R2~r) =&gt; g (f (r a))</code>, or in this case, a <code>[[V2 Double]]</code>, which is a double container of the values to chart</li>
+<li><code>lineChart</code> is a typical chart renderer</li>
+<li><code>[LineConfig]</code>, which is a list of configurations for each line</li>
+<li><code>Rect Double</code> which is the numeric range of the chart. Here, <code>range lineData</code> provides the range of the data. <code>lineChart_ lineDefs sixbyfour lineData</code> is a synonym for the above line; underscore renderers assume data range for the chart range.</li>
+<li><code>Aspect</code>, the aspect ratio to render the chart with.</li>
+<li>the data, a <code>(Traversable g, Traversable f, R2~r) =&gt; g (f (r a))</code>, or in this case, a <code>[[Pair Double]]</code>, which is a container of the lines to chart, each of these lines represented as a <code>[Pair Double]</code>.</li>
 </ul>
 <h2 id="withchart">withChart</h2>
 <p>You don't have to do anything special to combine these lines with axes.</p>
@@ -53,10 +54,9 @@
 <img src="other/exampleLineAxes.svg" />
 
 </div>
-<pre><code>lines lineDefs sixbyfour lineData &lt;&gt; 
-axes (chartRange .~ Just (rangeR2s lineData) $ def)</code></pre>
+<pre><code>lineChart_ lineDefs sixbyfour lineData &lt;&gt; axes def</code></pre>
 <p><code>withChart</code> is a convenience function for this common operation, and the code below is equivalent to the above code:</p>
-<pre><code>withChart def (lines lineDefs) lineData</code></pre>
+<pre><code>withChart def (lineChart lineDefs) lineData</code></pre>
 <h2 id="scatter">scatter</h2>
 <p>Other default chart types follow this same pattern:</p>
 <div class="figure">
@@ -64,7 +64,7 @@ axes (chartRange .~ Just (rangeR2s lineData) $ def)</code></pre>
 
 </div>
 <pre><code>xys &lt;- mkScatterData
-withChart (chartAspect .~ asquare $ def) (scatters scatterDefs) xys</code></pre>
+withChart (chartAspect .~ asquare $ def) (scatterChart scatterDefs) xys</code></pre>
 <p>As with <code>line</code>, <code>scatter</code> zips together multiple configurations and multiple containers of data. It's often much easier to construct charts assuming multiple data sets.</p>
 <p>A major point of the chart-unit library is that the look-n-feel of a chart is invariant to the data scale.</p>
 <div class="figure">
@@ -72,7 +72,7 @@ withChart (chartAspect .~ asquare $ def) (scatters scatterDefs) xys</code></pre>
 
 </div>
 <pre><code>let xys1 = fmap (over _x (*1e8) . over _y (*1e-8)) &lt;$&gt; xys in
-withChart (chartAspect .~ asquare $ def) (scatters scatterDefs) xys1</code></pre>
+withChart (chartAspect .~ asquare $ def) (scatterChart scatterDefs) xys1</code></pre>
 <h2 id="histogram">histogram</h2>
 <p>A histogram, in widescreen</p>
 <div class="figure">
@@ -134,7 +134,10 @@ withChart (chartAspect .~ asquare $ def) (scatters scatterDefs) xys1</code></pre
 
 </div>
 <h2 id="animation">animation</h2>
-<p><img style="border:5px solid grey" src="other/anim.gif"></p>
+<div class="figure">
+<img src="other/anim.gif" />
+
+</div>
 <h2 id="data">data</h2>
 <p>Double-containered dimensioned data covers what a chart charts - one or more data sets with at least an x and y dimension (called R2 in the linear library).</p>
 <p>Most chart variations are about what to do with the extra dimensions in the data. A rectangle, for example, is built from 4 dimensions, an anchoring of position in XY space, with a width (W) and height (Z). A contour map is three dimensional data (V3 in linear), with placement as XY and color as Z.</p>

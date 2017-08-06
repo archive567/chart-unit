@@ -1,4 +1,3 @@
-
 [chart-unit](https://tonyday567.github.io/chart-unit)
 ===
 
@@ -51,8 +50,3 @@ compile recipe
 ~~~
 stack build --test --exec "$(stack path --local-install-root)/bin/chart-unit-examples" --exec "$(stack path --local-bin)/pandoc -f markdown -i examples/examples.md -t html -o index.html --filter pandoc-include --mathjax" --file-watch
 ~~~
-
-to do
----
-
-- legends, text (titles, etc)

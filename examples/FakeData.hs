@@ -1,6 +1,7 @@
 {-# LANGUAGE CPP #-}
 {-# LANGUAGE DataKinds #-}
 {-# OPTIONS_GHC -Wall #-}
+{-# OPTIONS_GHC -fno-warn-name-shadowing #-}
 {-# OPTIONS_GHC -fno-warn-type-defaults #-}
 #if ( __GLASGOW_HASKELL__ < 820 )
 {-# OPTIONS_GHC -fno-warn-incomplete-patterns #-}
@@ -20,6 +21,8 @@ import System.Random.MWC.Probability
 import qualified Control.Foldl as L
 import qualified Protolude as P
 import Data.TDigest
+import qualified Data.Map as Map
+import Data.List
 
 {-
 Standard normal random variates in one dimension.
@@ -47,11 +50,39 @@ mkScatterData = do
     pure [ (\(Pair x y) -> Pair ( x^^2 + 3*x - 1) (y+1)) <$> xys
          , (\(Pair x y) -> Pair ( x^^2 + 3*x + 1) y) <$> xys1]
 
+data DealOvers = IgnoreOvers | IncludeOvers Double
+
 makeHist :: Int -> [Double] -> [Rect Double]
 makeHist n xs = fromHist (IncludeOvers 1) (fill cuts xs)
   where
-    r = space xs
-    cuts = linearSpace OuterPos r n
+    cuts = grid OuterPos (space xs :: Range Double) n
+
+fill :: (Functor f, Foldable f) => [Double] -> f Double -> Histogram
+fill cuts xs = Histogram cuts (histMap cuts xs)
+  where
+    histMap cuts xs = L.fold count $ (\x -> L.fold countBool (fmap (x >) cuts)) <$> xs
+    count = L.premap (\x -> (x,1.0)) countW
+    countBool = L.Fold (\x a -> x + if a then 1 else 0) 0 identity
+    countW = L.Fold (\x (a,w) -> Map.insertWith (+) a w x) Map.empty identity
+
+fromHist :: DealOvers -> Histogram -> [Rect Double]
+fromHist o (Histogram cuts counts) = zipWith4 Rect x z y w'
+  where
+      y = repeat 0
+      w = zipWith (/)
+          ((\x -> Map.findWithDefault 0 x counts) <$> [f..l])
+          (zipWith (-) z x)
+      f = case o of
+        IgnoreOvers -> 1
+        IncludeOvers _ -> 0
+      l = case o of
+        IgnoreOvers -> length cuts - 1
+        IncludeOvers _ -> length cuts
+      w' = (/P.sum w) <$> w
+      x = case o of
+        IgnoreOvers -> cuts
+        IncludeOvers outw -> [Data.List.head cuts - outw] <> cuts <> [last cuts + outw]
+      z = drop 1 x
 
 makeRvs :: IO [[Double]]
 makeRvs = do
@@ -65,10 +96,15 @@ mkHistData = do
     d0 <- makeRvs
     pure $ makeHist 30 <$> d0 
 
+data Histogram = Histogram
+   { _cuts   :: [Double] -- bucket boundaries
+   , _values :: Map.Map Int Double -- bucket counts
+   } deriving (Show, Eq)
+
 mkHistogramData :: IO [Histogram]
 mkHistogramData = do
     d0 <- makeRvs
-    let cuts = linearSpace OuterPos (Range -3.0 3.0) 6
+    let cuts = grid OuterPos (Range -3.0 3.0) 6
     pure $ fill cuts  <$> d0
 
 makeRectQuantiles :: Double -> IO [Rect Double]
@@ -99,7 +135,7 @@ tDigestQuantiles qs = L.Fold step begin done
 arrowData :: Pair Int -> [Arrow]
 arrowData g = zipWith Arrow positions arrows
   where
-    positions = gridP OuterPos (Rect -1 1 -1 1) g
+    positions = grid OuterPos (Rect -1 1 -1 1) g
     arrows = gradF rosenbrock 0.01 <$> positions
 
 gradF ::

@@ -3,8 +3,11 @@
 
 module Main where
 
-import Chart
 import NumHask.Prelude
+import Chart
+
+import Data.Default (def)
+import Control.Lens ((.~))
 
 import Test.Tasty (testGroup, defaultMain)
 import Test.Tasty.Hspec
@@ -29,8 +32,8 @@ testWithChart = describe "withChart" $ do
         justAxesChart = axes def
         line1Chart = withChart def (lineChart lineDefs) lineData
         line2Chart =
-            lineChart lineDefs sixbyfour lineData <>
-            axes (chartRange .~ Just (rangeR2s lineData) $ def)
+            lineChart_ lineDefs sixbyfour lineData <>
+            axes (chartRange .~ Just (range lineData) $ def)
 
         lineDefs :: [LineConfig]
         lineDefs =

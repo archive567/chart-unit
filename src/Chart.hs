@@ -15,8 +15,8 @@ import Linear (V4(..))
 
 import NumHask.Pair
 
+import NumHask.Space as X
 import NumHask.Range as X
 import NumHask.Rect as X
-import NumHask.Histogram as X
 import Chart.Types as X
 import Chart.Unit as X

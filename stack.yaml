@@ -1,8 +1,7 @@
-resolver: lts-9.0
+resolver: lts-8.24
 
 packages:
-- '.'
-- '../numhask-range'
+  - '.'
 
 extra-deps:
   - numhask-0.0.8

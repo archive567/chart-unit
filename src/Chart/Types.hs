@@ -36,6 +36,7 @@ module Chart.Types
   , axisInsideStrut
   , axisLabelStrut
   , axisTextSize
+  , axisTextRotation
   , axisTextColor
   , axisTickStyle
   , axisAlignedTextRight
@@ -120,7 +121,7 @@ widescreen = aspect 3
 data QChart a b = QChart
     { _qChart :: ( ( Renderable (Diagrams.TwoD.Text.Text Double) a)
                   , Renderable (Path V2 Double) a) =>
-                Aspect -> b -> QDiagram a V2 Double Any
+                Rect Double -> Aspect -> b -> QDiagram a V2 Double Any
     , _qXY :: Rect Double
     , _qData :: b
     }
@@ -180,6 +181,7 @@ data AxisConfig = AxisConfig
     , _axisInsideStrut :: Double -- distance of axis from plane
     , _axisLabelStrut :: Double -- distance of label from mark
     , _axisTextSize :: Double
+    , _axisTextRotation :: Double
     , _axisTextColor :: Color
     , _axisTickStyle :: TickStyle
     , _axisAlignedTextRight :: Double
@@ -199,6 +201,7 @@ instance Default AxisConfig where
         0.05
         0.02
         0.04
+        0
         (Color 0.2 0.2 0.2 0.7)
         (TickRound 8)
         0.5

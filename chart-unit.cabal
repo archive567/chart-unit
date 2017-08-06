@@ -53,6 +53,7 @@ library
     formatting,
     lens,
     linear,
+    data-default,
     numhask >= 0.0.5 && < 1,
     numhask-range >= 0.0.3 && < 1,
     text
@@ -115,6 +116,7 @@ executable chart-unit-examples
     text,
     numhask,
     -- for data examples
+    containers,
     mwc-random,
     mwc-probability,
     primitive,
@@ -175,7 +177,9 @@ test-suite test
     chart-unit,
     tasty,
     tasty-hspec,
-    numhask
+    numhask,
+    data-default,
+    lens
   default-extensions:
     NoImplicitPrelude,
     UnicodeSyntax,
