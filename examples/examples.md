@@ -63,15 +63,16 @@ Some actual, real-life lines to be plotted:
 ![](other/exampleLine.svg)
 
 ~~~
-lines lineDefs sixbyfour lineData
+lineChart lineDefs (range lineData) sixbyfour lineData
 ~~~
 
 Breaking the code down:
 
-- `lines` is a typical chart renderer, taking a
-- `[LineConfig]`, which is a list of configurations for each line, an
-- `Aspect`, the aspect ratio to render the chart, and, finally
-- the data, a `(Traversable g, Traversable f, R2~r) => g (f (r a))`, or in this case, a `[[V2 Double]]`, which is a double container of the values to chart
+- `lineChart` is a typical chart renderer
+- `[LineConfig]`, which is a list of configurations for each line
+- `Rect Double` which is the numeric range of the chart.  Here, `range lineData` provides the range of the data. `lineChart_ lineDefs sixbyfour lineData` is a synonym for the above line; underscore renderers assume data range for the chart range.
+- `Aspect`, the aspect ratio to render the chart with.
+- the data, a `(Traversable g, Traversable f, R2~r) => g (f (r a))`, or in this case, a `[[Pair Double]]`, which is a container of the lines to chart, each of these lines represented as a `[Pair Double]`.
 
 withChart
 ---
@@ -81,14 +82,13 @@ You don't have to do anything special to combine these lines with axes.
 ![](other/exampleLineAxes.svg)
 
 ~~~
-lines lineDefs sixbyfour lineData <> 
-axes (chartRange .~ Just (rangeR2s lineData) $ def)
+lineChart_ lineDefs sixbyfour lineData <> axes def
 ~~~
 
 `withChart` is a convenience function for this common operation, and the code below is equivalent to the above code:
 
 ~~~
-withChart def (lines lineDefs) lineData
+withChart def (lineChart lineDefs) lineData
 ~~~
 
 scatter
@@ -100,7 +100,7 @@ Other default chart types follow this same pattern:
 
 ~~~
 xys <- mkScatterData
-withChart (chartAspect .~ asquare $ def) (scatters scatterDefs) xys
+withChart (chartAspect .~ asquare $ def) (scatterChart scatterDefs) xys
 ~~~
 
 As with `line`, `scatter` zips together multiple configurations and multiple containers of data.  It's often much easier to construct charts assuming multiple data sets. 
@@ -111,7 +111,7 @@ A major point of the chart-unit library is that the look-n-feel of a chart is in
 
 ~~~
 let xys1 = fmap (over _x (*1e8) . over _y (*1e-8)) <$> xys in
-withChart (chartAspect .~ asquare $ def) (scatters scatterDefs) xys1
+withChart (chartAspect .~ asquare $ def) (scatterChart scatterDefs) xys1
 ~~~
 
 histogram
@@ -128,7 +128,6 @@ A histogram, with unequal bin sizes (based on quantiles)
 ... converted to a line chart
 
 ![](other/exampleHistUnequal2.svg)
-
 
 A labelled bar chart:
 
@@ -176,8 +175,7 @@ Clipping charts
 animation
 ---
 
-<img style="border:5px solid grey" src="other/anim.gif">
-
+![](other/anim.gif)
 
 
 data

@@ -1,5 +1,5 @@
 name: chart-unit
-version: 0.4.1
+version: 0.5.0
 synopsis:
   Native haskell charts.
 description:
@@ -53,6 +53,7 @@ library
     formatting,
     lens,
     linear,
+    data-default,
     numhask >= 0.0.5 && < 1,
     numhask-range >= 0.0.3 && < 1,
     text
@@ -115,12 +116,14 @@ executable chart-unit-examples
     text,
     numhask,
     -- for data examples
+    containers,
     mwc-random,
     mwc-probability,
     primitive,
     ad,
     reflection,
     tdigest,
+    numhask-range,
     -- for animation example
     diagrams-rasterific,
     JuicyPixels,
@@ -174,7 +177,9 @@ test-suite test
     chart-unit,
     tasty,
     tasty-hspec,
-    numhask
+    numhask,
+    data-default,
+    lens
   default-extensions:
     NoImplicitPrelude,
     UnicodeSyntax,

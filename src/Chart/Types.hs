@@ -36,6 +36,7 @@ module Chart.Types
   , axisInsideStrut
   , axisLabelStrut
   , axisTextSize
+  , axisTextRotation
   , axisTextColor
   , axisTickStyle
   , axisAlignedTextRight
@@ -57,16 +58,14 @@ module Chart.Types
   , rectBorderColor
   , rectColor
   , ArrowConfig(..)
-  , arrowMinHeadSize
-  , arrowMaxHeadSize
-  , arrowHeadSize
-  , arrowMinStaffLength
-  , arrowMaxStaffLength
-  , arrowStaffLength
+  , arrowMaxLength
+  , arrowMinLength
+  , arrowMinHeadLength
+  , arrowMaxHeadLength
   , arrowMinStaffWidth
   , arrowMaxStaffWidth
-  , arrowStaffWidth
   , arrowColor
+  , arrowHeadStyle
   , PixelConfig(..)
   , pixelGradient
   , pixelGrain
@@ -85,6 +84,7 @@ import Diagrams.Prelude hiding (Color(..), aspect)
 import qualified Diagrams.TwoD.Text
 import NumHask.Range
 import NumHask.Rect
+import NumHask.Pair
 import Data.Colour
 
 -- | a Chart has a concrete scale, and combinatory options amount to mappend (on top of) and beside
@@ -104,8 +104,7 @@ type Chart' a =
 data Aspect = Aspect { unAspect :: Rect Double}
 
 aspect :: Double -> Aspect
-aspect a = Aspect (Rect (V2 ((a*) <$> one) one))
-
+aspect a = Aspect (Ranges ((a*) <$> one) one)
 asquare :: Aspect
 asquare = aspect 1
 
@@ -122,7 +121,7 @@ widescreen = aspect 3
 data QChart a b = QChart
     { _qChart :: ( ( Renderable (Diagrams.TwoD.Text.Text Double) a)
                   , Renderable (Path V2 Double) a) =>
-                Aspect -> b -> QDiagram a V2 Double Any
+                Rect Double -> Aspect -> b -> QDiagram a V2 Double Any
     , _qXY :: Rect Double
     , _qData :: b
     }
@@ -182,6 +181,7 @@ data AxisConfig = AxisConfig
     , _axisInsideStrut :: Double -- distance of axis from plane
     , _axisLabelStrut :: Double -- distance of label from mark
     , _axisTextSize :: Double
+    , _axisTextRotation :: Double
     , _axisTextColor :: Color
     , _axisTickStyle :: TickStyle
     , _axisAlignedTextRight :: Double
@@ -201,6 +201,7 @@ instance Default AxisConfig where
         0.05
         0.02
         0.04
+        0
         (Color 0.2 0.2 0.2 0.7)
         (TickRound 8)
         0.5
@@ -264,35 +265,31 @@ instance Default RectConfig where
 makeLenses ''RectConfig
 
 data ArrowConfig a = ArrowConfig
-    { _arrowMinHeadSize :: a
-    , _arrowMaxHeadSize :: a
-    , _arrowHeadSize :: a
-    , _arrowMinStaffLength :: a
-    , _arrowMaxStaffLength :: a
-    , _arrowStaffLength :: a
+    { _arrowMinLength :: a
+    , _arrowMaxLength :: a
+    , _arrowMinHeadLength :: a
+    , _arrowMaxHeadLength :: a
     , _arrowMinStaffWidth :: a
     , _arrowMaxStaffWidth :: a
-    , _arrowStaffWidth :: a
     , _arrowColor :: Color
+    , _arrowHeadStyle :: ArrowHT a
     }
 
 instance Default (ArrowConfig Double) where
-    def = ArrowConfig 0.01 0.05 0.03 0.1 0.1 0.1 0.01 0.005 0.2
-          (Color 0.333 0.333 0.888 0.8)
+    def = ArrowConfig 0.02 0.2 0.01 0.1 0.002 0.005 (Color 0.333 0.333 0.888 0.8) dart
 
 makeLenses ''ArrowConfig
 
 data PixelConfig =
     PixelConfig
     { _pixelGradient :: Range Color
-    , _pixelGrain :: V2 Int
+    , _pixelGrain :: Pair Int
     }
 
 instance Default PixelConfig where
     def = PixelConfig
-        (Range ( Color 1 1 1 1
-               , Color 0 0 0 1))
-        (V2 20 20)
+        (Range (Color 1 1 1 1) (Color 0 0 0 1))
+        (Pair 20 20)
 
 makeLenses ''PixelConfig
 
