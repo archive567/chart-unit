@@ -14,6 +14,8 @@ module Chart.Unit
   , scatter1
   , rect1
   , pixel1
+  , text1
+  , text_
   , Arrow(..)
   , normArrows
   , arrow1
@@ -30,6 +32,8 @@ module Chart.Unit
   , arrowChart_
   , toPixels
   , pixelf
+  , textChart
+  , textChart_
   , withChart
   , precision
   , axes
@@ -69,13 +73,15 @@ instance R2 Pair where
 eps :: N [Point V2 Double]
 eps = 1e-8
 
-scaleX :: Double -> [Point V2 Double] -> [Point V2 Double]
+scaleX :: (N t ~ Double, Transformable t, R2 (V t), Diagrams.Additive (V t)) =>
+    Double -> t -> t
 scaleX s = Diagrams.scaleX (if s==zero then eps else s)
 
-scaleY :: Double -> [Point V2 Double] -> [Point V2 Double]
+scaleY :: (N t ~ Double, Transformable t, R2 (V t), Diagrams.Additive (V t)) =>
+    Double -> t -> t
 scaleY s = Diagrams.scaleY (if s==zero then eps else s)
 
--- * chartlets are recipes for constructing QDiagrams from traversable containers of vectors and a configuration
+-- * chartlets: recipes for constructing QDiagrams from traversable containers of vectors and a configuration
 -- a solid blob (shape) with a colour fill and no border
 blob ∷ (Floating (N a), Ord (N a), Typeable (N a), HasStyle a, V a ~ V2) ⇒
     Chart.Types.Color → a → a
@@ -106,8 +112,8 @@ rect1 cfg rs = mconcat $ toList $
     (\(Rect x z y w) ->
        (unitSquare #
         moveTo (p2 (0.5,0.5)) #
-        Diagrams.scaleX (if z-x==zero then eps else z-x) #
-        Diagrams.scaleY (if w-y==zero then eps else w-y) #
+        scaleX (z-x) #
+        scaleY (w-y) #
         moveTo (p2 (x,y)) #
         fcA (color $ cfg ^. rectColor) #
         lcA (color $ cfg ^. rectBorderColor) #
@@ -184,8 +190,8 @@ box ::
 box (Ranges x y) =
     moveOriginTo (p2 ( -lower x - (width x/2)
                      , -lower y - (width y/2))) $
-    Diagrams.scaleX (if singular x then eps else width x) $
-    Diagrams.scaleY (if singular y then eps else width y)
+    scaleX (width x) $
+    scaleY (width y)
     unitSquare
 
 -- | a pixel is a rectangle with a color.
@@ -194,15 +200,53 @@ pixel1 rs = mconcat $ toList $
     (\(Rect x z y w, c) ->
        (unitSquare #
         moveTo (p2 (0.5,0.5)) #
-        Diagrams.scaleX (if z-x==zero then eps else z-x) #
-        Diagrams.scaleY (if w-y==zero then eps else w-y) #
+        scaleX (z-x) #
+        scaleY (w-y) #
         moveTo (p2 (x,y)) #
         fcA (color c) #
         lcA transparent #
         lw 0
        )) <$> rs
 
--- * charts are recipes for constructing a QDiagram from a specification of the XY plane to be projected on to (XY), a list of traversable vector containers and a list of configurations.  The charts are self-scaling.
+-- | a text is rendered svg text and a position.
+text1 ::
+    (Traversable f, R2 r) =>
+    TextConfig ->
+    f (Text, r Double) ->
+    Chart' b
+text1 cfg xs =
+    atPoints (toList $ (p2 . unr2) . view _xy . snd <$> xs)
+    (toList $ text_ cfg . fst <$> xs)
+
+text_ ::
+    TextConfig ->
+    Text ->
+    Chart' b
+text_ cfg t =
+    Diagrams.Prelude.alignedText
+    (cfg ^. textRight)
+    (cfg ^. textBottom)
+    (Text.unpack t) #
+    fontSize (Diagrams.local (cfg ^. textSize))
+    Diagrams.rotate (cfg ^. textRotation @@ deg) #
+    fcA (color $ cfg ^.textColor) #
+    font "serif"
+
+textN_ ::
+    TextConfig ->
+    Text ->
+    Chart' b
+textN_ cfg t =
+    Diagrams.Prelude.alignedText
+    (cfg ^. textRight)
+    (cfg ^. textBottom)
+    (Text.unpack t) #
+    -- scaleX (cfg ^. textSize) #
+    -- scaleY (cfg ^. textSize) #
+    fontSize (Diagrams.local (cfg ^. textSize)) #
+    Diagrams.rotate (cfg ^. textRotation @@ deg) #
+    fcA (color $ cfg ^.textColor) #
+    font "serif"
 
 scale :: (Functor f, Functor f1) => Rect Double -> Rect Double -> f1 (f (Pair Double)) -> f1 (f (Pair Double))
 scale r0 r1 xyss = fmap (project r0 r1) <$> xyss
@@ -210,16 +254,18 @@ scale r0 r1 xyss = fmap (project r0 r1) <$> xyss
 range :: (Foldable f, Foldable f1) => f1 (f (Pair Double)) -> Rect Double
 range xyss = foldMap space xyss
 
+-- * charts are recipes for constructing a QDiagram from a specification of the XY plane to be projected on to (XY), a list of traversable vector containers and a list of configurations.  The charts are self-scaling.
+
 -- | a chart of lines
 lineChart ::
     (Traversable f) =>
     [LineConfig] ->
-    Rect Double ->
     Aspect ->
+    Rect Double ->
     [f (Pair Double)] ->
     Chart a
-lineChart defs r (Aspect xy) xyss =
-    mconcat $ zipWith line1 defs (scale r xy xyss)
+lineChart defs (Aspect asp) r xyss =
+    mconcat $ zipWith line1 defs (scale r asp xyss)
 
 -- | a chart of lines scaled to its own range
 lineChart_ ::
@@ -229,18 +275,18 @@ lineChart_ ::
     [f (Pair Double)] ->
     Chart a
 lineChart_ defs asp xyss =
-    lineChart defs (range xyss) asp xyss
+    lineChart defs asp (range xyss) xyss
 
 -- | a chart of scattered dot points
 scatterChart ::
     (Traversable f, R2 Pair) =>
     [ScatterConfig] ->
-    Rect Double ->
     Aspect ->
+    Rect Double ->
     [f (Pair Double)] ->
     Chart a
-scatterChart defs r (Aspect xy) xyss =
-    mconcat $ zipWith scatter1 defs (scale r xy xyss)
+scatterChart defs (Aspect asp) r xyss =
+    mconcat $ zipWith scatter1 defs (scale r asp xyss)
 
 -- | a chart of scattered dot points scaled to its own range
 scatterChart_ ::
@@ -250,18 +296,18 @@ scatterChart_ ::
     [f (Pair Double)] ->
     Chart a
 scatterChart_ defs asp xyss =
-    scatterChart defs (range xyss) asp xyss
+    scatterChart defs asp (range xyss) xyss
 
 -- | a chart of histograms
 histChart ::
     (Traversable f) =>
     [RectConfig] ->
-    Rect Double ->
     Aspect ->
+    Rect Double ->
     [f (Rect Double)] ->
     Chart a
-histChart defs r (Aspect xy) rs =
-    mconcat . zipWith rect1 defs $ fmap (projectRect r xy) <$> rs
+histChart defs (Aspect asp) r rs =
+    mconcat . zipWith rect1 defs $ fmap (projectRect r asp) <$> rs
 
 -- | a chart of histograms scaled to its own range
 histChart_ ::
@@ -271,9 +317,13 @@ histChart_ ::
     [f (Rect Double)] ->
     Chart a
 histChart_ defs asp rs =
-    histChart defs (fold $ fold <$> rs) asp rs
+    histChart defs asp (fold $ fold <$> rs) rs
 
-toPixels :: Rect Double -> (Pair Double -> Double) -> PixelConfig -> [(Rect Double, Color)]
+toPixels ::
+    Rect Double ->
+    (Pair Double -> Double) ->
+    PixelConfig ->
+    [(Rect Double, Color)]
 toPixels xy f cfg = zip g cs
     where
       g = gridSpace xy (view pixelGrain cfg)
@@ -282,7 +332,10 @@ toPixels xy f cfg = zip g cs
       (Range lc0 uc0) = view pixelGradient cfg
       cs = uncolor . (\x -> blend ((x - lx)/(ux - lx)) (color lc0) (color uc0)) <$> xs
 
-projectPixels :: Rect Double -> [(Rect Double, Color)] -> [(Rect Double, Color)]
+projectPixels ::
+    Rect Double ->
+    [(Rect Double, Color)] ->
+    [(Rect Double, Color)]
 projectPixels xy xys = zip vs cs
   where
     vs = projectRect (fold $ fst <$> xys) xy . fst <$> xys
@@ -298,15 +351,42 @@ pixelf ::
 pixelf cfg (Aspect asp) xy f =
     pixel1 $ projectPixels asp (toPixels xy f cfg)
 
+-- | a chart of text
+textChart ::
+    (Traversable f) =>
+    [TextConfig] ->
+    Aspect ->
+    Rect Double ->
+    [f (Text, Pair Double)] ->
+    Chart' a
+textChart defs (Aspect asp) r xyss =
+    mconcat $
+    zipWith text1 defs $
+    zipWith zip
+    (fmap fst . toList <$> xyss)
+    (scale r asp (fmap snd . toList <$> xyss))
+
+-- | a chart of text scaled to its own range
+textChart_ ::
+    (Traversable f) =>
+    [TextConfig] ->
+    Aspect ->
+    [f (Text, Pair Double)] ->
+    Chart' a
+textChart_ defs asp xyss =
+    textChart defs asp (range $ fmap snd . toList <$> xyss) xyss
+
 -- | A chart of arrows representing vectors at various positions
 arrowChart ::
-    Rect Double ->
     ArrowConfig Double ->
     Aspect ->
+    Rect Double ->
     [Arrow] ->
     Chart a
-arrowChart cr cfg (Aspect xy) xs =
-    arrow1 cfg $ (\(Arrow d a) -> Arrow (project cr xy d) (project cr xy a)) <$> xs
+arrowChart cfg (Aspect asp) r xs =
+    arrow1 cfg $
+    (\(Arrow d arr) ->
+        Arrow (project r asp d) (project r asp arr)) <$> xs
 
 -- | an arrow chart scaled to its own range
 arrowChart_ ::
@@ -314,28 +394,26 @@ arrowChart_ ::
     Aspect ->
     [Arrow] ->
     Chart a
-arrowChart_ cfg xy xs =
-    arrowChart
-    (space (pos <$> xs))
-    cfg xy xs
+arrowChart_ cfg asp xs =
+    arrowChart cfg asp (space (pos <$> xs)) xs
 
 -- * axis rendering
 -- | render with a chart configuration
 withChart ::
     ( Traversable f ) =>
     ChartConfig ->
-    (Rect Double -> Aspect -> [f (Pair Double)] -> QDiagram a V2 Double Any) ->
+    (Aspect -> Rect Double -> [f (Pair Double)] -> QDiagram a V2 Double Any) ->
     [f (Pair Double)] ->
     Chart' a
 withChart cfg renderer d = case cfg^.chartRange of
   Nothing ->
-      renderer (foldMap space d) (cfg^.chartAspect) d <>
+      renderer (cfg^.chartAspect) (foldMap space d) d <>
       axes (chartRange .~ Just (foldMap space d) $ cfg)
   Just r ->
       combine (cfg ^. chartAspect)
       [ QChart renderer r d
       , QChart
-        (\_ asp _ ->
+        (\asp _ _ ->
            axes
            ( chartAspect .~ asp
            $ chartRange .~ Just r
@@ -344,18 +422,26 @@ withChart cfg renderer d = case cfg^.chartRange of
         []
       ]
 
+-- | render a list of qcharts, taking into account each of their ranges
+combine :: Aspect -> [QChart a b] -> Chart' a
+combine asp qcs = mconcat $
+    (\(QChart c _ x) -> c asp rall x) <$> qcs
+    where
+      rall = fold $ (\(QChart _ r1 _) -> r1) <$> qcs
+
 axes ::
     ChartConfig ->
     Chart' a
-axes (ChartConfig p a r (Aspect asp@(Ranges ax ay)) cc) =
-    L.fold (L.Fold step begin (pad p)) a
+axes (ChartConfig p ax r (Aspect asp) cc) =
+    L.fold (L.Fold step begin (pad p)) ax
   where
     begin = box asp # fcA (color cc) # lcA (withOpacity black 0) # lw none
     step x cfg = beside dir x (mo $ axis1 cfg rendr tickr)
       where
+        (Ranges aspx aspy) = asp
         rendr = case view axisOrientation cfg of
-              X -> ax
-              Y -> ay
+              X -> aspx
+              Y -> aspy
         tickr = case view axisOrientation cfg of
               X -> rx
               Y -> ry
@@ -365,8 +451,8 @@ axes (ChartConfig p a r (Aspect asp@(Ranges ax ay)) cc) =
               AxisLeft -> r2 (-1,0)
               AxisRight -> r2 (1,0)
         mo    = case view axisOrientation cfg of
-              X -> moveOriginTo (p2 ((-lower ax)-width ax/2,0))
-              Y -> moveOriginTo (p2 (0,(-lower ay)-width ay/2))
+              X -> moveOriginTo (p2 ((-lower aspx)-width aspx/2,0))
+              Y -> moveOriginTo (p2 (0,(-lower aspy)-width aspy/2))
         (Ranges rx ry) = fromMaybe one r
 
 axis1 ::
@@ -458,13 +544,7 @@ mkLabel label cfg =
    (rule (cfg ^. axisMarkSize) #
    lcA (color $ cfg ^. axisMarkColor))
     s)
-  (Diagrams.Prelude.alignedText
-    (cfg ^. axisAlignedTextRight)
-    (cfg ^. axisAlignedTextBottom)
-    (Text.unpack label) #
-  Diagrams.scale (cfg ^. axisTextSize) #
-  Diagrams.rotate (cfg ^. axisTextRotation @@ deg) #
-  fcA (color $ cfg ^.axisTextColor))
+  (textN_ (cfg^.axisLabelText) label)
   where
     dir = case cfg ^. axisOrientation of
       X -> r2 (0,-1)
@@ -475,32 +555,6 @@ mkLabel label cfg =
     s = case cfg ^. axisOrientation of
       X -> strutY (cfg ^. axisLabelStrut)
       Y -> strutX (cfg ^. axisLabelStrut)
-
-{-
-text1 ::
-    TextConfig ->
-    Text ->
-    Chart' b
-text1 cfg label =
-  Diagrams.Prelude.alignedText
-    (cfg ^. textRight)
-    (cfg ^. textBottom)
-    (Text.unpack label) #
-  Diagrams.scale (cfg ^. textSize) #
-  fcA (color $ cfg ^.textColor)
-  where
-    dir = case cfg ^. textOrientation of
-      X -> r2 (0,-1)
-      Y -> r2 (-1,0)
--}
-
--- * rendering
--- | render a list of qcharts using a common range
-combine :: Aspect -> [QChart a b] -> Chart' a
-combine a qcs = mconcat $
-    (\(QChart c _ x) -> c rall a x) <$> qcs
-    where
-      rall = fold $ (\(QChart _ r1 _) -> r1) <$> qcs
 
 -- outline of a chart
 bubble ∷ ∀ a. (FromInteger (N a), MultiplicativeGroup (N a), RealFloat (N a), Traced a, V a ~ V2) ⇒ [a] → Int → [V a (N a)]
@@ -515,31 +569,35 @@ bubble chart' n = bubble'
 histCompareChart :: [(Rect Double)] -> [(Rect Double)] -> Chart' a
 histCompareChart h1 h2 =
     let deltah = zipWith (\(Rect x y z w) (Rect _ _ _ w') -> Rect x y z (w-w')) h1 h2
-        flat = Aspect (Rect -0.75 0.75 -0.25 0.25)
+        mainAspect = Aspect (Rect -0.75 0.75 -0.5 0.5)
+        botAspect = Aspect (Rect -0.75 0.75 -0.2 0.2)
     in
       pad 1.1 $
         beside (r2 (0,-1)) (histChart_
         [ def
         , rectBorderColor .~ Color 0 0 0 0
         $ rectColor .~ Color 0.333 0.333 0.333 0.1
-        $ def ] sixbyfour [h1,h2] <>
+        $ def ]
+        mainAspect [h1,h2] <>
         axes (ChartConfig 1.1
               [def]
               (Just (fold $ fold [abs <$> h1,abs <$> h2]))
-              sixbyfour (uncolor transparent)))
+              mainAspect (uncolor transparent)))
         (histChart_
         [ rectBorderColor .~ Color 0 0 0 0
         $ rectColor .~ Color 0.888 0.333 0.333 0.8
-        $ def ] flat [abs <$> deltah] <>
+        $ def ] botAspect [abs <$> deltah] <>
         axes (ChartConfig 1.1
-              [ axisAlignedTextBottom .~ 0.65 $
-                axisAlignedTextRight .~ 1 $
+              [ axisLabelText .~
+                ( textBottom .~ 0.65 $
+                  textRight .~ 1 $
+                  def) $
                 axisOrientation .~ Y $
                 axisPlacement .~ AxisLeft $
                 def
               ]
               (Just (fold $ abs <$> deltah))
-              flat (uncolor transparent)))
+              botAspect (uncolor transparent)))
 
 fileSvg ∷ FilePath → (Double, Double) → Chart SVG → IO ()
 fileSvg f s = renderSVG f (mkSizeSpec (Just <$> r2 s))

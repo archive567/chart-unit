@@ -12,6 +12,7 @@ module Chart.Types
   , sixbyfour
   , golden
   , widescreen
+  , skinny
   , QChart(..)
   , qXY
   , qChart
@@ -35,12 +36,8 @@ module Chart.Types
   , axisMarkColor
   , axisInsideStrut
   , axisLabelStrut
-  , axisTextSize
-  , axisTextRotation
-  , axisTextColor
+  , axisLabelText
   , axisTickStyle
-  , axisAlignedTextRight
-  , axisAlignedTextBottom
   , ChartConfig(..)
   , chartPad
   , chartAxes
@@ -69,14 +66,13 @@ module Chart.Types
   , PixelConfig(..)
   , pixelGradient
   , pixelGrain
-  , TextConfig
+  , TextConfig(..)
   , textPad
-  , textOrientation
-  , textPlacement
   , textSize
   , textColor
   , textRight
   , textBottom
+  , textRotation
   ) where
 
 import NumHask.Prelude
@@ -100,11 +96,13 @@ type Chart' a =
     ) =>
     QDiagram a V2 Double Any
 
--- | the rendering aspect (or plane) of the chart.  Wrapped to distinguish this from a plain XY
-data Aspect = Aspect { unAspect :: Rect Double}
+-- | the rendering plane
+newtype Aspect = Aspect { unAspect :: Rect Double }
 
+-- | the rendering aspect of a chart expressed as a ratio of x-plane : y-plane.
 aspect :: Double -> Aspect
-aspect a = Aspect (Ranges ((a*) <$> one) one)
+aspect a = Aspect $ Ranges ((a*) <$> one) one
+
 asquare :: Aspect
 asquare = aspect 1
 
@@ -117,11 +115,14 @@ golden = aspect 1.61803398875
 widescreen :: Aspect
 widescreen = aspect 3
 
+skinny :: Aspect
+skinny = aspect 5
+
 -- | The concrete nature of a QDiagram, and a desire to scale data and hud items naturally, a QChart is mostly a late binding of the Aspect that the chart is to be projected on to and the data.
 data QChart a b = QChart
     { _qChart :: ( ( Renderable (Diagrams.TwoD.Text.Text Double) a)
                   , Renderable (Path V2 Double) a) =>
-                Rect Double -> Aspect -> b -> QDiagram a V2 Double Any
+                Aspect -> Rect Double -> b -> QDiagram a V2 Double Any
     , _qXY :: Rect Double
     , _qData :: b
     }
@@ -170,6 +171,27 @@ opacs t cs = (\(Color r g b o) -> Color r g b (o*t)) <$> cs
 opac :: Double -> Color -> Color
 opac t (Color r g b o) = Color r g b (o*t)
 
+data TextConfig = TextConfig
+    { _textPad :: Double
+    , _textSize :: Double
+    , _textColor :: Color
+    , _textRight :: Double
+    , _textBottom :: Double
+    , _textRotation :: Double
+    }
+
+instance Default TextConfig where
+    def =
+        TextConfig
+        1
+        0.08
+        (Color 0.333 0.333 0.333 0.8)
+        0.5
+        1
+        0
+
+makeLenses ''TextConfig
+
 data AxisConfig = AxisConfig
     { _axisPad :: Double
     , _axisOrientation :: Orientation
@@ -180,12 +202,8 @@ data AxisConfig = AxisConfig
     , _axisMarkColor :: Color
     , _axisInsideStrut :: Double -- distance of axis from plane
     , _axisLabelStrut :: Double -- distance of label from mark
-    , _axisTextSize :: Double
-    , _axisTextRotation :: Double
-    , _axisTextColor :: Color
+    , _axisLabelText :: TextConfig
     , _axisTickStyle :: TickStyle
-    , _axisAlignedTextRight :: Double
-    , _axisAlignedTextBottom :: Double
     }
 
 instance Default AxisConfig where
@@ -200,12 +218,8 @@ instance Default AxisConfig where
         (Color 0.1 0.4 0.8 0.5)
         0.05
         0.02
-        0.04
-        0
-        (Color 0.2 0.2 0.2 0.7)
+        (textSize .~ 0.06 $ def)
         (TickRound 8)
-        0.5
-        1
 
 makeLenses ''AxisConfig
 
@@ -222,8 +236,12 @@ instance Default ChartConfig where
         ChartConfig
         1.3
         [def,
-         axisAlignedTextBottom .~ 0.65 $
-         axisAlignedTextRight .~ 1 $
+         axisLabelText .~
+          ( textSize .~ 0.06 $
+            textBottom .~ 0.65 $
+            textRight .~ 1 $
+            textRotation .~ 0 $
+            def) $
          axisOrientation .~ Y $
          axisPlacement .~ AxisLeft $
          def]
@@ -292,27 +310,4 @@ instance Default PixelConfig where
         (Pair 20 20)
 
 makeLenses ''PixelConfig
-
-data TextConfig = TextConfig
-    { _textPad :: Double
-    , _textOrientation :: Orientation
-    , _textPlacement :: Placement
-    , _textSize :: Double
-    , _textColor :: Color
-    , _textRight :: Double
-    , _textBottom :: Double
-    }
-
-instance Default TextConfig where
-    def =
-        TextConfig
-        1
-        X
-        AxisBottom
-        0.08
-        (Color 0.333 0.333 0.333 0.2)
-        0.5
-        1
-
-makeLenses ''TextConfig
 
