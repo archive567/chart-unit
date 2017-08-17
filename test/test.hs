@@ -37,9 +37,9 @@ testWithChart = describe "withChart" $ do
 
         lineDefs :: [LineConfig]
         lineDefs =
-            [ LineConfig 0.01 (Color 0.945 0.345 0.329 0.8)
-            , LineConfig 0.02 (Color 0.698 0.569 0.184 0.5)
-            , LineConfig 0.005 (Color 0.5 0.5 0.5 1.0)
+            [ LineConfig 0.01 (color 0.945 0.345 0.329 0.8)
+            , LineConfig 0.02 (color 0.698 0.569 0.184 0.5)
+            , LineConfig 0.005 (color 0.5 0.5 0.5 1.0)
             ]
         lineData :: [[Pair Double]]
         lineData =

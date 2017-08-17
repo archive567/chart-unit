@@ -1,23 +1,6 @@
-<meta charset="utf-8"> <link rel="stylesheet" href="https://tonyday567.github.io/other/lhs.css">
-<script type="text/javascript" async
-  src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-MML-AM_CHTML">
-</script>
+<img style="border:1px solid red; float: left" src="other/testAlpha.svg">
 
-[alpha beta testing]
-===
+<img style="border:1px solid red; float: left" src="other/testBeta.svg">
 
-alpha
----
-
-<img style="border:2px solid grey" src="other/testAlpha.svg">
-
-beta
----
-
-<img style="border:2px solid grey" src="other/testBeta.svg">
-
-compare
----
-
-<img style="border:2px solid grey" src="other/testab.svg">
+<img style="border:1px solid red; float: left" src="other/testab.svg">
 

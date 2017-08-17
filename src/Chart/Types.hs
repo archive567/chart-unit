@@ -4,8 +4,19 @@
 {-# LANGUAGE TemplateHaskell #-}
 
 module Chart.Types
-  ( Chart
-  , Chart'
+  ( vert
+  , hori
+  , sepVert
+  , sepHori
+  , color
+  , GlyphConfig(..)
+  , glyphSize
+  , glyphColor 
+  , glyphBorderColor
+  , glyphBorderSize
+  , glyphShape
+  , hline_
+  , vline_
   , Aspect(..)
   , aspect
   , asquare
@@ -13,47 +24,56 @@ module Chart.Types
   , golden
   , widescreen
   , skinny
-  , QChart(..)
-  , qXY
-  , qChart
-  , qData
+  , Chart(..)
+  , chartRenderer
+  , chartRenderRange
+  , chartData
   , Orientation(..)
-  , Placement(..)
+  , Place(..)
+  , placeOutside
+  , placeGap
+  , AlignH(..)
+  , AlignV(..)
+  , alignH
+  , alignV
   , TickStyle(..)
-  , Color(..)
-  , color
-  , uncolor
-  , opac
-  , opacs
-  , palette
   , AxisConfig(..)
   , axisPad
   , axisOrientation
-  , axisPlacement
-  , axisHeight
-  , axisColor
-  , axisMarkSize
-  , axisMarkColor
-  , axisInsideStrut
-  , axisLabelStrut
-  , axisLabelText
+  , axisPlace
   , axisTickStyle
+  , axisRect
+  , axisRectHeight
+  , axisLabel
+  , axisMark
+  , axisMarkStart
+  , axisGap
+  , defXAxis
+  , defYAxis
+  , TitleConfig(..)
+  , titleText
+  , titleAlign
+  , titlePlace
+  , titleStrut
   , ChartConfig(..)
   , chartPad
   , chartAxes
+  , chartTitles
+  , chartLegends
   , chartRange
   , chartAspect
-  , chartCanvasColor
+  , chartCanvas
   , LineConfig(..)
   , lineSize
   , Chart.Types.lineColor
-  , ScatterConfig(..)
-  , scatterSize
-  , scatterColor
   , RectConfig(..)
   , rectBorderWidth
   , rectBorderColor
   , rectColor
+  , blob
+  , box
+  , clear
+  , bound
   , ArrowConfig(..)
   , arrowMaxLength
   , arrowMinLength
@@ -69,35 +89,74 @@ module Chart.Types
   , TextConfig(..)
   , textPad
   , textSize
+  , textAlignH
+  , textAlignV
   , textColor
-  , textRight
-  , textBottom
+  , textFillRule
   , textRotation
+  , LabelConfig(..)
+  , labelText
+  , labelOrientation
+  , labelStrut
+  , LegendType(..)
+  , LegendConfig(..)
+  , legendChartType
+  , legendInnerPad
+  , legendInnerSep
+  , legendOuterPad
+  , legendRowPad
+  , legendPlace
+  , legendAlign
+  , legendSep
+  , legendRect
+  , legendText
   ) where
 
-import NumHask.Prelude
-import Diagrams.Prelude hiding (Color(..), aspect)
-import qualified Diagrams.TwoD.Text
+import NumHask.Prelude hiding (local)
+import Diagrams.Prelude hiding (Color(..), aspect, (&))
 import NumHask.Range
 import NumHask.Rect
 import NumHask.Pair
-import Data.Colour
+import Diagrams.Backend.SVG
 
--- | a Chart has a concrete scale, and combinatory options amount to mappend (on top of) and beside
-type Chart a =
-    ( Renderable (Path V2 Double) a
-    ) =>
-    QDiagram a V2 Double Any
- 
--- | an alternative synonym where text is involved.
-type Chart' a =
-    ( Renderable (Path V2 Double) a
-    , Renderable (Diagrams.TwoD.Text.Text Double) a
-    ) =>
-    QDiagram a V2 Double Any
+
+-- | chart combinators
+vert :: (V a ~ V2, Foldable t, Juxtaposable a, Semigroup a, Num (N a), Monoid a) => (a->a) -> t a -> a
+vert f xs = foldr (\a x -> beside (r2(0,-1)) (f a) x) mempty xs
+
+hori :: (V a ~ V2, Foldable t, Juxtaposable a, Semigroup a, Num (N a), Monoid a) => (a->a) -> t a -> a
+hori f xs = foldr (\a x -> beside (r2(1,0)) (f a) x) mempty xs
+
+sepHori :: Double -> Diagram B -> Diagram B
+sepHori s x = beside (r2(0,-1)) x (strutX s)
+
+sepVert :: Double -> Diagram B -> Diagram B
+sepVert s x = beside (r2(1,0)) x (strutY s)
+
+color :: (Floating a, Ord a) => a -> a -> a -> a -> AlphaColour a
+color r g b o = withOpacity (sRGB r g b) o
+
+data GlyphConfig = GlyphConfig
+    { _glyphSize :: Double
+    , _glyphColor :: AlphaColour Double
+    , _glyphBorderColor :: AlphaColour Double
+    , _glyphBorderSize :: Double
+    , _glyphShape :: Double -> Diagram B
+    }
+
+instance Default GlyphConfig where
+    def = GlyphConfig 0.03 (color 0.333 0.333 0.333 0.4) (color 0.365 0.647 0.855 0.5) 0.015 circle
+
+makeLenses ''GlyphConfig
+
+vline_ :: (Transformable a, TrailLike a, InSpace V2 Double a) => Double -> Double -> a
+vline_ fatness x = vrule x # scaleX (1.6/0.5*fatness)
+
+hline_ :: (Transformable a, TrailLike a, InSpace V2 Double a) => Double -> Double -> a
+hline_ fatness x = hrule x # scaleY (1.6/0.5*fatness)
 
 -- | the rendering plane
-newtype Aspect = Aspect { unAspect :: Rect Double }
+newtype Aspect = Aspect { aspectRect :: Rect Double }
 
 -- | the rendering aspect of a chart expressed as a ratio of x-plane : y-plane.
 aspect :: Double -> Aspect
@@ -118,65 +177,64 @@ widescreen = aspect 3
 skinny :: Aspect
 skinny = aspect 5
 
--- | The concrete nature of a QDiagram, and a desire to scale data and hud items naturally, a QChart is mostly a late binding of the Aspect that the chart is to be projected on to and the data.
-data QChart a b = QChart
-    { _qChart :: ( ( Renderable (Diagrams.TwoD.Text.Text Double) a)
-                  , Renderable (Path V2 Double) a) =>
-                Aspect -> Rect Double -> b -> QDiagram a V2 Double Any
-    , _qXY :: Rect Double
-    , _qData :: b
+-- | a Chart is mostly a late binding of the Diagram B Aspect that is to be projected on to and the data.
+data Chart a = Chart
+    { _chartRenderer :: ( ) =>
+                Aspect -> Rect Double -> a -> Diagram B
+    , _chartRenderRange :: Rect Double
+    , _chartData :: a
     }
 
-makeLenses ''QChart
+makeLenses ''Chart
 
 data Orientation = X | Y
 
-data Placement = AxisLeft | AxisRight | AxisTop | AxisBottom
+data Place = PlaceLeft | PlaceRight | PlaceTop | PlaceBottom
+
+placeOutside :: Num n => Place -> V2 n
+placeOutside pl =
+    case pl of
+      PlaceBottom -> r2 (0,-1)
+      PlaceTop -> r2 (0,1)
+      PlaceLeft -> r2 (-1,0)
+      PlaceRight -> r2 (1,0)
+
+placeGap :: (Monoid m, Semigroup m, Ord n, Floating n) =>
+    Place -> QDiagram b V2 n m -> n -> QDiagram b V2 n m
+placeGap pl x s = beside (placeOutside pl) (strut' pl s) x
+  where
+    strut' PlaceTop = strutY
+    strut' PlaceBottom = strutY
+    strut' PlaceLeft = strutX
+    strut' PlaceRight = strutX
+
+data AlignH = AlignLeft | AlignCenter | AlignRight
+
+data AlignV = AlignTop | AlignMid | AlignBottom
+
+alignH :: AlignH -> Double
+alignH a =
+    case a of
+      AlignLeft -> 0.5
+      AlignCenter -> 0
+      AlignRight -> -0.5
+
+alignV :: AlignV -> Double
+alignV a =
+    case a of
+      AlignTop -> -0.5
+      AlignMid -> 0
+      AlignBottom -> 0.5
 
 data TickStyle = TickNone | TickLabels [Text] | TickRound Int | TickExact Int | TickPlaced [(Double,Text)]
-
-data Color =
-    Color
-    { _red :: Double
-    , _green :: Double
-    , _blue :: Double
-    , _aaa :: Double
-    } deriving (Eq, Show)
-
-color ∷ Color → AlphaColour Double
-color (Color r g b a)= withOpacity (sRGB r g b) a
-
-uncolor ∷ AlphaColour Double → Color
-uncolor c = Color r g b a
-  where
-    a = alphaChannel c
-    (RGB r g b) = toSRGB (Data.Colour.over c black)
-
-palette ∷ [Color]
-palette =
-    [ Color 0.333 0.333 0.333 1.00 -- grey
-    , Color 0.365 0.647 0.855 1.00 -- blue
-    , Color 0.980 0.647 0.855 1.00 -- orange
-    , Color 0.376 0.741 0.408 1.00 -- green
-    , Color 0.945 0.486 0.690 1.00 -- pink
-    , Color 0.698 0.569 0.184 1.00 -- brown
-    , Color 0.698 0.463 0.698 1.00 -- purple
-    , Color 0.871 0.812 0.247 1.00 -- yellow
-    , Color 0.945 0.345 0.329 1.00 -- red
-    ]
-
-opacs :: Double -> [Color] -> [Color]
-opacs t cs = (\(Color r g b o) -> Color r g b (o*t)) <$> cs
-
-opac :: Double -> Color -> Color
-opac t (Color r g b o) = Color r g b (o*t)
 
 data TextConfig = TextConfig
     { _textPad :: Double
     , _textSize :: Double
-    , _textColor :: Color
-    , _textRight :: Double
-    , _textBottom :: Double
+    , _textAlignH :: AlignH
+    , _textAlignV :: AlignV
+    , _textColor :: AlphaColour Double
+    , _textFillRule :: FillRule
     , _textRotation :: Double
     }
 
@@ -185,102 +243,154 @@ instance Default TextConfig where
         TextConfig
         1
         0.08
-        (Color 0.333 0.333 0.333 0.8)
-        0.5
-        1
+        AlignCenter
+        AlignMid
+        (withOpacity black 0.33)
+        EvenOdd
         0
 
 makeLenses ''TextConfig
 
-data AxisConfig = AxisConfig
-    { _axisPad :: Double
-    , _axisOrientation :: Orientation
-    , _axisPlacement :: Placement
-    , _axisHeight :: Double
-    , _axisColor :: Color
-    , _axisMarkSize :: Double -- mark length
-    , _axisMarkColor :: Color
-    , _axisInsideStrut :: Double -- distance of axis from plane
-    , _axisLabelStrut :: Double -- distance of label from mark
-    , _axisLabelText :: TextConfig
-    , _axisTickStyle :: TickStyle
+data LabelConfig = LabelConfig
+    { _labelText :: TextConfig
+    , _labelOrientation :: Pair Double
+    , _labelStrut :: Double
     }
 
-instance Default AxisConfig where
+instance Default LabelConfig where
     def =
-        AxisConfig
-        1
-        X
-        AxisBottom
-        0.02
-        (Color 0.333 0.333 0.333 0.2)
-        0.02
-        (Color 0.1 0.4 0.8 0.5)
+        LabelConfig
+        def
+        (Pair 0 1)
         0.05
-        0.02
-        (textSize .~ 0.06 $ def)
-        (TickRound 8)
 
-makeLenses ''AxisConfig
-
-data ChartConfig = ChartConfig
-    { _chartPad :: Double
-    , _chartAxes :: [AxisConfig]
-    , _chartRange :: Maybe (Rect Double)
-    , _chartAspect :: Aspect
-    , _chartCanvasColor :: Color
-    }
-
-instance Default ChartConfig where
-    def =
-        ChartConfig
-        1.3
-        [def,
-         axisLabelText .~
-          ( textSize .~ 0.06 $
-            textBottom .~ 0.65 $
-            textRight .~ 1 $
-            textRotation .~ 0 $
-            def) $
-         axisOrientation .~ Y $
-         axisPlacement .~ AxisLeft $
-         def]
-        Nothing
-        sixbyfour
-        (Color 1 1 1 0.02)
-
-makeLenses ''ChartConfig
-
-data LineConfig = LineConfig
-    { _lineSize :: Double
-    , _lineColor :: Color
-    }
-
-instance Default LineConfig where
-    def = LineConfig 0.02 (Color 0.365 0.647 0.855 1.00)
-
-makeLenses ''LineConfig
-
-data ScatterConfig = ScatterConfig
-    { _scatterSize :: Double
-    , _scatterColor :: Color
-    }
-
-instance Default ScatterConfig where
-    def = ScatterConfig 0.03 (Color 0.33 0.33 0.33 0.2)
-
-makeLenses ''ScatterConfig
+makeLenses ''LabelConfig
 
 data RectConfig = RectConfig
     { _rectBorderWidth :: Double
-    , _rectBorderColor :: Color
-    , _rectColor :: Color
+    , _rectBorderColor :: AlphaColour Double
+    , _rectColor :: AlphaColour Double
     }
 
 instance Default RectConfig where
-    def = RectConfig 1 (Color 0.333 0.333 0.333 0.4) (Color 0.365 0.647 0.855 0.5)
+    def = RectConfig 0.015 (color 0.333 0.333 0.333 0.4) (color 0.365 0.647 0.855 0.5)
 
 makeLenses ''RectConfig
+
+-- | solid rect, no border
+blob :: AlphaColour Double -> RectConfig
+blob c = RectConfig 0 transparent c
+
+-- | clear and transparent rect
+clear :: RectConfig
+clear = RectConfig 0 transparent transparent
+
+-- | clear rect, with border
+box :: AlphaColour Double -> RectConfig
+box c = RectConfig 0.015 c transparent
+
+-- | place a rect around an Diagram B
+bound :: RectConfig -> Double -> Diagram B -> Diagram B
+bound cfg p x =
+    (boundingRect (pad p x) #
+     lcA (cfg^.rectBorderColor) #
+     lw (local $ cfg^.rectBorderWidth) #
+     fcA (cfg^.rectColor)) <>
+    (pad p $ x)
+
+data AxisConfig = AxisConfig
+    { _axisPad :: Double
+    , _axisOrientation :: Orientation
+    , _axisPlace :: Place
+    , _axisRect :: RectConfig
+    , _axisRectHeight :: Double
+    , _axisMark :: GlyphConfig
+    , _axisMarkStart :: Double
+    , _axisGap :: Double -- distance of axis from plane
+    , _axisLabel :: LabelConfig
+    , _axisTickStyle :: TickStyle
+    }
+
+defXAxis :: AxisConfig
+defXAxis = AxisConfig 1 X PlaceBottom
+    (RectConfig 0 transparent (withOpacity black 0.1)) -- ok
+    0.02 -- ok
+    (GlyphConfig 0.03 transparent (withOpacity black 0.6) 0.005 (vline_ 1)) -- ok
+    0 -- ok
+    0.04 -- ok
+    (LabelConfig
+     ( TextConfig
+        1
+        0.06 -- ok
+        AlignCenter
+        AlignMid
+        (withOpacity black 0.6) -- ok
+        EvenOdd
+        0
+     )
+     (Pair 0 -1) -- ok
+     0.015) -- ok
+    (TickRound 8) -- ok
+
+defYAxis :: AxisConfig
+defYAxis = AxisConfig 1 Y PlaceLeft
+    (RectConfig 0 transparent (withOpacity black 0.1)) -- ok
+    0.02 -- ok
+    (GlyphConfig 0.03 transparent (withOpacity black 0.6) 0.005 (hline_ 1)) -- ok
+    0 -- ok
+    0.04 -- ok
+    (LabelConfig
+     ( TextConfig
+       1
+       0.06 -- ok
+       AlignCenter
+       AlignMid
+       (withOpacity black 0.6) -- ok
+       EvenOdd
+       0
+     )
+     (Pair -1 0)
+     0.015)
+    (TickRound 8) -- ok
+
+instance Default AxisConfig where
+    def = defXAxis
+
+makeLenses ''AxisConfig
+
+data TitleConfig = TitleConfig
+    { _titleText :: TextConfig
+    , _titleAlign :: AlignH
+    , _titlePlace :: Place
+    , _titleStrut :: Double
+    }
+
+instance Default TitleConfig where
+    def = TitleConfig
+        (TextConfig
+         1
+         0.16
+         AlignCenter
+         AlignMid
+         (withOpacity black 0.8)
+         EvenOdd
+         0
+        )
+        AlignCenter
+        PlaceTop
+        0.02
+
+makeLenses ''TitleConfig
+
+data LineConfig = LineConfig
+    { _lineSize :: Double
+    , _lineColor :: AlphaColour Double
+    }
+
+instance Default LineConfig where
+    def = LineConfig 0.02 (color 0.365 0.647 0.855 1.00)
+
+makeLenses ''LineConfig
 
 data ArrowConfig a = ArrowConfig
     { _arrowMinLength :: a
@@ -289,25 +399,94 @@ data ArrowConfig a = ArrowConfig
     , _arrowMaxHeadLength :: a
     , _arrowMinStaffWidth :: a
     , _arrowMaxStaffWidth :: a
-    , _arrowColor :: Color
+    , _arrowColor :: AlphaColour Double
     , _arrowHeadStyle :: ArrowHT a
     }
 
 instance Default (ArrowConfig Double) where
-    def = ArrowConfig 0.02 0.2 0.01 0.1 0.002 0.005 (Color 0.333 0.333 0.888 0.8) dart
+    def = ArrowConfig 0.02 0.2 0.01 0.1 0.002 0.005 (color 0.333 0.333 0.888 0.8) dart
 
 makeLenses ''ArrowConfig
 
 data PixelConfig =
     PixelConfig
-    { _pixelGradient :: Range Color
+    { _pixelGradient :: Range (AlphaColour Double)
     , _pixelGrain :: Pair Int
     }
 
 instance Default PixelConfig where
     def = PixelConfig
-        (Range (Color 1 1 1 1) (Color 0 0 0 1))
+        (Range (color 1 1 1 1) (color 0 0 0 1))
         (Pair 20 20)
 
 makeLenses ''PixelConfig
+
+data LegendType =
+    LegendText TextConfig |
+    LegendGlyph GlyphConfig |
+    LegendLine LineConfig Double |
+    LegendGLine GlyphConfig LineConfig Double |
+    LegendRect RectConfig Double |
+    LegendArrow (ArrowConfig Double) Double |
+    LegendPixel RectConfig Double
+
+data LegendConfig =
+    LegendConfig
+    { _legendChartType :: [(LegendType, Text)]
+    , _legendInnerPad :: Double
+    , _legendInnerSep :: Double
+    , _legendOuterPad :: Double
+    , _legendRowPad :: Double
+    , _legendPlace :: Place
+    , _legendAlign :: AlignH
+    , _legendSep :: Double
+    , _legendRect :: RectConfig
+    , _legendText :: TextConfig
+    }
+
+instance Default LegendConfig where
+    def =
+        LegendConfig
+        []
+        1.1
+        0.03
+        1.2
+        1
+        PlaceRight
+        AlignRight
+        0.02
+        (RectConfig 0.002 (withOpacity black 0.2) transparent)
+        (TextConfig
+         1
+         0.07
+         AlignCenter
+         AlignMid
+         (withOpacity black 0.63)
+         EvenOdd
+         0)
+
+makeLenses ''LegendConfig
+
+data ChartConfig = ChartConfig
+    { _chartPad :: Double
+    , _chartAxes :: [AxisConfig]
+    , _chartTitles :: [(TitleConfig, Text)]
+    , _chartLegends :: [LegendConfig]
+    , _chartRange :: Maybe (Rect Double)
+    , _chartAspect :: Aspect
+    , _chartCanvas :: RectConfig
+    }
+
+instance Default ChartConfig where
+    def =
+        ChartConfig
+        1.3
+        [defXAxis, defYAxis]
+        []
+        []
+        Nothing
+        sixbyfour
+        clear
+
+makeLenses ''ChartConfig
 

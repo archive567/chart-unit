@@ -1,20 +1,20 @@
-<meta charset="utf-8"> <link rel="stylesheet" href="https://tonyday567.github.io/other/lhs.css">
-<script type="text/javascript" async
-  src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-MML-AM_CHTML">
-</script>
-
-[chart-unit](https://tonyday567.github.io/chart-unit)
+[chart-unit](https://github.com/tonyday567/chart-unit)
 ===
 
 [![Build Status](https://travis-ci.org/tonyday567/chart-unit.svg)](https://travis-ci.org/tonyday567/chart-unit) [![Hackage](https://img.shields.io/hackage/v/chart-unit.svg)](https://hackage.haskell.org/package/chart-unit) [![lts](https://www.stackage.org/package/chart-unit/badge/lts)](http://stackage.org/lts/package/chart-unit) [![nightly](https://www.stackage.org/package/chart-unit/badge/nightly)](http://stackage.org/nightly/package/chart-unit)
 
-[repo](https://github.com/tonyday567/chart-unit)
+`chart-unit` is a haskell chart library focusing on a small set of high-quality charts using native haskell. Here's a recent example, chock-a-block fill of titles and legends, since they've just been added:
 
-`chart-unit` is an experimental haskell chart library.
+<img style="border:2px solid grey" src="other/exampleChart.svg">
 
-scratchpad
+reduced
+---
 
-<img style="border:5px solid grey" src="other/scratchpad.svg">
+<img style="height=40%" src="other/exampleChart.svg">
+
+
+
+
 
 unital charting
 -----
