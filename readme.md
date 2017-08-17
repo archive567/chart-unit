@@ -9,6 +9,26 @@
 
 See https://tonyday567.github.io/chart-unit for an extended description.
 
+
+[chart-unit](https://github.com/tonyday567/chart-unit)
+===
+
+[![Build Status](https://travis-ci.org/tonyday567/chart-unit.svg)](https://travis-ci.org/tonyday567/chart-unit) [![Hackage](https://img.shields.io/hackage/v/chart-unit.svg)](https://hackage.haskell.org/package/chart-unit) [![lts](https://www.stackage.org/package/chart-unit/badge/lts)](http://stackage.org/lts/package/chart-unit) [![nightly](https://www.stackage.org/package/chart-unit/badge/nightly)](http://stackage.org/nightly/package/chart-unit)
+
+`chart-unit` is a haskell chart library focusing on a small set of high-quality charts using native haskell. Here's a recent example, chock-a-block fill of titles and legends, since they've just been added:
+
+<img style="border:2px solid grey" src="./other/exampleChart.svg">
+
+served
+---
+
+<img style="border:2px solid grey" src="https://tonyday567.github.io/other/exampleChart.svg">
+
+reduced
+---
+
+<img style="height=40%" src="https://tonyday567.github.io/other/exampleChart.svg">
+
 chart bling
 ===
 
