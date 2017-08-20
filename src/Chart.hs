@@ -1,22 +1,63 @@
 {-# OPTIONS_GHC -Wall #-}
+{-# LANGUAGE PatternSynonyms #-}
+{-# OPTIONS_HADDOCK prune, not-home #-}
+
+-- | native haskell charts
+--
+-- > {-# NoImplicitPrelude #-}
+-- > {-# OverloadedString #-}
+-- > import NumHask.Prelude
+-- > import Chart
+--
+-- chart-unit is designed to be used in conjunction with the numhask prelude.
+--
 
 module Chart
-  ( module X
+  ( module Chart.Core
+  , module Chart.Arrow
+  , module Chart.Glyph
+  , module Chart.Hud
+  , module Chart.Line
+  , module Chart.Rect
+  , module Chart.Text
+  , module Chart.Lenses
+  , module NumHask.Pair
+  , module NumHask.Space
+  , module NumHask.Range
+  , module NumHask.Rect
+  , module Data.Colour
+  , module Data.Colour.Palette.Harmony
+  , module Data.Colour.Palette.ColorSet
+  , Diagram
+  , triangle
+  , square
+  , circle
   , SVG
-  , V4(..)
-  , zipWith4
-  , Pair(..)
-  , pattern Pair
+  , B
+  , Default(..)
+  , Text
   ) where
 
-import Data.List (zipWith4)
-import Diagrams.Backend.SVG (SVG)
-import Linear (V4(..))
+import Chart.Core
+import Chart.Arrow
+import Chart.Glyph
+import Chart.Hud
+import Chart.Line
+import Chart.Rect
+import Chart.Text
+import Chart.Lenses
 
 import NumHask.Pair
+import NumHask.Space hiding (width)
+import NumHask.Range
+import NumHask.Rect
 
-import NumHask.Space as X
-import NumHask.Range as X
-import NumHask.Rect as X
-import Chart.Types as X
-import Chart.Unit as X
+import Data.Default (Default(..))
+import Data.Text
+
+import Diagrams.Backend.SVG (SVG, B)
+import Diagrams.Prelude
+import Data.Colour
+import Data.Colour.Palette.Harmony
+import Data.Colour.Palette.ColorSet
+

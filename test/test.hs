@@ -1,17 +1,16 @@
 {-# OPTIONS_GHC -Wall #-}
-{-# LANGUAGE DataKinds #-}
 
 module Main where
 
-import NumHask.Prelude
 import Chart
 
-import Data.Default (def)
 import Control.Lens ((.~))
+import qualified Data.Text as Text
+import Data.List (zipWith3)
 
 import Test.Tasty (testGroup, defaultMain)
 import Test.Tasty.Hspec
-
+ 
 testWithChart :: SpecWith ()
 testWithChart = describe "withChart" $ do
     it "axes and chartWith should render the same" $ do
@@ -30,17 +29,11 @@ testWithChart = describe "withChart" $ do
       where
         emptyChart = withChart def (\_ _ -> mempty) [corners one]
         justAxesChart = axes def
-        line1Chart = withChart def (lineChart lineDefs) lineData
+        line1Chart = withChart def (lineChart (repeat def)) lineData
         line2Chart =
-            lineChart_ lineDefs sixbyfour lineData <>
-            axes (chartRange .~ Just (range lineData) $ def)
+            lineChart_ (repeat def) sixbyfour lineData <>
+            axes (def {chartRange = Just (range lineData)})
 
-        lineDefs :: [LineConfig]
-        lineDefs =
-            [ LineConfig 0.01 (color 0.945 0.345 0.329 0.8)
-            , LineConfig 0.02 (color 0.698 0.569 0.184 0.5)
-            , LineConfig 0.005 (color 0.5 0.5 0.5 1.0)
-            ]
         lineData :: [[Pair Double]]
         lineData =
             fmap (uncurry Pair) <$>
@@ -53,3 +46,4 @@ main :: IO ()
 main = do
     t1 <- testSpec "withChart" testWithChart
     defaultMain $ testGroup "chart-unit" [t1]
+

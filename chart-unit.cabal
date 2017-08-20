@@ -6,15 +6,19 @@ description:
   See <https://tonyday567.github.io/chart-unit/index.html chart-unit> for chart bling and usage.
   .
   .
-  <<https://tonyday567.github.io/other/examplePixels.svg>>
+  ![example](other/mainExample.svg)
   .
   These charts are designed to be scale independent and amenable to combinatory busywork (hence the unit suffix).
   .
   .
 extra-source-files:
+  readme.md,
+  index.html,
+  stack.yaml,
+  other/*.svg
+extra-doc-files:
+  other/*.svg,
   readme.md
-  index.html
-  stack.yaml
 category:
   charts
 homepage:
@@ -39,14 +43,21 @@ library
     src
   exposed-modules:
     Chart,
-    Chart.Unit,
-    Chart.Types
+    Chart.Arrow,
+    Chart.Core,
+    Chart.Glyph,
+    Chart.Hud,
+    Chart.Line,
+    Chart.Rect,
+    Chart.Text,
+    Chart.Lenses
   ghc-options:
     -funbox-strict-fields
-    -fforce-recomp          
+    -fforce-recomp
   build-depends:
     base >= 4.7 && < 5,
     colour,
+    palette,
     diagrams-lib,
     diagrams-svg,
     foldl,
@@ -62,6 +73,7 @@ library
     Haskell2010
   default-extensions:
     NoImplicitPrelude,
+    ExtendedDefaultRules,
     UnicodeSyntax,
     BangPatterns,
     BinaryLiterals,
@@ -94,7 +106,7 @@ library
     TypeFamilies,
     TypeOperators
 
-executable chart-unit-examples
+executable chart-source-examples
   default-language:
     Haskell2010
   ghc-options:
@@ -106,35 +118,17 @@ executable chart-unit-examples
   hs-source-dirs:
     examples
   main-is:
-    examples.hs
-  other-modules:
-    FakeData
+    sourceExamples.hs
   build-depends:
     base >= 4.7 && < 5,
     chart-unit,
     protolude,
-    foldl,
-    text,
+    lens,
     numhask,
-    palette,
-    diagrams-svg,
-    SVGFonts,
-    -- for data examples
-    containers,
-    mwc-random,
-    mwc-probability,
-    primitive,
-    ad,
-    reflection,
-    tdigest,
-    numhask-range,
-    -- for animation example
-    diagrams-rasterific,
-    JuicyPixels,
-    diagrams-lib
-
+    text
   default-extensions:
     NoImplicitPrelude,
+    ExtendedDefaultRules,
     UnicodeSyntax,
     BangPatterns,
     BinaryLiterals,
@@ -183,40 +177,15 @@ test-suite test
     tasty-hspec,
     numhask,
     data-default,
-    lens
+    lens,
+    diagrams-lib,
+    diagrams-svg,
+    text
   default-extensions:
     NoImplicitPrelude,
+    ExtendedDefaultRules,
     UnicodeSyntax,
-    BangPatterns,
-    BinaryLiterals,
-    DeriveFoldable,
-    DeriveFunctor,
-    DeriveGeneric,
-    DeriveTraversable,
-    DisambiguateRecordFields,
-    EmptyCase,
-    FlexibleContexts,
-    FlexibleInstances,
-    FunctionalDependencies,
-    GADTSyntax,
-    InstanceSigs,
-    KindSignatures,
-    LambdaCase,
-    MonadComprehensions,
-    MultiParamTypeClasses,
-    MultiWayIf,
-    NegativeLiterals,
-    OverloadedStrings,
-    ParallelListComp,
-    PartialTypeSignatures,
-    PatternSynonyms,
-    RankNTypes,
-    RecordWildCards,
-    RecursiveDo,
-    ScopedTypeVariables,
-    TupleSections,
-    TypeFamilies,
-    TypeOperators
+    NegativeLiterals
 
 source-repository head
   type:

@@ -7,10 +7,16 @@
 
 <img style="border:2px solid grey" src="https://tonyday567.github.io/chart-unit/other/exampleChart.svg">
 
-reduced version
+gallery
 ---
 
-<img style="height=20%" src="https://tonyday567.github.io/chart-unit/other/exampleChart.svg">
+<img style="height:50%;" src="https://tonyday567.github.io/chart-unit/other/exampleLine.svg"> 
+<img style="height:50%;" src="https://tonyday567.github.io/chart-unit/other/exampleGlyph.svg">
+<img style="height:50%;" src="https://tonyday567.github.io/chart-unit/other/exampleGline.svg">
+<img style="height:50%;" src="https://tonyday567.github.io/chart-unit/other/exampleLGlyph.svg">
+
+___
+
 
 chart bling
 ===

@@ -87,8 +87,6 @@ axisAuto aspect cfg = newcfg
     newcfg = cfg
     -- relSize = aspectd / (cfg ^. axisLabelText ^. textSize * fromIntegral maxl)
 
---  testTitles 1.5 -1 "a left-aligned title" (textPad .~ 1.2 $ textAlignH .~ 0.5 $ textSize .~ 0.2 $ def)
-
 testTitles aspx cfg = vert (pad 1.2 . bound (box (withOpacity red 0.2)) 1)
     [ axes (chartAspect .~ Aspect (Ranges (aspx *. one) one) $ chartPad .~ 1 $ def)
     , (textp (textAlignH .~ 0.5 $ textSize .~ 0.2 $ cfg) "Left-Aligned" (Pair (-0.5 *aspx) 0))
