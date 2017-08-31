@@ -34,7 +34,7 @@ copyright:
 build-type:
   Simple
 cabal-version:
-  >=1.10
+  >=1.18
 
 library
   hs-source-dirs:
