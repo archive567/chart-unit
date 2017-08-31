@@ -1,3 +1,7 @@
+```include
+other/header.md
+```
+
 [chart-unit](https://github.com/tonyday567/chart-unit)
 ===
 
@@ -5,57 +9,80 @@
 
 `chart-unit` is a haskell chart library focusing on a small set of high-quality charts using native haskell. Here's a recent example, chock-a-block fill of titles and legends, since they've just been added:
 
-<img style="border:2px solid grey" src="https://tonyday567.github.io/chart-unit/other/exampleChart.svg">
+![](other/mainExample.svg)
 
-gallery
----
-
-<img style="height:50%;" src="https://tonyday567.github.io/chart-unit/other/exampleLine.svg"> 
-<img style="height:50%;" src="https://tonyday567.github.io/chart-unit/other/exampleGlyph.svg">
-<img style="height:50%;" src="https://tonyday567.github.io/chart-unit/other/exampleGline.svg">
-<img style="height:50%;" src="https://tonyday567.github.io/chart-unit/other/exampleLGlyph.svg">
-
-___
-
-
-chart bling
+Chart Types
 ===
 
-line chart
----
-<img src="https://tonyday567.github.io/chart-unit/other/exampleLine.svg">
+So far, there are 8 major chart types:
 
-scatter chart
----
-<img src="https://tonyday567.github.io/chart-unit/other/exampleScatter.svg">
+![](other/textHudExample.svg)
 
-histogram
----
-<img src="https://tonyday567.github.io/chart-unit/other/exampleHist.svg">
+![](other/glyphHudExample.svg)
 
-pixel chart
+![](other/lglyphHudExample.svg)
+
+![](other/lineHudExample.svg)
+
+![](other/glineHudExample.svg)
+
+![](other/rectHudExample.svg)
+
+![](other/pixelHudExample.svg)
+
+![](other/arrowHudExample.svg)
+
+Gallery
+===
+
+The main chart types and the power of diagrams make it easy to invent new charts.  Hrere's some inspiration (all code for these charts is in [examples/sourceExamples.hs](examples/sourceExamples.hs)).
+
+schoolbook
 ---
-<img src="https://tonyday567.github.io/chart-unit/other/examplePixels.svg">
+
+![](other/schoolbookExample.svg)
+
+labelled bar
+---
+
+![](other/labelledBarExample.svg)
 
 histogram diff
 ---
-<img src="https://tonyday567.github.io/chart-unit/other/exampleHistCompare.svg">
 
-arrow chart
----
-<img src="https://tonyday567.github.io/chart-unit/other/exampleArrow.svg">
+![](other/histDiffExample.svg)
 
-compound
+
+combined scatter histogram
 ---
-<img src="https://tonyday567.github.io/chart-unit/other/exampleCompound.svg">
+
+![](other/scatterHistExample.svg)
+
+
+clipping
+---
+
+![](other/clippingExample.svg)
+
+skinny
+---
+
+![](other/skinnyExample.svg)
+
 
 animation
 ---
-<img src="https://tonyday567.github.io/chart-unit/other/anim.gif">
 
-compile recipe
---------
+![](other/animationExample.gif)
+
+
+workflow
+===
 
 ~~~
-stack build --test --exec "$(stack path --local-install-root)/bin/chart-unit-examples" --exec "$(stack path --local-bin)/pandoc -f markdown -i examples/examples.md -t html -o index.html --filter pandoc-include --mathjax" --file-watch
+stack build --test --exec "$(stack path --local-install-root)/bin/chart-source-examples" --exec "$(stack path --local-bin)/pandoc -f markdown -i readme.md -t html -o index.html --filter pandoc-include --mathjax" --file-watch
 ~~~
+
+```include
+other/footer.md
+```

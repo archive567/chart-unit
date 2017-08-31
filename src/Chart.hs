@@ -1,5 +1,4 @@
 {-# OPTIONS_GHC -Wall #-}
-{-# LANGUAGE PatternSynonyms #-}
 {-# OPTIONS_HADDOCK prune, not-home #-}
 
 -- | native haskell charts
@@ -34,30 +33,35 @@ module Chart
   , circle
   , SVG
   , B
+  , Renderable
+  , Path
+  , V2
   , Default(..)
   , Text
+  , scratch
   ) where
 
-import Chart.Core
 import Chart.Arrow
+import Chart.Core
 import Chart.Glyph
 import Chart.Hud
+import Chart.Lenses
 import Chart.Line
 import Chart.Rect
 import Chart.Text
-import Chart.Lenses
-
-import NumHask.Pair
-import NumHask.Space hiding (width)
-import NumHask.Range
-import NumHask.Rect
-
+import Data.Colour
+import Data.Colour.Palette.ColorSet
+import Data.Colour.Palette.Harmony
 import Data.Default (Default(..))
 import Data.Text
-
 import Diagrams.Backend.SVG (SVG, B)
 import Diagrams.Prelude
-import Data.Colour
-import Data.Colour.Palette.Harmony
-import Data.Colour.Palette.ColorSet
+import NumHask.Pair
+import NumHask.Range
+import NumHask.Rect
+import NumHask.Space hiding (width)
+import NumHask.Prelude (IO)
 
+-- | a scratch pad
+scratch :: Diagram SVG -> IO ()
+scratch = fileSvg "other/scratchpad.svg" (600, 400)

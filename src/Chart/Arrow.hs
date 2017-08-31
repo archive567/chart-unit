@@ -1,14 +1,4 @@
-{-# LANGUAGE NoImplicitPrelude #-}
-{-# LANGUAGE GADTs #-}
-{-# LANGUAGE FlexibleContexts #-}
-{-# LANGUAGE DataKinds #-}
 {-# OPTIONS_GHC -Wall #-}
-{-# OPTIONS_GHC -fno-warn-type-defaults #-}
-{-# LANGUAGE CPP #-}
-#if ( __GLASGOW_HASKELL__ < 820 )
-{-# OPTIONS_GHC -fno-warn-incomplete-patterns #-}
-#endif
-{-# OPTIONS_GHC -fno-warn-orphans #-}
 
 -- | Charts that depict gradients and similar, using arrows
 
@@ -23,14 +13,14 @@ module Chart.Arrow (
 
 import Chart.Core
 
-import NumHask.Prelude hiding (min,max,from,to,(&),local,size,rotate)
+import NumHask.Prelude hiding (max,(&))
 import NumHask.Space
 import NumHask.Range
 import NumHask.Rect
 import NumHask.Pair
 
 import Data.Ord (max)
-import Diagrams.Prelude hiding (width, unit, D, Color, scale, zero, scaleX, scaleY, aspect, rect, project, lineColor, (*.), size)
+import Diagrams.Prelude hiding (width, D, Color, project)
 
 data ArrowOptions a = ArrowOptions
     { arrowMinLength :: a
@@ -82,7 +72,7 @@ arrows opts xs = c
         (\ps' as' hrel' wrel' srel' ->
                     (ps',
                      arrowAt' (arropts hrel' wrel') (p2 (0, 0))
-                     ((srel'/norm(as')) *^ as'))) <$> ZipList
+                     ((srel'/norm as') *^ as'))) <$> ZipList
         (toList $ p_ <$> ps) <*> ZipList
         (toList $ r_ <$> as) <*> ZipList
         (toList hrel) <*> ZipList
@@ -92,24 +82,24 @@ arrows opts xs = c
     -- arrow vectors
     as = arrowDir <$> xs
     -- width of the data space
-    (Pair dx dy) = width ((space ps) :: Rect Double)
+    (Pair dx dy) = width (space ps :: Rect Double)
     -- norm of arrow vectors relative to the data space metric
     anorm = (\(Pair x y) -> sqrt((x/dx)**2+(y/dy)**2)) <$> as
     -- the maximum arrow vector norm
     (Range _ anormMax) = space anorm
     -- the overall size of the arrows, as a proportion to the data space
-    arel = (\x -> (max (anormMax * (arrowMinLength opts))
-                  (x / anormMax * (arrowMaxLength opts)))) <$> anorm
+    arel = (\x -> max (anormMax * arrowMinLength opts)
+                 (x / anormMax * arrowMaxLength opts)) <$> anorm
     -- size of the head (as a proportion of the data space)
-    hrel = (\x -> max (arrowMinHeadLength opts) ((arrowMaxHeadLength opts) * x)) <$>
+    hrel = (\x -> max (arrowMinHeadLength opts) (arrowMaxHeadLength opts * x)) <$>
         arel
     -- widt of the staff
-    wrel = (\x -> max (arrowMinStaffWidth opts) ((arrowMaxStaffWidth opts) * x)) <$>
+    wrel = (\x -> max (arrowMinStaffWidth opts) (arrowMaxStaffWidth opts * x)) <$>
         arel
     -- length of the staff (taking into account the head length)
     srel = zipWith (\la lh -> max 1e-12 (la - lh)) (toList arel) (toList hrel)
     -- diagrams arrow options
-    arropts lh lw'' = with & arrowHead .~ (arrowHeadStyle opts) &
+    arropts lh lw'' = with & arrowHead .~ arrowHeadStyle opts &
                  headLength .~ global lh &
                  shaftStyle %~ (lwG lw'' & lcA (arrowColor opts)) &
                  headStyle %~ (lcA (arrowColor opts) & fcA (arrowColor opts))
@@ -143,6 +133,4 @@ arrowChart_ ::
 arrowChart_ optss asp xss =
     arrowChart optss asp r xss
   where
-    r = (fold $ space <$> map arrowPos <$> xss)
-        -- `mappend`
-        -- (fold $ space <$> map (\x -> arrowPos x + arrowDir x) <$> xss)
+    r = fold (space . map arrowPos <$> xss)

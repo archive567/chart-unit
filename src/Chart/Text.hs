@@ -1,17 +1,5 @@
-{-# LANGUAGE NoImplicitPrelude #-}
-{-# LANGUAGE GADTs #-}
-{-# LANGUAGE FlexibleContexts #-}
-{-# LANGUAGE DataKinds #-}
 {-# OPTIONS_GHC -Wall #-}
-{-# OPTIONS_GHC -fno-warn-type-defaults #-}
-{-# LANGUAGE CPP #-}
-#if ( __GLASGOW_HASKELL__ < 820 )
-{-# OPTIONS_GHC -fno-warn-incomplete-patterns #-}
-#endif
-{-# OPTIONS_GHC -fno-warn-orphans #-}
-
 -- | text chart elements
-
 module Chart.Text
   ( TextOptions(..)
   , text_
@@ -23,33 +11,25 @@ module Chart.Text
   ) where
 
 import Chart.Core
-
-import NumHask.Prelude hiding (min,max,from,to,(&),local,size,rotate)
-import NumHask.Rect
-import NumHask.Pair
-
-import Diagrams.Prelude hiding (width, unit, D, Color, scale, zero, scaleX, scaleY, aspect, rect, project, lineColor, (*.), size)
 import qualified Data.Text as Text
-import Graphics.SVGFonts
+import Diagrams.Prelude hiding (Color, D, scale)
 import qualified Diagrams.TwoD.Size as D
+import Graphics.SVGFonts
+import NumHask.Pair
+import NumHask.Prelude hiding (rotate)
+import NumHask.Rect
 
 -- | text options
 data TextOptions = TextOptions
-    { textSize :: Double
-    , textAlignH :: AlignH
-    , textColor :: AlphaColour Double
-    , textFillRule :: FillRule
-    , textRotation :: Double
-    }
+  { textSize :: Double
+  , textAlignH :: AlignH
+  , textColor :: AlphaColour Double
+  , textFillRule :: FillRule
+  , textRotation :: Double
+  }
 
 instance Default TextOptions where
-    def =
-        TextOptions
-        0.08
-        AlignCenter
-        (withOpacity black 0.33)
-        EvenOdd
-        0
+  def = TextOptions 0.08 AlignCenter (withOpacity black 0.33) EvenOdd 0
 
 -- | create a text primitive
 --
@@ -59,8 +39,8 @@ instance Default TextOptions where
 --
 text_ :: TextOptions -> Text -> Chart b
 text_ (TextOptions s a c fr rot) t =
-    moveTo (p_ (Pair (alignHTU a * D.width path) 0)) $
-    path # fcA c # lw 0 # fillRule fr # rotate (rot @@ deg)
+  moveTo (p_ (Pair (alignHTU a * D.width path) 0)) $
+  path # fcA c # lw 0 # fillRule fr # rotate (rot @@ deg)
   where
     path = textSVG_ (TextOpts lin2 INSIDE_H KERN False s s) (Text.unpack t)
 
@@ -71,27 +51,22 @@ text_ (TextOptions s a c fr rot) t =
 --
 -- ![texts example](other/textsExample.svg)
 --
-texts ::
-    (R2 r) =>
-    TextOptions ->
-    [Text] ->
-    [r Double] ->
-    Chart b
+texts :: (R2 r) => TextOptions -> [Text] -> [r Double] -> Chart b
 texts opts ts ps = mconcat $ zipWith (\p t -> positioned p (text_ opts t)) ps ts
 
 -- | a chart of text
 textChart ::
-    (Traversable f) =>
-    [TextOptions] ->
-    Aspect ->
-    Rect Double ->
-    [f (Text, Pair Double)] ->
-    Chart b
+     (Traversable f)
+  => [TextOptions]
+  -> Aspect
+  -> Rect Double
+  -> [f (Text, Pair Double)]
+  -> Chart b
 textChart optss (Aspect asp) r xyss =
-    mconcat $ getZipList $ texts <$> ZipList
-    optss <*> ZipList
-    (map fst . toList <$> xyss) <*> ZipList
-    (projectss r asp (fmap snd . toList <$> xyss))
+  mconcat $
+  getZipList $
+  texts <$> ZipList optss <*> ZipList (map fst . toList <$> xyss) <*>
+  ZipList (projectss r asp (fmap snd . toList <$> xyss))
 
 -- | a chart of text scaled to its own range
 --
@@ -101,27 +76,19 @@ textChart optss (Aspect asp) r xyss =
 --
 -- ![textChart_ example](other/textChart_Example.svg)
 --
-textChart_ ::
-    [TextOptions] ->
-    Aspect ->
-    [[(Text, Pair Double)]] ->
-    Chart b
+textChart_ :: [TextOptions] -> Aspect -> [[(Text, Pair Double)]] -> Chart b
 textChart_ optss asp xyss =
-    textChart optss asp (range $ fmap snd . toList <$> xyss) xyss
+  textChart optss asp (range $ fmap snd . toList <$> xyss) xyss
 
 -- | a label is a text element attached to a chart element
 data LabelOptions = LabelOptions
-    { labelText :: TextOptions
-    , labelOrientation :: Pair Double -- ^ direction of label
-    , labelGap :: Double -- ^ distance to label
-    }
+  { labelText :: TextOptions
+  , labelOrientation :: Pair Double -- ^ direction of label
+  , labelGap :: Double -- ^ distance to label
+  }
 
 instance Default LabelOptions where
-    def =
-        LabelOptions
-        def
-        (Pair 0 1)
-        0.05
+  def = LabelOptions def (Pair 0 1) 0.05
 
 -- | label a chart element with some text
 --
@@ -132,6 +99,4 @@ instance Default LabelOptions where
 --
 labelled :: LabelOptions -> Text -> Chart b -> Chart b
 labelled (LabelOptions texto o g) t ch =
-  beside (r_ o)
-  (beside (r_ o) ch (strut (r_ o) # scale g))
-  (text_ texto t)
+  beside (r_ o) (beside (r_ o) ch (strut (r_ o) # scale g)) (text_ texto t)

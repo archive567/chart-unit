@@ -13,9 +13,6 @@ import Chart
 import NumHask.Prelude
 
 import Control.Monad.Primitive (PrimState)
-import Data.Reflection
-import Numeric.AD
-import Numeric.AD.Internal.Reverse
 import System.Random.MWC
 import System.Random.MWC.Probability
 import qualified Control.Foldl as L
@@ -53,9 +50,9 @@ mkScatterData = do
 data DealOvers = IgnoreOvers | IncludeOvers Double
 
 makeHist :: Int -> [Double] -> [Rect Double]
-makeHist n xs = fromHist (IncludeOvers 1) (fill cuts xs)
+makeHist n xs = fromHist IgnoreOvers (fill cuts xs)
   where
-    cuts = grid OuterPos (space xs :: Range Double) n
+    cuts = grid MidPos (space xs :: Range Double) n
 
 fill :: (Functor f, Foldable f) => [Double] -> f Double -> Histogram
 fill cuts xs = Histogram cuts (histMap cuts xs)
@@ -84,28 +81,23 @@ fromHist o (Histogram cuts counts) = zipWith4 Rect x z y w'
         IncludeOvers outw -> [Data.List.head cuts - outw] <> cuts <> [last cuts + outw]
       z = drop 1 x
 
-makeRvs :: IO [[Double]]
+makeRvs :: IO ([Double],[Double])
 makeRvs = do
     g <- create
     xys <- rvs g 1000
     xys1 <- rvs g 1000
-    pure [xys, (1.5*) <$> xys1]
-
-mkHistData :: IO [[Rect Double]]
-mkHistData = do
-    d0 <- makeRvs
-    pure $ makeHist 30 <$> d0 
+    pure (xys, (1.5*) <$> xys1)
 
 data Histogram = Histogram
    { _cuts   :: [Double] -- bucket boundaries
    , _values :: Map.Map Int Double -- bucket counts
    } deriving (Show, Eq)
 
-mkHistogramData :: IO [Histogram]
-mkHistogramData = do
-    d0 <- makeRvs
-    let cuts = grid OuterPos (Range -3.0 3.0) 6
-    pure $ fill cuts  <$> d0
+makeHistDiffExample :: IO ([Rect Double],[Rect Double])
+makeHistDiffExample = do
+    (d0,d1) <- makeRvs
+    let cuts = grid OuterPos (Range -5.0 5.0) 50
+    pure (fromHist IgnoreOvers (fill cuts d0), fromHist IgnoreOvers (fill cuts d1))
 
 makeRectQuantiles :: Double -> IO [Rect Double]
 makeRectQuantiles n = do
@@ -131,24 +123,4 @@ tDigestQuantiles qs = L.Fold step begin done
     step x a = Data.TDigest.insert a x
     begin = tdigest ([]::[Double]) :: TDigest 25
     done x = fromMaybe nan . (`quantile` compress x) <$> qs
-
-arrowData :: Pair Int -> [Arrow]
-arrowData g = zipWith Arrow positions arrows
-  where
-    positions = grid OuterPos (Rect -1 1 -1 1) g
-    arrows = gradF rosenbrock 0.01 <$> positions
-
-gradF ::
-    (forall s. (Reifies s Tape) => [Reverse s Double] -> Reverse s Double) ->
-    Double ->
-    Pair Double ->
-    Pair Double
-gradF f step (Pair x y) =
-    fmap negate ((\[x',y'] -> Pair x' y') $
-          gradWith (\x0 x1 -> x0 + (x1 - x0) * step) f [x,y])
-
-rosenbrock :: (Num a) => [a] -> a
-rosenbrock [] = 0
-rosenbrock [x] = 100 P.* (P.negate x P.^ 2) P.^ 2 P.+ (x P.- 1) P.^ 2
-rosenbrock (x:y:_) = 100 P.* (y P.- x P.^ 2) P.^ 2 P.+ (x P.- 1) P.^ 2
 

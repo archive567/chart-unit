@@ -1,11 +1,10 @@
 {-# LANGUAGE TemplateHaskell #-}
-{-# LANGUAGE NoImplicitPrelude #-}
 {-# OPTIONS_GHC -Wall #-}
 
 -- | Lenses for all the options.  Note the trailing underscore naming convention, rather than the more obnoxious _prefixed conventions.
 module Chart.Lenses
-  ( -- * tea anyone?
-    arrowMinLength_
+    -- * tea anyone?
+  ( arrowMinLength_
   , arrowMaxLength_
   , arrowMinHeadLength_
   , arrowMaxHeadLength_
@@ -38,11 +37,11 @@ module Chart.Lenses
   , titleText_
   , titleAlign_
   , titlePlace_
-  , titleStrut_
+  , titleGap_
   , legendChartType_
   , legendInnerPad_
   , legendInnerSep_
-  , legendOuterPad_
+  , legendGap_
   , legendRowPad_
   , legendPlace_
   , legendAlign_
@@ -70,96 +69,103 @@ import Chart.Hud
 import Chart.Line
 import Chart.Rect
 import Chart.Text
-
 import Control.Lens
 
 makeLensesFor
-    [ ("arrowMinLength", "arrowMinLength_")
-    , ("arrowMaxLength", "arrowMaxLength_")
-    , ("arrowMinHeadLength", "arrowMinHeadLength_")
-    , ("arrowMaxHeadLength", "arrowMaxHeadLength_")
-    , ("arrowMinStaffWidth", "arrowMinStaffWidth_")
-    , ("arrowMaxStaffWidth", "arrowMaxStaffWidth_")
-    , ("arrowColor", "arrowColor_")
-    , ("arrowHeadStyle", "arrowHeadStyle_")
-    ] ''ArrowOptions
+  [ ("arrowMinLength", "arrowMinLength_")
+  , ("arrowMaxLength", "arrowMaxLength_")
+  , ("arrowMinHeadLength", "arrowMinHeadLength_")
+  , ("arrowMaxHeadLength", "arrowMaxHeadLength_")
+  , ("arrowMinStaffWidth", "arrowMinStaffWidth_")
+  , ("arrowMaxStaffWidth", "arrowMaxStaffWidth_")
+  , ("arrowColor", "arrowColor_")
+  , ("arrowHeadStyle", "arrowHeadStyle_")
+  ]
+  ''ArrowOptions
 
 makeLensesFor
-    [ ("glyphSize", "glyphSize_")
-    , ("glyphColor", "glyphColor_")
-    , ("glyphBorderColor", "glyphBorderColor_")
-    , ("glyphBorderSize", "glyphBorderSize_")
+  [ ("glyphSize", "glyphSize_")
+  , ("glyphColor", "glyphColor_")
+  , ("glyphBorderColor", "glyphBorderColor_")
+  , ("glyphBorderSize", "glyphBorderSize_")
       -- GHC doesn't yet support impredicative polymorphism
       -- In the type signature:
       --   glyphShape_ :: forall b_agHOV b_agNLd.
       --                  Lens (GlyphOptions b_agHOV) (GlyphOptions b_agNLd) (ghc-prim-0.5.0.0:GHC.Types.Double -> Chart.Core.Chart b_agHOV) (ghc-prim-0.5.0.0:GHC.Types.Double -> Chart.Core.Chart b_agNLd)
     -- , ("glyphShape", "glyphShape_")
-    ] ''GlyphOptions
+  ]
+  ''GlyphOptions
 
 makeLensesFor
-    [ ("hudPad", "hudPad_")
-    , ("hudAxes", "hudAxes_")
-    , ("hudTitles", "hudTitles_")
-    , ("hudLegends", "hudLegends_")
-    , ("hudRange", "hudRange_")
-    , ("hudAspect", "hudAspect_")
-    , ("hudCanvas", "hudCanvas_")
-    ] ''HudOptions
+  [ ("hudPad", "hudPad_")
+  , ("hudAxes", "hudAxes_")
+  , ("hudTitles", "hudTitles_")
+  , ("hudLegends", "hudLegends_")
+  , ("hudRange", "hudRange_")
+  , ("hudAspect", "hudAspect_")
+  , ("hudCanvas", "hudCanvas_")
+  ]
+  ''HudOptions
 
 makeLensesFor
-    [ ("axisPad", "axisPad_")
-    , ("axisOrientation", "axisOrientation_")
-    , ("axisPlace", "axisPlace_")
-    , ("axisRect", "axisRect_")
-    , ("axisRectHeight", "axisRectHeight_")
-    , ("axisMark", "axisMark_")
-    , ("axisMarkStart", "axisMarkStart_")
-    , ("axisGap", "axisGap_")
-    , ("axisLabel", "axisLabel_")
-    , ("axisTickStyle", "axisTickStyle_")
-    ] ''AxisOptions
+  [ ("axisPad", "axisPad_")
+  , ("axisOrientation", "axisOrientation_")
+  , ("axisPlace", "axisPlace_")
+  , ("axisRect", "axisRect_")
+  , ("axisRectHeight", "axisRectHeight_")
+  , ("axisMark", "axisMark_")
+  , ("axisMarkStart", "axisMarkStart_")
+  , ("axisGap", "axisGap_")
+  , ("axisLabel", "axisLabel_")
+  , ("axisTickStyle", "axisTickStyle_")
+  ]
+  ''AxisOptions
 
 makeLensesFor
-    [ ("titleText", "titleText_")
-    , ("titleAlign", "titleAlign_")
-    , ("titlePlace", "titlePlace_")
-    , ("titleStrut", "titleStrut_")
-    ] ''TitleOptions
+  [ ("titleText", "titleText_")
+  , ("titleAlign", "titleAlign_")
+  , ("titlePlace", "titlePlace_")
+  , ("titleGap", "titleGap_")
+  ]
+  ''TitleOptions
 
 makeLensesFor
-    [ ("legendChartType", "legendChartType_")
-    , ("legendInnerPad", "legendInnerPad_")
-    , ("legendInnerSep", "legendInnerSep_")
-    , ("legendOuterPad", "legendOuterPad_")
-    , ("legendRowPad", "legendRowPad_")
-    , ("legendPlace", "legendPlace_")
-    , ("legendAlign", "legendAlign_")
-    , ("legendSep", "legendSep_")
-    , ("legendRect", "legendRect_")
-    , ("legendText", "legendText_")
-    ] ''LegendOptions
+  [ ("legendChartType", "legendChartType_")
+  , ("legendInnerPad", "legendInnerPad_")
+  , ("legendInnerSep", "legendInnerSep_")
+  , ("legendGap", "legendGap_")
+  , ("legendRowPad", "legendRowPad_")
+  , ("legendPlace", "legendPlace_")
+  , ("legendAlign", "legendAlign_")
+  , ("legendSep", "legendSep_")
+  , ("legendRect", "legendRect_")
+  , ("legendText", "legendText_")
+  ]
+  ''LegendOptions
 
 makeLensesFor
-    [ ("lineSize", "lineSize_")
-    , ("lineColor", "lineColor_")
-    ] ''LineOptions
+  [("lineSize", "lineSize_"), ("lineColor", "lineColor_")]
+  ''LineOptions
 
 makeLensesFor
-    [ ("rectBorderSize", "rectBorderSize_")
-    , ("rectBorderColor", "rectBorderColor_")
-    , ("rectColor", "rectColor_")
-    ] ''RectOptions
+  [ ("rectBorderSize", "rectBorderSize_")
+  , ("rectBorderColor", "rectBorderColor_")
+  , ("rectColor", "rectColor_")
+  ]
+  ''RectOptions
 
 makeLensesFor
-    [ ("textSize", "textSize_")
-    , ("textAlignH", "textAlignH_")
-    , ("textColor", "textColor_")
-    , ("textFillRule", "textFillRule_")
-    , ("textRotation", "textRotation_")
-    ] ''TextOptions
+  [ ("textSize", "textSize_")
+  , ("textAlignH", "textAlignH_")
+  , ("textColor", "textColor_")
+  , ("textFillRule", "textFillRule_")
+  , ("textRotation", "textRotation_")
+  ]
+  ''TextOptions
 
 makeLensesFor
-    [ ("labelText", "labelText_")
-    , ("labelOrientation", "labelOrientation_")
-    , ("labelGap", "labelGap_")
-    ] ''LabelOptions
+  [ ("labelText", "labelText_")
+  , ("labelOrientation", "labelOrientation_")
+  , ("labelGap", "labelGap_")
+  ]
+  ''LabelOptions
