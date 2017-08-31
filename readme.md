@@ -9,28 +9,28 @@ other/header.md
 
 `chart-unit` is a haskell chart library focusing on a small set of high-quality charts using native haskell. Here's a recent example, chock-a-block fill of titles and legends, since they've just been added:
 
-![](other/mainExample.svg)
+![](https://tonyday567.github.io/other/mainExample.svg)
 
 Chart Types
 ===
 
 So far, there are 8 major chart types:
 
-![](other/textHudExample.svg)
+![](https://tonyday567.github.io/other/textHudExample.svg)
 
-![](other/glyphHudExample.svg)
+![](https://tonyday567.github.io/other/glyphHudExample.svg)
 
-![](other/lglyphHudExample.svg)
+![](https://tonyday567.github.io/other/lglyphHudExample.svg)
 
-![](other/lineHudExample.svg)
+![](https://tonyday567.github.io/other/lineHudExample.svg)
 
-![](other/glineHudExample.svg)
+![](https://tonyday567.github.io/other/glineHudExample.svg)
 
-![](other/rectHudExample.svg)
+![](https://tonyday567.github.io/other/rectHudExample.svg)
 
-![](other/pixelHudExample.svg)
+![](https://tonyday567.github.io/other/pixelHudExample.svg)
 
-![](other/arrowHudExample.svg)
+![](https://tonyday567.github.io/other/arrowHudExample.svg)
 
 Gallery
 ===
@@ -40,40 +40,40 @@ The main chart types and the power of diagrams make it easy to invent new charts
 schoolbook
 ---
 
-![](other/schoolbookExample.svg)
+![](https://tonyday567.github.io/other/schoolbookExample.svg)
 
 labelled bar
 ---
 
-![](other/labelledBarExample.svg)
+![](https://tonyday567.github.io/other/labelledBarExample.svg)
 
 histogram diff
 ---
 
-![](other/histDiffExample.svg)
+![](https://tonyday567.github.io/other/histDiffExample.svg)
 
 
 combined scatter histogram
 ---
 
-![](other/scatterHistExample.svg)
+![](https://tonyday567.github.io/other/scatterHistExample.svg)
 
 
 clipping
 ---
 
-![](other/clippingExample.svg)
+![](https://tonyday567.github.io/other/clippingExample.svg)
 
 skinny
 ---
 
-![](other/skinnyExample.svg)
+![](https://tonyday567.github.io/other/skinnyExample.svg)
 
 
 animation
 ---
 
-![](other/animationExample.gif)
+![](https://tonyday567.github.io/other/animationExample.gif)
 
 
 workflow
