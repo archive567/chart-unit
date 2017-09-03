@@ -4,11 +4,9 @@
 {-# OPTIONS_GHC -fno-warn-incomplete-patterns #-}
 #endif
 
+-- | Points on a chart connected by lines.
 module Chart.Line
-  ( -- * line
-    --
-    -- $line
-    LineOptions(..)
+  ( LineOptions(..)
   , oneline
   , lines
   , glines
@@ -26,11 +24,10 @@ import NumHask.Pair
 import NumHask.Prelude
 import NumHask.Rect
 
--- $line
+-- | The main features of a line (that distinguish it from a glyph say) is that:
 --
--- line chart elements
--- The main features of a line (that distinguish it from a glyph say) is that:
 -- - it exists over multiple points (a line can't exist at a single point)
+--
 -- - line rendering is normalized to the eventual physical chart
 --
 data LineOptions = LineOptions
@@ -41,7 +38,7 @@ data LineOptions = LineOptions
 instance Default LineOptions where
   def = LineOptions 0.02 ublue
 
--- | a line connecting a series of points
+-- | A line connecting a series of points
 --
 -- > lines def [Pair (10*x/100.0) (cos (x * (10 / 100.0))) | x <- fromIntegral <$> [0..n]]
 --
@@ -55,12 +52,12 @@ lines (LineOptions s c) xs =
       trailLike (trailFromVertices (toList $ p_ <$> xs) `at` p_ p) # lcA c #
       lwN s
 
--- a single line connecting 2 points
+-- | A single line connecting 2 points
 oneline :: (R2 r) => LineOptions -> Pair (r Double) -> Chart b
 oneline (LineOptions s c) (Pair x0 x1) =
   stroke (trailFromVertices [p_ x0, p_ x1] `at` p_ x0) # lcA c # lwN s
 
--- | a chart of lines
+-- | A chart of lines
 lineChart ::
      (Traversable f)
   => [LineOptions]
@@ -71,11 +68,13 @@ lineChart ::
 lineChart optss (Aspect asp) r xyss =
   mconcat $ zipWith lines optss (projectss r asp xyss)
 
--- | a chart of lines scaled to its own range
+-- | A chart of lines scaled to its own range
 --
 -- > import Data.Colour.Palette.Harmony (tetrad)
--- > ls = map (uncurry Pair) <$> [[(0.0,1.0),(1.0,1.0),(2.0,5.0)], [(0.0,0.0),(3.0,3.0)], [(0.5,4.0),(0.5,0)]]
--- > lopts = zipWith (\x y -> LineOptions x (withOpacity y 0.6)) [0.01,0.02,0.005] (tetrad blue)
+-- > ls = map (uncurry Pair) <$> [[(0.0,1.0),(1.0,1.0),(2.0,5.0)],
+-- >                              [(0.0,0.0),(3.0,3.0)], [(0.5,4.0),(0.5,0)]]
+-- > lopts = zipWith (\x y -> LineOptions x (withOpacity y 0.6)) [0.01,0.02,0.005]
+-- >         (tetrad blue)
 -- > lineChart_ lopts sixbyfour ls
 --
 -- ![lineChart_ example](other/lineChart_Example.svg)
@@ -84,7 +83,7 @@ lineChart_ ::
      (Traversable f) => [LineOptions] -> Aspect -> [f (Pair Double)] -> Chart b
 lineChart_ optss asp xyss = lineChart optss asp (range xyss) xyss
 
--- | lines with glyphs atop
+-- | Lines with glyphs atop eack point
 glines ::
      (Traversable f, R2 r)
   => LineOptions
@@ -93,7 +92,7 @@ glines ::
   -> Chart b
 glines opts gopts xs = glyphs gopts xs <> lines opts xs
 
--- | a chart of glines
+-- | A chart of glines
 glineChart ::
      (Traversable f)
   => [LineOptions]
@@ -107,9 +106,11 @@ glineChart ls gs (Aspect asp) r xyss =
   getZipList $
   glines <$> ZipList ls <*> ZipList gs <*> ZipList (projectss r asp xyss)
 
--- | a chart of glyphs_lines scaled to its own range
+-- | A chart of glyphs_lines scaled to its own range
 --
--- > let gopts = zipWith (\x y -> def {glyphColor=transparent, glyphBorderColor=withOpacity x 0.6, glyphShape=y}) (tetrad green) [triangle, square, circle]
+-- > let gopts = zipWith (\x y -> def {glyphColor=transparent,
+-- >         glyphBorderColor=withOpacity x 0.6, glyphShape=y}) (tetrad green)
+-- >         [triangle, square, circle]
 -- >
 -- > glineChart_ lopts gopts sixbyfour ls
 --

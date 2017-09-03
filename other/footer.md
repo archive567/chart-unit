@@ -1,5 +1,8 @@
 ***
 
 <div class="footer">
-Powered by [haskell](https://haskell-lang.org/), [stack](https://docs.haskellstack.org/en/stable/README/) and [pandoc](http://pandoc.org/).
+Made with love 'n' care; and
+[haskell](https://haskell-lang.org/),
+[pandoc](https://pandoc.org), and
+[stack](https://docs.haskellstack.org/en/stable/README/).
 </div>

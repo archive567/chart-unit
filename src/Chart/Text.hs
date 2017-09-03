@@ -1,5 +1,5 @@
 {-# OPTIONS_GHC -Wall #-}
--- | text chart elements
+-- | textual chart elements
 module Chart.Text
   ( TextOptions(..)
   , text_
@@ -31,7 +31,7 @@ data TextOptions = TextOptions
 instance Default TextOptions where
   def = TextOptions 0.08 AlignCenter (withOpacity black 0.33) EvenOdd 0
 
--- | create a text primitive
+-- | Create a textual chart element
 --
 -- > let text_Example = text_ def "Welcome to chart-unit!"
 --
@@ -44,7 +44,7 @@ text_ (TextOptions s a c fr rot) t =
   where
     path = textSVG_ (TextOpts lin2 INSIDE_H KERN False s s) (Text.unpack t)
 
--- | positioned svg text from a list
+-- | Creatye positioned text from a list
 --
 -- > let ts = map (Text.singleton) ['a'..'z']
 -- > texts def ts [Pair (0.05*x) 0 |x <- [0..5]]
@@ -54,7 +54,7 @@ text_ (TextOptions s a c fr rot) t =
 texts :: (R2 r) => TextOptions -> [Text] -> [r Double] -> Chart b
 texts opts ts ps = mconcat $ zipWith (\p t -> positioned p (text_ opts t)) ps ts
 
--- | a chart of text
+-- | A chart of text
 textChart ::
      (Traversable f)
   => [TextOptions]
@@ -68,7 +68,7 @@ textChart optss (Aspect asp) r xyss =
   texts <$> ZipList optss <*> ZipList (map fst . toList <$> xyss) <*>
   ZipList (projectss r asp (fmap snd . toList <$> xyss))
 
--- | a chart of text scaled to its own range
+-- | A chart of text scaled to its own range
 --
 -- > import qualified Data.Text as Text
 -- > let ps = [Pair (sin (x*0.1)) x | x<-[0..25]]
@@ -80,7 +80,7 @@ textChart_ :: [TextOptions] -> Aspect -> [[(Text, Pair Double)]] -> Chart b
 textChart_ optss asp xyss =
   textChart optss asp (range $ fmap snd . toList <$> xyss) xyss
 
--- | a label is a text element attached to a chart element
+-- | A label is a text element attached to a chart element
 data LabelOptions = LabelOptions
   { labelText :: TextOptions
   , labelOrientation :: Pair Double -- ^ direction of label
@@ -90,7 +90,7 @@ data LabelOptions = LabelOptions
 instance Default LabelOptions where
   def = LabelOptions def (Pair 0 1) 0.05
 
--- | label a chart element with some text
+-- | Label a chart element with some text
 --
 -- > let lopts = def {textAlignH = AlignLeft, textRotation=45}
 -- > labelled (LabelOptions lopts (Pair 1 1) 0.05) "a label" (glyph_ def)

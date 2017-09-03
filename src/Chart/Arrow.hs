@@ -1,6 +1,6 @@
 {-# OPTIONS_GHC -Wall #-}
 
--- | Charts that depict gradients and similar, using arrows
+-- | Charts that depict gradients and similar data, using arrows in positions
 
 module Chart.Arrow (
     Arrow(..)
@@ -22,6 +22,7 @@ import NumHask.Pair
 import Data.Ord (max)
 import Diagrams.Prelude hiding (width, D, Color, project)
 
+-- | todo: quite a clunky specification of what an arrow is (or could be)
 data ArrowOptions a = ArrowOptions
     { arrowMinLength :: a
     , arrowMaxLength :: a
@@ -36,7 +37,7 @@ data ArrowOptions a = ArrowOptions
 instance Default (ArrowOptions Double) where
     def = ArrowOptions 0.02 0.2 0.01 0.1 0.002 0.005 ublue dart
 
--- | equalize the arrow space width with the data space one.
+-- | Equalize the arrow space width with the data space one.
 -- this creates the right arrow sizing in physical chart space
 normArrows :: [Arrow] -> [Arrow]
 normArrows xs =
@@ -52,16 +53,19 @@ normArrows xs =
              width (space $ arrowDir <$> xs :: Rect Double)) <$>
           as
 
--- | an arrow structure contains position, direction and size information
+-- | An arrow structure contains position, direction and size information
 data Arrow = Arrow
     { arrowPos :: Pair Double -- position of arrow tail
     , arrowDir :: Pair Double -- direction and strength of arrow
     } deriving (Eq, Show)
 
--- | arrows rescale data across position, and between position and arrow direction
--- note that, due t0 all this scaling stuff, there is no such thing as a single arrow_ chart
+-- | Rescale data across position, and between position and arrow direction.
 --
--- > arrows (def {arrowMaxLength=0.5,arrowMaxHeadLength=0.2,arrowMaxStaffWidth=0.01}) [Arrow (Pair x (sin (5*x))) (Pair x (cos x)) | x<-grid MidPos (one::Range Double) 100]
+-- note that, due to this auto-scaling, there is no such thing as a single arrow_ chart
+--
+-- > arrows (def {arrowMaxLength=0.5,arrowMaxHeadLength=0.2,arrowMaxStaffWidth=0.01})
+-- >     [Arrow (Pair x (sin (5*x))) (Pair x (cos x)) |
+-- >      x<-grid MidPos (one::Range Double) 100]
 --
 -- ![arrows example](other/arrowsExample.svg)
 --
@@ -117,9 +121,11 @@ arrowChart optss (Aspect asp) r xss =
     (\(Arrow d arr) ->
         Arrow (project r asp d) (project r asp arr)) <$> xs) optss xss
 
--- | an arrow chart scaled to its own range
+-- | An arrow chart scaled to its own range
 --
--- > let as = normArrows [Arrow (Pair x y) (Pair (sin 1/x+0.0001) (cos 1/y+0.0001)) | x<-grid MidPos (one::Range Double) 20, y<-grid MidPos (one::Range Double) 20]
+-- > let as = normArrows [Arrow (Pair x y) (Pair (sin 1/x+0.0001) (cos 1/y+0.0001)) |
+-- >                      x<-grid MidPos (one::Range Double) 20,
+-- >                      y<-grid MidPos (one::Range Double) 20]
 -- > arrowChart_ [def] asquare [as]
 --
 -- ![arrowChart_ example](other/arrowChart_Example.svg)

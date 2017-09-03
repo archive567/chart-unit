@@ -7,13 +7,14 @@
 {-# OPTIONS_GHC -fno-warn-incomplete-patterns #-}
 
 import Chart
-import Control.Lens hiding (beside, (#), at)
+import Control.Lens hiding (beside)
 import qualified Data.Text as Text
 import NumHask.Prelude
 import Data.List (zipWith3, zipWith4)
-import Diagrams.Prelude hiding ((*.), scaleX, scaleY, width)
+import Diagrams.Prelude hiding ((*.), scaleX, scaleY, (<>))
 import FakeData
-import Diagrams.Backend.Rasterific (Rasterific, animatedGif, GifLooping(..))
+import Diagrams.Backend.Rasterific (renderRasterific, Rasterific, animatedGif, GifLooping(..))
+import Diagrams.Backend.SVG (B)
 
 hudbits :: Text -> Maybe Text -> [Text] -> [LegendType b] -> HudOptions b -> HudOptions b
 hudbits t subt ts ls x =
@@ -83,7 +84,8 @@ glyphsExample :: Chart b
 glyphsExample = glyphs def [Pair (x / 10) (sin x / 10) | x <- [0 .. 10]]
 
 gopts :: [GlyphOptions b]
-gopts = [def, def {glyphBorderColor = ured, glyphShape = triangle}]
+gopts = [def, def { glyphBorderColor = rybColor 0 `withOpacity` 0.5
+                  , glyphShape = triangle}]
 
 gdata :: [[Pair Double]]
 gdata = [p_1, p_2]
@@ -266,7 +268,7 @@ pixelChart_Example =
     asquare
     [ [ Pixel
         (Rect x (x + 0.05) y (y + 0.05))
-        (blend (x * y + x * x) ured ublue)
+        (blend (x * y + x * x) (rybColor 0 `withOpacity` 1) ublue)
       | x <- grid MidPos (one :: Range Double) 20
       , y <- grid MidPos (one :: Range Double) 20
       ]
@@ -360,7 +362,7 @@ legends =
 legendExample :: Chart b
 legendExample = legend $ def {legendChartType = legends}
 
-mainExample :: Diagram B
+mainExample :: Chart b
 mainExample = withHud opts (lineChart lopts) ls
   where
     opts =
@@ -397,10 +399,12 @@ titles =
     , "bottom right, non-essential note")
   ]
 
+scaleExample :: IO ()
+scaleExample =
+    fileSvg "other/scaleExample.svg" (300,120) $ withHud (hudAspect_ .~ widescreen $ hudRange_ .~ Just (Rect 0 12 0 0.2) $ def) (lineChart (repeat def)) ((\x -> [Pair x 0, Pair x (x/100)]) <$> [0..10])
 
 -- gallery
-
-scatterHistExample :: [[Pair Double]] -> Diagram B
+scatterHistExample :: [[Pair Double]] -> Chart b
 scatterHistExample xys =
     beside (r2 (1,0))
     (beside (r2 (0,-1))
@@ -433,7 +437,7 @@ scatterHistExample xys =
     hy = makeHist 50 . fmap (view _y) <$> xys
 
 
-labelledBarExample :: Diagram B
+labelledBarExample :: Chart b
 labelledBarExample =
     rectChart_ [def]
     sixbyfour
@@ -474,7 +478,7 @@ skinnyExample = do
              def] skinny r
             [zipWith (\x y -> (x,Pair y 0.05))
              ["min","3rd Q","median","1st Q","max"] qs']
-    let ticks' = glyphChart [def] skinny r [(\x -> Pair x 0.02) <$> qs]
+    let ticks' = glyphChart [def] skinny r [(`Pair` 0.02) <$> qs]
     pure $ hud' <> ticks' <> labels'
 
 histDiffExample :: ([Rect Double],[Rect Double]) -> Chart b
@@ -516,42 +520,40 @@ clip (Rect xl xu yl yu) c =
              scaleY (yu - yl) $
              scaleX (xu - xl) $
              moveOriginTo (p2(-0.5,-0.5))
-             unitSquare) $  c
+             unitSquare) c
 
 grp :: Int -> [a] -> [[a]]
 grp n = unfoldr
         (\x -> let y = splitAt n x in
-            if length (fst y) == 0 then Nothing else Just y)
+            if null (fst y) then Nothing else Just y)
+
+-- | chop a chart extent into a double list of Rects
+chop :: Pair Int -> QDiagram b V2 Double Any -> [[Rect Double]]
+chop p@(Pair _ n) ch = grp n $ gridSpace (Rect xl xu yl yu) p
+  where
+    (xl,xu) = fromMaybe (-0.5,0.5) (extentX ch)
+    (yl,yu) = fromMaybe (-0.5,0.5) (extentY ch)
 
 exampleClipping :: RectOptions -> Double -> Int -> QDiagram B V2 Double Any -> QDiagram B V2 Double Any
 exampleClipping rcfg p n ch =
-    foldl' vert mempty $ (foldl' hori mempty) <$> qb
-  where
-    hori x a = beside (r2 (0,1)) x (pad p $ bound rcfg 1 $ centerXY $ clip a ch)
-    vert x a = beside (r2 (1,0)) x (pad p $ centerXY $ a)
-    qb :: [[Rect Double]] = grp n $ gridSpace (Rect xl xu yl yu) (Pair n n)
-    (xl,xu) = fromMaybe (-0.5,0.5) (extentX ch)
-    (yl,yu) = fromMaybe (-0.5,0.5) (extentY ch)
+    stack (Pair 0 1) (pad p . centerXY) $
+    hori (\a -> pad p $ bound rcfg 1 $ centerXY $ clip a ch) <$> chop (Pair n n) ch
 
 exampleClipping' :: RectOptions -> Double -> Double -> Int -> QDiagram Rasterific V2 Double Any -> QDiagram Rasterific V2 Double Any
 exampleClipping' rcfg rot p n ch =
-    foldl' vert mempty $ (foldl' hori mempty) <$> qb
-  where
-    hori x a = beside (r2 (0,1)) x (Diagrams.Prelude.rotate (rot @@ deg) $ pad p $ bound rcfg 1 $ centerXY $ clip a ch)
-    vert x a = beside (r2 (1,0)) x (pad p $ centerXY $ a)
-    qb :: [[Rect Double]] = grp n $ gridSpace (Rect xl xu yl yu) (Pair n n)
-    (xl,xu) = fromMaybe (-0.5,0.5) (extentX ch)
-    (yl,yu) = fromMaybe (-0.5,0.5) (extentY ch)
+    stack (Pair 0 1) (pad p . centerXY) $
+    hori (\a -> Diagrams.Prelude.rotate (rot @@ deg) $
+           pad p $ bound rcfg 1 $ centerXY $ clip a ch) <$> chop (Pair n n) ch
 
 animationExample :: FilePath -> IO ()
 animationExample f = do
-    let c = ((\x -> bound (rectColor_ .~ ucolor 1 1 1 0.1 $ def) 1 $
+    let c = (\x -> bound (rectColor_ .~ ucolor 1 1 1 0.1 $ def) 1 $
             exampleClipping' (rectBorderSize_ .~ 0.001 $
                               rectColor_ .~ ucolor 1 1 1 0.1 $ def)
-               (x*12) 1 5 lineChart_Example) <$> [0..30])
+               (x*12) 1 5 lineChart_Example) <$> [0..30]
     animatedGif f (mkSizeSpec (Just <$> r2 (600,400))) LoopingNever 20 c
 
-schoolbookExample :: Diagram B
+schoolbookExample :: Chart b
 schoolbookExample =
     pad 1.1 $
     lineChart_
@@ -559,7 +561,7 @@ schoolbookExample =
       lineColor_ .~ ucolor 0.4 0.5 0.2 0.8 $
       lineSize_ .~ 0.001 $
       def) asquare $
-    (\x -> [Pair -10.0 (-10 + 2*x), Pair 10.0 (-10 + 2*x)]) <$>
+    (\x -> [Pair -10.0 (-10 + 2*x), Pair 10.0 (-10 + 2*x)]) . 
     fromIntegral <$> ([0..10] :: [Int])
 
 main :: IO ()
@@ -608,9 +610,7 @@ main = do
   fileSvg "other/arrowHudExample.svg" (600, 400) $
       arrowHudExample <> arrowChart_Example
 
-
   -- gallery
-
   xys <- mkScatterData
   putStrLn ("scatterHistExample" :: Text)
   fileSvg "other/scatterHistExample.svg" (600,400) (scatterHistExample xys)
@@ -631,3 +631,8 @@ main = do
   animationExample "other/animationExample.gif"
   putStrLn ("schoolbookExample" :: Text)
   fileSvg "other/schoolbookExample.svg" (400,400) schoolbookExample
+
+  -- small hud examples
+  renderRasterific "other/hud.png" (dims (r2(100,100))) (showOrigin $ hud def :: QDiagram Rasterific V2 Double Any)
+  fileSvg "other/hud.svg" (100,100) (showOrigin $ hud def)
+  scaleExample

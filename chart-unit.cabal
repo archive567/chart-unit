@@ -1,15 +1,22 @@
 name: chart-unit
-version: 0.5.0
+version: 0.5.1
 synopsis:
   Native haskell charts.
 description:
-  See <https://tonyday567.github.io/chart-unit/index.html chart-unit> for chart bling and usage.
   .
+  <<https://tonyday567.github.io/other/mainExample.svg>>
   .
-  ![example](other/mainExample.svg)
+  chart-unit is a native haskell charting library designed:
   .
-  These charts are designed to be scale independent and amenable to combinatory busywork (hence the unit suffix).
+  - as a chart DSL and algebra
   .
+  - towards a minimalist look and feel
+  .
+  - to provide a set of default values that are robust across differet data and physical chart scales
+  .
+  - around provision of a small but core set of chart types.
+  .
+  See <https://tonyday567.github.io/chart-unit/index.html chart-unit> for a chart gallery.
   .
 extra-source-files:
   readme.md,
@@ -113,7 +120,8 @@ executable chart-source-examples
     protolude,
     tdigest,
     text,
-    diagrams-rasterific
+    diagrams-rasterific,
+    diagrams-svg
   default-extensions:
     DeriveGeneric,
     DeriveTraversable,

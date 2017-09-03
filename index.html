@@ -1,10 +1,10 @@
-<meta charset="utf-8"> <link rel="stylesheet" href="other/lhs.css">
+<meta charset="utf-8"> <link rel="stylesheet" href="https://tonyday567.github.io/other/lhs.css"> <link href="https://fonts.googleapis.com/css?family=Inconsolata|Lora|Raleway" rel="stylesheet">
 <script type="text/javascript" async
-  src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-MML-AM_CHTML">
+  src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-MML-AM_CHTML">
 </script>
 <h1 id="chart-unit"><a href="https://github.com/tonyday567/chart-unit">chart-unit</a></h1>
 <p><a href="https://travis-ci.org/tonyday567/chart-unit"><img src="https://travis-ci.org/tonyday567/chart-unit.svg" alt="Build Status" /></a> <a href="https://hackage.haskell.org/package/chart-unit"><img src="https://img.shields.io/hackage/v/chart-unit.svg" alt="Hackage" /></a> <a href="http://stackage.org/lts/package/chart-unit"><img src="https://www.stackage.org/package/chart-unit/badge/lts" alt="lts" /></a> <a href="http://stackage.org/nightly/package/chart-unit"><img src="https://www.stackage.org/package/chart-unit/badge/nightly" alt="nightly" /></a></p>
-<p><code>chart-unit</code> is a haskell chart library focusing on a small set of high-quality charts using native haskell. Here's a recent example, chock-a-block fill of titles and legends, since they've just been added:</p>
+<p><code>chart-unit</code> is a haskell chart library focusing on a small set of high-quality charts using native haskell. Here's a recent example, chock-a-block full of titles and legends (that needed testing):</p>
 <div class="figure">
 <img src="other/mainExample.svg" />
 
@@ -43,8 +43,58 @@
 <img src="other/arrowHudExample.svg" />
 
 </div>
+<h1 id="why-the-name-chart-unit">Why the name chart-unit?</h1>
+<p>Most of the behind-the-scenes grunt work is scaling data, projecting points from one range to another, and computing position. A key to making these computations neat was <code>one = Range -0.5 0.5</code> and <code>one = Rect -0.5 0.5 -0.5 0.5</code> as the (multiplicative) units of a chart range. See <a href="https://github.com/tonyday567/numhask-range">numhask-range</a> for a monologue.</p>
+<h1 id="whats-with-the-funny-names">What's with the funny names?</h1>
+<p>Charting is an age-old craft, and stuffed to the brim with cliche and jargon. I wanted to cut through the cruft of what is thought of as a chart (and charting has been dominated by excel for 30 years), and approach charting from a haskelly perspective. The funny names were the cohorts that popped out. A rough translation:</p>
+<table>
+<thead>
+<tr class="header">
+<th>ye-old Chart type</th>
+<th>chart-unit type</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>line</td>
+<td>LineChart</td>
+</tr>
+<tr class="even">
+<td>line chart with markers</td>
+<td>GLineChart</td>
+</tr>
+<tr class="odd">
+<td>scatter</td>
+<td>GlyphChart</td>
+</tr>
+<tr class="even">
+<td>pie</td>
+<td>pull requests welcome</td>
+</tr>
+<tr class="odd">
+<td>heatmap</td>
+<td>PixelChart</td>
+</tr>
+<tr class="even">
+<td><a href="https://en.wikipedia.org/wiki/Bar_chart">Bar</a></td>
+<td>RectChart</td>
+</tr>
+<tr class="odd">
+<td><a href="https://en.wikipedia.org/wiki/Histogram">Histogram</a></td>
+<td>RectChart</td>
+</tr>
+<tr class="even">
+<td>sparkline</td>
+<td>a skinny Aspect</td>
+</tr>
+<tr class="odd">
+<td></td>
+<td></td>
+</tr>
+</tbody>
+</table>
 <h1 id="gallery">Gallery</h1>
-<p>The main chart types and the power of diagrams make it easy to invent new charts. Hrere's some inspiration (all code for these charts is in <a href="examples/sourceExamples.hs" class="uri">examples/sourceExamples.hs</a>).</p>
+<p>The main chart types and the power of diagrams make it easy to invent new charts. Hrere's some inspiration (all code for these charts is in <a href="https://github.com/tonyday567/chart-unit/blob/master/examples/sourceExamples.hs">examples/sourceExamples.hs</a>).</p>
 <h2 id="schoolbook">schoolbook</h2>
 <div class="figure">
 <img src="other/schoolbookExample.svg" />
@@ -81,8 +131,8 @@
 
 </div>
 <h1 id="workflow">workflow</h1>
-<pre><code>stack build --test --exec &quot;$(stack path --local-install-root)/bin/chart-source-examples&quot; --exec &quot;$(stack path --local-bin)/pandoc -f markdown -i readme.md -t html -o index.html --filter pandoc-include --mathjax&quot; --file-watch</code></pre>
+<pre><code>stack build --test --exec &quot;$(stack path --local-install-root)/bin/chart-source-examples&quot; --exec &quot;$(stack path --local-bin)/pandoc -f markdown -i other/header.md readme.md other/footer.md -t html -o index.html --filter pandoc-include --mathjax&quot; --file-watch</code></pre>
 <hr />
 <div class="footer">
-<p>Powered by <a href="https://haskell-lang.org/">haskell</a>, <a href="https://docs.haskellstack.org/en/stable/README/">stack</a> and <a href="http://pandoc.org/">pandoc</a>.</p>
+<p>Made with love 'n' care; and <a href="https://haskell-lang.org/">haskell</a>, <a href="https://pandoc.org">pandoc</a>, and <a href="https://docs.haskellstack.org/en/stable/README/">stack</a>.</p>
 </div>

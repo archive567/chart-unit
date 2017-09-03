@@ -4,11 +4,13 @@
 {-# OPTIONS_GHC -fno-warn-incomplete-patterns #-}
 #endif
 
--- | collective noun for axes, titles & legends
+-- | Hud (Heads up display) is a collective noun for axes, titles & legends
+--
+-- todo: refactor me please. A hud for a chart uses 'beside' to combine elements, and this restricts the hud to the outside of the chart canvas.  This tends to make hud elements (such as gridlines) harder to implement than they should be.
 module Chart.Hud
   ( HudOptions(..)
-  , withHud
   , hud
+  , withHud
   , Orientation(..)
   , Place(..)
   , placeOutside
@@ -36,7 +38,7 @@ import qualified Control.Foldl as L
 import Data.List (nub)
 import Data.Ord (max)
 import Diagrams.Prelude
-       hiding (Color, D, (*.), (<>), project, width, zero)
+       hiding (Color, D, (*.), (<>), project, width, zero, (<>))
 import qualified Diagrams.TwoD.Size as D
 import Formatting
 import NumHask.Pair
@@ -45,8 +47,9 @@ import NumHask.Range
 import NumHask.Rect
 import NumHask.Space
 
--- | various options for a hud
--- Defaults to an x- and y-axis, sixbyfour aspect, no titles and no legends
+-- | Various options for a hud.
+--
+-- Defaults to the classical x- and y-axis, a sixbyfour aspect, no titles and no legends
 data HudOptions b = HudOptions
   { hudPad :: Double
   , hudAxes :: [AxisOptions b]
@@ -60,7 +63,7 @@ data HudOptions b = HudOptions
 instance Default (HudOptions b) where
   def = HudOptions 1.1 [defXAxis, defYAxis] [] [] Nothing sixbyfour clear
 
--- | create a hud based upon HudOptions
+-- | Create a hud.
 --
 -- > hud def
 --
@@ -104,7 +107,8 @@ hud (HudOptions p axes titles legends mr asp@(Aspect ar@(Ranges ax ay)) can) =
 -- > withHudExample = withHud hopts (lineChart lopts) ls
 -- >     where
 -- >       hopts = def {hudTitles=[(def,"withHud Example")],
--- >                    hudLegends=[def {legendChartType=zipWith (\x y -> (LegendLine x 0.05, y)) lopts ["line1", "line2", "line3"]}]}
+-- >                    hudLegends=[def {legendChartType=zipWith (\x y ->
+-- >                    (LegendLine x 0.05, y)) lopts ["line1", "line2", "line3"]}]}
 --
 -- ![withHud example](other/withHudExample.svg)
 --
@@ -129,7 +133,7 @@ withHud opts renderer d =
             []
         ]
 
--- | placement of hud elements around (what is implicity but maybe shouldn't just be) a rectangular canvas
+-- | Placement of hud elements around (what is implicity but maybe shouldn't just be) a rectangular canvas
 data Place
   = PlaceLeft
   | PlaceRight
@@ -137,7 +141,7 @@ data Place
   | PlaceBottom
   deriving (Eq, Show)
 
--- | direction to place stuff on the outside of the built-up chart
+-- | Direction to place stuff on the outside of the built-up hud
 placeOutside :: Num n => Place -> V2 n
 placeOutside pl =
   case pl of
@@ -146,7 +150,7 @@ placeOutside pl =
     PlaceLeft -> r2 (-1, 0)
     PlaceRight -> r2 (1, 0)
 
--- | a strut to add to a placement
+-- | A gap to add when placing elements.
 placeGap ::
      (Monoid m, Semigroup m, Ord n, Floating n)
   => Place
@@ -160,12 +164,12 @@ placeGap pl s x = beside (placeOutside pl) (strut' pl s) x
     strut' PlaceLeft = strutX
     strut' PlaceRight = strutX
 
--- | orientation for a hud element.  Watch this space for curvature!
+-- | Orientation for a hud element.  Watch this space for curvature!
 data Orientation
   = Hori
   | Vert
 
--- | axes are somewhat complicated.  For instance, they contain a range within which tick marks need to be supplied or computed.
+-- | Axes are somewhat complicated.  For instance, they contain a range within which tick marks need to be supplied or computed.
 data AxisOptions b = AxisOptions
   { axisPad :: Double
   , axisOrientation :: Orientation
@@ -220,12 +224,14 @@ instance Default (AxisOptions b) where
 
 -- | create an axis, based on AxisOptions, a physical aspect, and a range
 --
--- Under-the-hood, the axis function has gone through many a re-factor, and still has a ways to go.  A high degree of technical debt tends to acrue here.
+-- Under-the-hood, the axis function has gone through many a refactor, and still has a ways to go.  A high degree of technical debt tends to acrue here.
 --
 -- > axisExample :: Chart b
 -- > axisExample = axis aopts one (Range 0 100000)
 -- >   where
--- >     aopts = def {axisLabel=(axisLabel def) {labelGap=0.0001,labelText=(labelText (axisLabel def)) {textSize=0.06,textAlignH=AlignLeft,textRotation=(-45)}}}
+-- >     aopts = def {axisLabel=(axisLabel def) {
+-- >                  labelGap=0.0001, labelText=(labelText (axisLabel def)) {
+-- >                  textSize=0.06, textAlignH=AlignLeft, textRotation=(-45)}}}
 --
 -- ![axis example](other/axisExample.svg)
 --
@@ -279,7 +285,7 @@ axis opts asp r =
           , ls)
         TickPlaced xs -> (project r asp . fst <$> xs, snd <$> xs)
 
--- | style of tick marks on an axis
+-- | Style of tick marks on an axis.
 data TickStyle
   = TickNone -- ^ no ticks on axis
   | TickLabels [Text] -- ^ specific labels
@@ -287,7 +293,7 @@ data TickStyle
   | TickExact Int -- ^ exactly n equally spaced ticks
   | TickPlaced [(Double, Text)] -- ^ specific labels and placement
 
--- | provide a formatted text from a list of numbers so that they are just distinguished.  'precision 2 ticks' means give the tick labels as much precision as is needed for them to be distinguished, but with at least 2 significant figues.
+-- | Provide formatted text for a list of numbers so that they are just distinguished.  'precision 2 ticks' means give the tick labels as much precision as is needed for them to be distinguished, but with at least 2 significant figues.
 precision :: Int -> [Double] -> [Text]
 precision n0 xs
   | foldr max 0 xs < 0.01 = precLoop Formatting.expt n0 xs
@@ -307,7 +313,7 @@ precision n0 xs
            then s
            else precLoopInt f (n + 1) xs'
 
--- | options for titles.  Defaults to center aligned, and placed at Top of the hud
+-- | Options for titles.  Defaults to center aligned, and placed at Top of the hud
 data TitleOptions = TitleOptions
   { titleText :: TextOptions
   , titleAlign :: AlignH
@@ -338,7 +344,7 @@ title (Aspect (Ranges aspx aspy)) (TitleOptions textopts a p s) t =
     pos AlignRight PlaceLeft = Pair 0 (upper aspy)
     pos AlignRight PlaceRight = Pair 0 (lower aspy)
 
--- | the LegendType reuses all the various chart option types to help formulate a legend
+-- | LegendType reuses all the various chart option types to help formulate a legend
 data LegendType b
   = LegendText TextOptions
   | LegendGlyph (GlyphOptions b)
@@ -354,7 +360,7 @@ data LegendType b
   | LegendPixel RectOptions
                 Double
 
--- | legend options. The main missing piece here is to allow for horizontal concatenation.
+-- | Legend options. todo: allow for horizontal concatenation.
 data LegendOptions b = LegendOptions
   { legendChartType :: [(LegendType b, Text)]
   , legendInnerPad :: Double

@@ -1,10 +1,10 @@
 {-# LANGUAGE TemplateHaskell #-}
 {-# OPTIONS_GHC -Wall #-}
 
--- | Lenses for all the options.  Note the trailing underscore naming convention, rather than the more obnoxious _prefixed conventions.
+-- | Lenses for all the options.  Note the trailing underscore_ naming convention, rather than the more obnoxious prefixed _underscore convention.
 module Chart.Lenses
-    -- * tea anyone?
-  ( arrowMinLength_
+  ( -- cup of tea?
+    arrowMinLength_
   , arrowMaxLength_
   , arrowMinHeadLength_
   , arrowMaxHeadLength_

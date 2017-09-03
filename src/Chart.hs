@@ -1,18 +1,19 @@
 {-# OPTIONS_GHC -Wall #-}
 {-# OPTIONS_HADDOCK prune, not-home #-}
 
--- | native haskell charts
+-- | The Chart module exports all of the chart-unit functionality, and most of what you need from outside libraries.
+--
+-- Chart is designed to be used in conjunction with both the numhask and diagrams preludes. Diagrams.Prelude conatins much of the lens library and many re-exports that clash with NumHask, so best to import qualified.
 --
 -- > {-# NoImplicitPrelude #-}
 -- > {-# OverloadedString #-}
 -- > import NumHask.Prelude
+-- > import qualified Diagrams.Prelude as D
 -- > import Chart
 --
--- chart-unit is designed to be used in conjunction with the numhask prelude.
---
-
 module Chart
-  ( module Chart.Core
+  ( -- * chart-unit
+    module Chart.Core
   , module Chart.Arrow
   , module Chart.Glyph
   , module Chart.Hud
@@ -20,24 +21,25 @@ module Chart
   , module Chart.Rect
   , module Chart.Text
   , module Chart.Lenses
+
+    -- * numhask-range
   , module NumHask.Pair
   , module NumHask.Space
   , module NumHask.Range
   , module NumHask.Rect
+
+    -- * color
   , module Data.Colour
   , module Data.Colour.Palette.Harmony
   , module Data.Colour.Palette.ColorSet
-  , Diagram
-  , triangle
-  , square
-  , circle
-  , SVG
-  , B
-  , Renderable
-  , Path
-  , V2
+
+    -- * Default
   , Default(..)
+
+    -- * Text
   , Text
+
+    -- * scratch pad
   , scratch
   ) where
 
@@ -54,7 +56,7 @@ import Data.Colour.Palette.ColorSet
 import Data.Colour.Palette.Harmony
 import Data.Default (Default(..))
 import Data.Text
-import Diagrams.Backend.SVG (SVG, B)
+import Diagrams.Backend.SVG (SVG)
 import Diagrams.Prelude
 import NumHask.Pair
 import NumHask.Range

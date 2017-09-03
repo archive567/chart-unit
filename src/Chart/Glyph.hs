@@ -1,5 +1,6 @@
 {-# OPTIONS_GHC -Wall #-}
 
+-- | Glyphs are (typically) small shapes symbolically representing a data point.
 module Chart.Glyph
   ( GlyphOptions(..)
   , hline_
@@ -11,6 +12,9 @@ module Chart.Glyph
   , glyphChart_
   , lglyphChart
   , lglyphChart_
+  , circle
+  , square
+  , triangle
   ) where
 
 import Chart.Core
@@ -32,15 +36,15 @@ data GlyphOptions b = GlyphOptions
 instance Default (GlyphOptions b) where
   def = GlyphOptions 0.03 ublue ugrey 0.015 circle
 
--- | vertical line glyph shape
+-- | Vertical line glyph shape with a reasonable thickness at "vline_ 1"
 vline_ :: Double -> Double -> Chart b
 vline_ fatness x = vrule x # scaleX (1.6 / 0.5 * fatness)
 
--- | horizontal line glyph shape
+-- | Horizontal line glyph shape with a reasonable thickness as "hline_ 1"
 hline_ :: Double -> Double -> Chart b
 hline_ fatness x = hrule x # scaleY (1.6 / 0.5 * fatness)
 
--- | create a glyph from a configuration
+-- | Create a glyph.
 --
 -- > let glyph_Example = glyph_ def
 --
@@ -49,7 +53,7 @@ hline_ fatness x = hrule x # scaleY (1.6 / 0.5 * fatness)
 glyph_ :: GlyphOptions b -> Chart b
 glyph_ (GlyphOptions s c bc bs shape) = shape s # fcA c # lcA bc # lwN bs
 
--- | positioned glyphs
+-- | Create positioned glyphs.
 --
 -- > let ps = [Pair (x/10) ((sin x)/10) | x<-[0..10]]
 -- > glyphs def ps
@@ -59,7 +63,7 @@ glyph_ (GlyphOptions s c bc bs shape) = shape s # fcA c # lcA bc # lwN bs
 glyphs :: (R2 r, Traversable f) => GlyphOptions b -> f (r Double) -> Chart b
 glyphs opts xs = mconcat $ toList $ (\x -> positioned x (glyph_ opts)) <$> xs
 
--- | a chart of glyphs
+-- | A chart of glyphs
 glyphChart ::
      (Traversable f)
   => [GlyphOptions b]
@@ -70,7 +74,7 @@ glyphChart ::
 glyphChart optss (Aspect asp) r xyss =
   mconcat $ zipWith glyphs optss (projectss r asp xyss)
 
--- | a chart of glyphs scaled to its own range
+-- | A chart of glyphs scaled to its own range
 --
 -- > let gopts = [def,def {glyphBorderColor=withOpacity red 0.2, glyphShape=triangle}]
 -- > let p_1 = [Pair x (sin (x/10)) | x<-[0..100]]
@@ -87,7 +91,7 @@ glyphChart_ ::
   -> Chart b
 glyphChart_ optss asp xyss = glyphChart optss asp (range xyss) xyss
 
--- | labelled, positioned glyphs
+-- | Create labelled, positioned glyphs.
 --
 -- > lglyphs def def $ zip (show <$> [0..]) ps
 --
@@ -103,7 +107,7 @@ lglyphs lopts gopts xs =
   mconcat $
   toList $ (\(t, x) -> moveTo (p_ x) $ labelled lopts t (glyph_ gopts)) <$> xs
 
--- | a chart of labelled glyphs
+-- | A chart of labelled glyphs
 lglyphChart ::
      (Traversable f)
   => [LabelOptions]
@@ -122,7 +126,7 @@ lglyphChart ls gs (Aspect asp) r xyss =
        (map fst . toList <$> xyss)
        (projectss r asp (map snd . toList <$> xyss)))
 
--- | a chart of labelled glyphs scaled to its own range
+-- | A chart of labelled glyphs scaled to its own range
 --
 -- > let g = Pair <$> [0..5] <*> [0..5] :: [Pair Int]
 -- > let xs = [(\(p@(Pair x y)) -> ((show x <> "," <> show y), fromIntegral <$> p)) <$> g]
