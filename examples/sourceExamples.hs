@@ -15,6 +15,7 @@ import Diagrams.Prelude hiding ((*.), scaleX, scaleY, (<>))
 import FakeData
 import Diagrams.Backend.Rasterific (renderRasterific, Rasterific, animatedGif, GifLooping(..))
 import Diagrams.Backend.SVG (B)
+import Formatting
 
 hudbits :: Text -> Maybe Text -> [Text] -> [LegendType b] -> HudOptions b -> HudOptions b
 hudbits t subt ts ls x =
@@ -279,7 +280,7 @@ pixelChart_Example =
       rectF (\(Pair x y) -> (x+y)*(x+y))
       one (Pair 40 40)
     ]
-
+ 
 pixelateChartExample :: Chart b
 pixelateChartExample = pixelateChart def asquare one (\(Pair x y) -> (x+y)*(x+y))
 
@@ -478,7 +479,7 @@ skinnyExample = do
     let r = Ranges (space qs) (Range 0 0.2)
     let hud' =
             hud (HudOptions 1.1
-                 [axisLabel_ . labelText_ . textSize_ .~ 0.25 $ def] [] []
+                 [axisLabel_ . labelText_ . textSize_ .~ 0.25 $ def] [] [] []
                  (Just r)
                  skinny clear)
     let labels' = textChart
@@ -549,30 +550,66 @@ exampleClipping rcfg p n ch =
     stack (Pair 0 1) (pad p . centerXY) $
     hori (\a -> pad p $ bound rcfg 1 $ centerXY $ clip a ch) <$> chop (Pair n n) ch
 
-exampleClipping' :: RectOptions -> Double -> Double -> Int -> QDiagram Rasterific V2 Double Any -> QDiagram Rasterific V2 Double Any
-exampleClipping' rcfg rot p n ch =
-    stack (Pair 0 1) (pad p . centerXY) $
-    hori (\a -> Diagrams.Prelude.rotate (rot @@ deg) $
-           pad p $ bound rcfg 1 $ centerXY $ clip a ch) <$> chop (Pair n n) ch
+schoolbookHud :: Chart b
+schoolbookHud = hud
+    ( hudAxes_ .~ [] $
+      hudAspect_ .~ asquare $
+      hudTitles_ .~ [(def,"y = x² - 3")] $
+      hudRange_ .~ Just (Rect -5 5 -5 5) $
+      hudGrids_ .~
+      [ GridOptions Vert (GridExact OuterPos 10) (LineOptions 0.005 schoolBlue)
+      , GridOptions Hori (GridExact OuterPos 10) (LineOptions 0.005 schoolBlue)
+      , GridOptions Vert (GridExact OuterPos 50) (LineOptions 0.002 schoolBlue)
+      , GridOptions Hori (GridExact OuterPos 50) (LineOptions 0.002 schoolBlue)
+      ] $
+      def)
+  where
+    schoolBlue = ucolor 0.19 0.74 0.89 0.7
+
+parabola :: Rect Double -> (Double -> Double) -> Int -> Range Double -> Chart b
+parabola r f grain xscope = 
+    lineChart [lineSize_ .~ 0.01 $ lineColor_ .~ ucolor 0.6 0.6 0.6 1 $ def] asquare r
+    [dataXY f xscope grain]
+
+ceptLines :: Renderable (Path V2 Double) b => Aspect -> Rect Double -> (Double -> Double) -> Double -> QDiagram b V2 Double Any
+ceptLines (Aspect asp) r@(Ranges rx ry) f x =
+    mconcat $ lines (lineColor_ .~ ucolor 0.2 0.2 0.2 1 $ lineSize_ .~ 0.005 $ def) <$>
+    (fmap $ Chart.project r asp) <$>
+    [ [Pair (lower rx) (f x), Pair x (f x)]
+    , [Pair x (lower ry), Pair x (f x)]
+    ]
+
+cepts :: Renderable (Path V2 Double) b => Aspect -> Rect Double -> (Double -> Double) -> Double -> QDiagram b V2 Double Any
+cepts a r@(Ranges rx ry) f x =
+    textChart [def, textAlignH_ .~ AlignCenter $ textRotation_ .~ 0 $ def]
+    a r
+    [ [("x = " <> sformat (fixed 1) x, Pair x (lower ry - 1))]
+    , [("y = " <> sformat (fixed 1) (f x), Pair (lower rx - 1.5) (f x))]
+    ]
+
+schoolbookExample :: Double -> Chart b
+schoolbookExample x =
+    bound (rectColor_ .~ ucolor 1 1 1 0.1 $ def) 1.05 $
+    schoolbookHud <>
+    parabola r f grain xscope <>
+    ceptLines asquare r f x <>
+    glyphChart [glyphColor_ .~ red `withOpacity` 0.5 $ def] asquare r [[Pair x (f x)]] <>
+    cepts asquare r f x
+  where
+    f x = x*x - 3
+    r = Rect -5 5 -5 5
+    xscope = Range -3 3
+    grain = 50
 
 animationExample :: FilePath -> IO ()
 animationExample f = do
-    let c = (\x -> bound (rectColor_ .~ ucolor 1 1 1 0.1 $ def) 1 $
-            exampleClipping' (rectBorderSize_ .~ 0.001 $
-                              rectColor_ .~ ucolor 1 1 1 0.1 $ def)
-               (x*12) 1 5 lineChart_Example) <$> [0..30]
-    animatedGif f (mkSizeSpec (Just <$> r2 (600,400))) LoopingNever 20 c
+    let grain = 50
+    let xscope = Range 0 -3
+    let xs = reverse $ grid OuterPos xscope grain
+    let c = ((schoolbookExample :: Double -> QDiagram Rasterific V2 Double Any) <$> xs)
+    animatedGif f (mkSizeSpec (Just <$> r2 (400,400))) LoopingNever 10 c
 
-schoolbookExample :: Chart b
-schoolbookExample =
-    pad 1.1 $
-    lineChart_
-    (repeat $
-      lineColor_ .~ ucolor 0.4 0.5 0.2 0.8 $
-      lineSize_ .~ 0.001 $
-      def) asquare $
-    (\x -> [Pair -10.0 (-10 + 2*x), Pair 10.0 (-10 + 2*x)]) . 
-    fromIntegral <$> ([0..10] :: [Int])
+-- scratch $ schoolbookExample <> bound def 1 (axis defYAxis one (Range -5 5)) <> bound def 1 (axis defXAxis one (Range -5 5)) <> parabola
 
 main :: IO ()
 main = do
@@ -640,7 +677,7 @@ main = do
   putStrLn ("animationExample" :: Text)
   animationExample "other/animationExample.gif"
   putStrLn ("schoolbookExample" :: Text)
-  fileSvg "other/schoolbookExample.svg" (400,400) schoolbookExample
+  fileSvg "other/schoolbookExample.svg" (400,400) (schoolbookExample -1)
 
   -- small hud examples
   renderRasterific "other/hud.png" (dims (r2(100,100))) (showOrigin $ hud def :: QDiagram Rasterific V2 Double Any)

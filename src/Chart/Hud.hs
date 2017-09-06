@@ -26,6 +26,11 @@ module Chart.Hud
   , LegendType(..)
   , LegendOptions(..)
   , legend
+  , GridStyle(..)
+  , GridOptions(..)
+  , defXGrid
+  , defYGrid
+  , gridl
   ) where
 
 import Chart.Arrow
@@ -54,6 +59,7 @@ import Graphics.SVGFonts
 data HudOptions b = HudOptions
   { hudPad :: Double
   , hudAxes :: [AxisOptions b]
+  , hudGrids :: [GridOptions]
   , hudTitles :: [(TitleOptions, Text)]
   , hudLegends :: [LegendOptions b]
   , hudRange :: Maybe (Rect Double)
@@ -62,7 +68,8 @@ data HudOptions b = HudOptions
   }
 
 instance Default (HudOptions b) where
-  def = HudOptions 1.1 [defXAxis, defYAxis] [] [] Nothing sixbyfour clear
+  def = HudOptions 1.1 [defXAxis, defYAxis] [defXGrid, defYGrid] [] []
+      Nothing sixbyfour clear
 
 -- | Create a hud.
 --
@@ -70,10 +77,14 @@ instance Default (HudOptions b) where
 --
 -- ![hud example](other/hudExample.svg)
 --
+-- todo: the example highlights the issues with using beside.  The x-axis is placed first,
+-- and then the y-axis.  In setting that 'beside' the combination of the canvas, and the x-axis, it calculates the middle, which has moved slightly from the canvas middle.
 hud :: () => HudOptions b -> Chart b
-hud (HudOptions p axes titles legends mr asp@(Aspect ar@(Ranges ax ay)) can) =
+hud (HudOptions p axes grids titles legends mr asp@(Aspect ar@(Ranges ax ay)) can) =
+  (mconcat $ (\x -> gridl x asp r) <$> grids) <>
   L.fold (L.Fold addTitle uptoLegend (pad p)) titles
   where
+    r = fromMaybe one mr
     addTitle x (topts, t) =
       beside (placeOutside (titlePlace topts)) x (title asp topts t)
     addLegend x lopts =
@@ -453,3 +464,55 @@ legend opts =
       hori
         identity
         [rect_ c (s *. one), strutX (legendSep opts), text_ (legendText opts) t]
+
+
+-- | Style of grid lines
+data GridStyle
+  = GridNone -- ^ no ticks on axis
+  | GridRound Pos Int -- ^ sensibly rounded line placement and a guide to how many
+  | GridExact Pos Int -- ^ exactly n lines using Pos
+  | GridPlaced [Double] -- ^ specific line placement
+
+-- | Options for gridlines.
+data GridOptions = GridOptions
+  { gridOrientation :: Orientation
+  , gridStyle :: GridStyle
+  , gridLine :: LineOptions
+  }
+
+defXGrid :: GridOptions
+defXGrid =
+    GridOptions
+    Hori
+    (GridRound OuterPos 10)
+    (LineOptions 0.002 ublue)
+
+defYGrid :: GridOptions
+defYGrid =
+    GridOptions
+    Vert
+    (GridRound OuterPos 10)
+    (LineOptions 0.002 ublue)
+
+instance Default GridOptions where
+  def = defXGrid
+
+-- | Create a grid line for a chart.
+gridl :: GridOptions -> Aspect -> Rect Double -> Chart b
+gridl gopt (Aspect (Ranges aspx aspy)) (Ranges rx ry) = ls
+  where
+    ls = mconcat $ lines (gridLine gopt) <$> (l1d <$> lineLocations)
+    lineLocations =
+        case (gridStyle gopt) of
+          GridNone -> []
+          GridRound p n -> project r0 asp0 <$> gridSensible p r0 n
+          GridExact p n -> project r0 asp0 <$> grid p r0 n
+          GridPlaced xs -> project r0 asp0 <$> xs
+    (asp0, r0) =
+        case (gridOrientation gopt) of
+          Vert -> (aspx, rx)
+          Hori -> (aspy, ry)
+    l1d =
+        case (gridOrientation gopt) of
+          Hori -> (\y -> [Pair (lower aspx) y, Pair (upper aspx) y])
+          Vert -> (\x -> [Pair x (lower aspy), Pair x (upper aspy)])

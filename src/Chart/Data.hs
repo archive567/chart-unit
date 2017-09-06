@@ -8,6 +8,7 @@
 module Chart.Data
   ( lineOneD
   , vlineOneD
+  , hlineOneD
   , rectOneD
   , dataXY
   , dataYX
@@ -30,6 +31,11 @@ lineOneD = zipWith Pair [zero..]
 -- | Convert a one-dimensional data set to verticle line data
 vlineOneD :: (Enum a, AdditiveUnital a) => [a] -> [[Pair a]]
 vlineOneD = zipWith (\x y -> [Pair x zero, Pair x y]) [zero..]
+
+-- | Convert a one-dimensional data set to horizontal line data
+hlineOneD :: (Enum a, AdditiveUnital a) => [a] -> [[Pair a]]
+hlineOneD = zipWith (\x y -> [Pair zero x, Pair y x]) [zero..]
+
 
 -- | Convert a one-dimensional data set to bars
 rectOneD :: (Enum a, FromInteger a, Ord a, BoundedField a, Additive a, MultiplicativeUnital a) => [a] -> [Rect a]

@@ -19,6 +19,7 @@ module Chart.Lenses
   -- , glyphShape_
   , hudPad_
   , hudAxes_
+  , hudGrids_
   , hudTitles_
   , hudLegends_
   , hudRange_
@@ -62,6 +63,9 @@ module Chart.Lenses
   , labelText_
   , labelOrientation_
   , labelGap_
+  , gridOrientation_
+  , gridStyle_
+  , gridLine_
   ) where
 
 import Chart.Arrow
@@ -100,6 +104,7 @@ makeLensesFor
 makeLensesFor
   [ ("hudPad", "hudPad_")
   , ("hudAxes", "hudAxes_")
+  , ("hudGrids", "hudGrids_")
   , ("hudTitles", "hudTitles_")
   , ("hudLegends", "hudLegends_")
   , ("hudRange", "hudRange_")
@@ -171,3 +176,11 @@ makeLensesFor
   , ("labelGap", "labelGap_")
   ]
   ''LabelOptions
+
+
+makeLensesFor
+  [ ("gridOrientation", "gridOrientation_")
+  , ("gridStyle", "gridStyle_")
+  , ("gridLine", "gridLine_")
+  ]
+  ''GridOptions

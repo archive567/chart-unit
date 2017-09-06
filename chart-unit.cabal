@@ -122,7 +122,8 @@ executable chart-source-examples
     tdigest,
     text,
     diagrams-rasterific,
-    diagrams-svg
+    diagrams-svg,
+    formatting
   default-extensions:
     DeriveGeneric,
     DeriveTraversable,
