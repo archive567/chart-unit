@@ -58,6 +58,7 @@ module Chart.Lenses
   , textColor_
   , textFillRule_
   , textRotation_
+  , textFont_
   , labelText_
   , labelOrientation_
   , labelGap_
@@ -160,6 +161,7 @@ makeLensesFor
   , ("textColor", "textColor_")
   , ("textFillRule", "textFillRule_")
   , ("textRotation", "textRotation_")
+  , ("textFont", "textFont_")
   ]
   ''TextOptions
 

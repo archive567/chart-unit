@@ -40,7 +40,7 @@ instance Default LineOptions where
 
 -- | A line connecting a series of points
 --
--- > lines def [Pair (10*x/100.0) (cos (x * (10 / 100.0))) | x <- fromIntegral <$> [0..n]]
+-- > lines def (dataXY cos (Range 0 (4*pi)) n)
 --
 -- ![lines example](other/linesExample.svg)
 --

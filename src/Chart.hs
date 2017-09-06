@@ -14,6 +14,7 @@
 module Chart
   ( -- * chart-unit
     module Chart.Core
+  , module Chart.Data
   , module Chart.Arrow
   , module Chart.Glyph
   , module Chart.Hud
@@ -33,6 +34,9 @@ module Chart
   , module Data.Colour.Palette.Harmony
   , module Data.Colour.Palette.ColorSet
 
+    -- * fonts
+  , module Graphics.SVGFonts
+
     -- * Default
   , Default(..)
 
@@ -45,12 +49,14 @@ module Chart
 
 import Chart.Arrow
 import Chart.Core
+import Chart.Data
 import Chart.Glyph
 import Chart.Hud
 import Chart.Lenses
 import Chart.Line
 import Chart.Rect
 import Chart.Text
+import Graphics.SVGFonts hiding (textFont)
 import Data.Colour
 import Data.Colour.Palette.ColorSet
 import Data.Colour.Palette.Harmony

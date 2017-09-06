@@ -46,6 +46,7 @@ import NumHask.Prelude hiding (max)
 import NumHask.Range
 import NumHask.Rect
 import NumHask.Space
+import Graphics.SVGFonts
 
 -- | Various options for a hud.
 --
@@ -196,7 +197,7 @@ defXAxis =
     0
     0.04
     (LabelOptions
-       (TextOptions 0.08 AlignCenter (withOpacity black 0.6) EvenOdd 0)
+       (TextOptions 0.08 AlignCenter (withOpacity black 0.6) EvenOdd 0 lin2)
        (Pair 0 -1)
        0.015)
     (TickRound 8)
@@ -214,7 +215,7 @@ defYAxis =
     0
     0.04
     (LabelOptions
-       (TextOptions 0.08 AlignCenter (withOpacity black 0.6) EvenOdd 0)
+       (TextOptions 0.08 AlignCenter (withOpacity black 0.6) EvenOdd 0 lin2)
        (Pair -1 0)
        0.015)
     (TickRound 8)
@@ -324,7 +325,7 @@ data TitleOptions = TitleOptions
 instance Default TitleOptions where
   def =
     TitleOptions
-      (TextOptions 0.12 AlignCenter (withOpacity black 0.6) EvenOdd 0)
+      (TextOptions 0.12 AlignCenter (withOpacity black 0.6) EvenOdd 0 lin2)
       AlignCenter
       PlaceTop
       0.04
@@ -386,7 +387,7 @@ instance Default (LegendOptions b) where
       AlignRight
       0.02
       (RectOptions 0.002 (withOpacity black 0.2) transparent)
-      (TextOptions 0.07 AlignCenter (withOpacity black 0.63) EvenOdd 0)
+      (TextOptions 0.07 AlignCenter (withOpacity black 0.63) EvenOdd 0 lin2)
 
 -- | Create a legend based on a LegendOptions
 --

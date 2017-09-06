@@ -1,5 +1,5 @@
 name: chart-unit
-version: 0.5.1
+version: 0.5.2
 synopsis:
   Native haskell charts.
 description:
@@ -50,6 +50,7 @@ library
     Chart,
     Chart.Arrow,
     Chart.Core,
+    Chart.Data,
     Chart.Glyph,
     Chart.Hud,
     Chart.Line,

@@ -96,7 +96,7 @@ rect_ (RectOptions bs bc c) (Rect x z y w) =
 
 -- | Create rectangles (with the same configuration).
 --
--- > rects def $ zipWith (\x y -> Rect x (x+1) 0 y) [0..] [1,2,3,5,8,0,-2,11,2,1]
+-- > rects def (rectOneD [1, 2, 3, 5, 8, 0, -2, 11, 2, 1])
 --
 -- ![rects example](other/rectsExample.svg)
 --
@@ -131,9 +131,9 @@ rectChart optss (Aspect asp) r rs =
 --
 -- > let ropts = [def {rectBorderSize=0}, def
 -- >         {rectBorderSize=0,rectColor=ucolor 0.3 0.3 0.3 0.2}]
--- > let pss = transpose [[exp (-(x**2)/2), 0.5 * exp (-(x**2)/8)] |
--- >                      x <- grid LowerPos (Range -5 5) 1000]
--- > let rss = (zipWith (\x y -> Rect x (x+1) 0 y) [0..]) <$> pss
+-- > let rss = [ rectXY (\x -> exp (-(x ** 2) / 2)) (Range -5 5) 50
+-- >           , rectXY (\x -> 0.5 * exp (-(x ** 2) / 8)) (Range -5 5) 50
+-- >           ]
 -- > rectChart_ ropts widescreen rss
 --
 -- ![rectChart_ example](other/rectChart_Example.svg)
@@ -182,9 +182,16 @@ pixelChart (Aspect asp) r pss =
 
 -- | A chart of pixels scaled to its own range
 --
--- > pixelChart_ asquare [[Pixel (Rect x (x+0.05) y (y+0.05)) (blend  (x*y+x*x) ugrey ublue)
--- >     | x <- grid OuterPos (one::Range Double) 20,
--- >       y <- grid OuterPos (one::Range Double) 20]]
+-- > pixelChart_Example :: Chart b
+-- > pixelChart_Example =
+-- >     pixelChart_ asquare
+-- >     [ (\(r,c) -> Pixel r
+-- >                 (blend c
+-- >                  (rybColor 14 `withOpacity` 1)
+-- >                  (ucolor 0.8 0.8 0.8 0.3))) <$>
+-- >       rectF (\(Pair x y) -> 4*(x*x+y*y))
+-- >       one (Pair 40 40)
+-- >     ]
 --
 -- ![pixelChart_ example](other/pixelChart_Example.svg)
 --
@@ -198,7 +205,9 @@ data PixelationOptions = PixelationOptions
   }
 
 instance Default PixelationOptions where
-  def = PixelationOptions (Range ugrey ublue) (Pair 20 20)
+  def = PixelationOptions
+      (Range (ucolor 0.47 0.73 0.86 1) (ucolor 0.01 0.06 0.22 1))
+      (Pair 40 40)
 
 -- | Transform a Rect into Pixels using a function over a Pair
 pixelate ::
@@ -213,7 +222,7 @@ pixelate (PixelationOptions (Range lc0 uc0) grain) xy f = zipWith Pixel g cs
 -- | Chart pixels using a function
 -- This is a convenience function, and the example below is equivalent to the pixelChart_ example
 --
--- > pixelateChart def asquare one (\(Pair x y) -> x*y+x*x)
+-- > pixelateChart def asquare one (\(Pair x y) -> (x+y)*(x+y))
 --
 pixelateChart ::
      PixelationOptions

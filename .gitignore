@@ -1,3 +1,4 @@
 /.stack-work/
-/src/.DS_Store
 /test/*.svg
+/*/.DS_Store
+/*/*/.DS_Store

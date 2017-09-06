@@ -10,7 +10,7 @@ import Chart
 import Control.Lens hiding (beside)
 import qualified Data.Text as Text
 import NumHask.Prelude
-import Data.List (zipWith3, zipWith4)
+import Data.List (zipWith3)
 import Diagrams.Prelude hiding ((*.), scaleX, scaleY, (<>))
 import FakeData
 import Diagrams.Backend.Rasterific (renderRasterific, Rasterific, animatedGif, GifLooping(..))
@@ -81,17 +81,20 @@ glyph_Example :: Chart b
 glyph_Example = glyph_ def
 
 glyphsExample :: Chart b
-glyphsExample = glyphs def [Pair (x / 10) (sin x / 10) | x <- [0 .. 10]]
+glyphsExample = glyphs def (dataXY sin (Range 0 (2*pi)) 30)
 
 gopts :: [GlyphOptions b]
-gopts = [def, def { glyphBorderColor = rybColor 0 `withOpacity` 0.5
-                  , glyphShape = triangle}]
+gopts = [ glyphBorderSize_ .~ 0.001 $ def
+        , glyphBorderSize_ .~ 0.001 $
+          glyphSize_ .~ 0.1 $
+          glyphColor_ .~ rybColor 7 `withOpacity` 0.4 $
+          def {glyphShape = triangle}
+        ]
 
 gdata :: [[Pair Double]]
-gdata = [p_1, p_2]
-  where
-    p_1 = [Pair x (sin (x / 10)) | x <- [0 .. 100]]
-    p_2 = [Pair x (cos (x / 10)) | x <- [0 .. 100]]
+gdata = [ dataXY sin (Range 0 (2*pi)) 30
+        , dataXY cos (Range 0 (2*pi)) 30
+        ]
 
 glyphChart_Example :: Chart b
 glyphChart_Example = glyphChart_ gopts widescreen gdata
@@ -103,7 +106,20 @@ glyphHudExample =
           (LegendGlyph <$> gopts) $
           hudRange_ .~ Just (range gdata) $
           hudAspect_ .~ widescreen $
+          hudAxes_ .~ [ axisLabel_ . labelText_ . textSize_ .~ 0.2 $
+                        axisTickStyle_ .~ TickPlaced pis $
+                        axisLabel_ . labelText_ . textFont_ .~ lin $
+                        defXAxis
+                      , defYAxis
+                      ] $
           def)
+    where
+      pis = [ (0,"zero")
+            , (pi/2, "π/2")
+            , (pi, "π")
+            , (3 * pi / 2, "3π/2")
+            , (2*pi,"2π")
+            ]
 
 lglyphsExample :: Chart b
 lglyphsExample =
@@ -138,12 +154,7 @@ lglyphHudExample = hud
       def)
 
 linesExample :: Int -> Chart b
-linesExample n =
-  lines
-    def
-    [ Pair (10 * x / fromIntegral n) (cos (x * (10 / fromIntegral n)))
-    | x <- fromIntegral <$> [0 .. n]
-    ]
+linesExample n = lines def (dataXY cos (Range 0 (4*pi)) n)
 
 ls :: [[Pair Double]]
 ls =
@@ -152,7 +163,7 @@ ls =
   , [(0.0, 0.0), (3.0, 3.0)]
   , [(0.5, 4.0), (0.5, 0)]
   ]
- 
+
 lopts :: [LineOptions]
 lopts =
   zipWith
@@ -192,7 +203,7 @@ glineHudExample =
     hud ( hudLegends_ . each . legendGap_ .~ 0.2 $
           hudTitles_ . each . _1 . titleGap_ .~ 0.2 $
           hudbits "Gline Chart" Nothing ["triangle", "square", "circle"]
-          (zipWith3 LegendGLine gopts3 lopts (repeat 0.1)) $
+          (zipWith (\x y -> LegendGLine x y 0.1) gopts3 lopts) $
           hudAxes_ .~ [] $
           hudRange_ .~ Just (Rect 0 5 0 5) $
           def) <>
@@ -216,8 +227,7 @@ rect_Example n =
 
 rectsExample :: Chart b
 rectsExample =
-  rects def $
-  zipWith (\x y -> Rect x (x + 1) 0 y) [0 ..] [1, 2, 3, 5, 8, 0, -2, 11, 2, 1]
+  rects def (rectOneD [1, 2, 3, 5, 8, 0, -2, 11, 2, 1])
 
 ropts :: [RectOptions]
 ropts =
@@ -226,19 +236,15 @@ ropts =
       ]
 
 rss :: [[Rect Double]]
-rss = zipWith (\x y -> Rect x (x + 1) 0 y) [0 ..] <$> pss
-  where
-    pss =
-      transpose
-        [ [exp (-(x ** 2) / 2), 0.5 * exp (-(x ** 2) / 8)]
-        | x <- grid LowerPos (Range -5 5) 1000
-        ]
+rss = [ rectXY (\x -> exp (-(x ** 2) / 2)) (Range -5 5) 50
+      , rectXY (\x -> 0.5 * exp (-(x ** 2) / 8)) (Range -5 5) 50
+      ]
 
 rectChart_Example :: Chart b
 rectChart_Example = rectChart_ ropts widescreen rss
 
 rectHudExample :: Chart b
-rectHudExample = 
+rectHudExample =
     hud ( hudLegends_ . each . legendPlace_ .~ PlaceBottom $
           hudLegends_ . each . legendAlign_ .~ AlignCenter $
           hudbits "Rect Chart" Nothing ["blue gaussian", "grey wider distribution"]
@@ -264,21 +270,21 @@ pixelsExample =
 
 pixelChart_Example :: Chart b
 pixelChart_Example =
-  pixelChart_
-    asquare
-    [ [ Pixel
-        (Rect x (x + 0.05) y (y + 0.05))
-        (blend (x * y + x * x) (rybColor 0 `withOpacity` 1) ublue)
-      | x <- grid MidPos (one :: Range Double) 20
-      , y <- grid MidPos (one :: Range Double) 20
-      ]
+    pixelChart_ asquare
+    [ (\(r,c) -> Pixel r
+                (blend c
+                 (ucolor 0.47 0.73 0.86 1)
+                 (ucolor 0.01 0.06 0.22 1)
+                )) <$>
+      rectF (\(Pair x y) -> (x+y)*(x+y))
+      one (Pair 40 40)
     ]
 
 pixelateChartExample :: Chart b
-pixelateChartExample = pixelateChart def asquare one (\(Pair x y) -> x*y+x*x)
+pixelateChartExample = pixelateChart def asquare one (\(Pair x y) -> (x+y)*(x+y))
 
 pixelHudExample :: Chart b
-pixelHudExample = 
+pixelHudExample =
     hud (hudbits "Pixel Chart" Nothing ["red", "blue"]
           ((`LegendPixel` 0.05) <$> ropts) $
           hudRange_ .~ Just one $
@@ -401,7 +407,12 @@ titles =
 
 scaleExample :: IO ()
 scaleExample =
-    fileSvg "other/scaleExample.svg" (300,120) $ withHud (hudAspect_ .~ widescreen $ hudRange_ .~ Just (Rect 0 12 0 0.2) $ def) (lineChart (repeat def)) ((\x -> [Pair x 0, Pair x (x/100)]) <$> [0..10])
+    fileSvg "other/scaleExample.svg" (300,120) $ withHud
+      ( hudAspect_ .~ widescreen $
+        hudRange_ .~ Just (Rect 0 12 0 0.2) $
+        def)
+      (lineChart (repeat def))
+      (vlineOneD ((0.1*) <$> [0..10]))
 
 -- gallery
 scatterHistExample :: [[Pair Double]] -> Chart b
@@ -457,8 +468,7 @@ labelledBarExample =
     )
   where
     labels' = fmap Text.pack <$> take 10 $ (:[]) <$> ['a'..]
-    rs :: [Rect Double]
-    rs = (\(Ranges a b) -> Ranges (abs a) (abs b)) <$> zipWith4 Rect [0..10] [1..11] (replicate 11 0) ys
+    rs = rectOneD ys
     ys = [1,2,3,5,8,0,-2,11,2,1]
 
 skinnyExample :: IO (Diagram B)

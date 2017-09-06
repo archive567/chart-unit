@@ -55,8 +55,8 @@ glyph_ (GlyphOptions s c bc bs shape) = shape s # fcA c # lcA bc # lwN bs
 
 -- | Create positioned glyphs.
 --
--- > let ps = [Pair (x/10) ((sin x)/10) | x<-[0..10]]
--- > glyphs def ps
+-- > glyphsExample :: Chart b
+-- > glyphsExample = glyphs def (dataXY sin (Range 0 (2*pi)) 30)
 --
 -- ![glyphs example](other/glyphsExample.svg)
 --
@@ -76,10 +76,21 @@ glyphChart optss (Aspect asp) r xyss =
 
 -- | A chart of glyphs scaled to its own range
 --
--- > let gopts = [def,def {glyphBorderColor=withOpacity red 0.2, glyphShape=triangle}]
--- > let p_1 = [Pair x (sin (x/10)) | x<-[0..100]]
--- > let p_2 = [Pair x (cos (x/10)) | x<-[0..100]]
--- > glyphChart_ gopts widescreen [p_1,p_2]
+-- > gopts :: [GlyphOptions b]
+-- > gopts = [ glyphBorderSize_ .~ 0.001 $ def
+-- >         , glyphBorderSize_ .~ 0.001 $
+-- >           glyphSize_ .~ 0.1 $
+-- >           glyphColor_ .~ rybColor 7 `withOpacity` 0.4 $
+-- >           def {glyphShape = triangle}
+-- >         ]
+-- > 
+-- > gdata :: [[Pair Double]]
+-- > gdata = [ dataXY sin (Range 0 (2*pi)) 30
+-- >         , dataXY cos (Range 0 (2*pi)) 30
+-- >         ]
+-- > 
+-- > glyphChart_Example :: Chart b
+-- > glyphChart_Example = glyphChart_ gopts widescreen gdata
 --
 -- ![glyphChart_ example](other/glyphChart_Example.svg)
 --
