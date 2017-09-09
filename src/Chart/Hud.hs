@@ -68,7 +68,7 @@ data HudOptions b = HudOptions
   }
 
 instance Default (HudOptions b) where
-  def = HudOptions 1.1 [defXAxis, defYAxis] [defXGrid, defYGrid] [] []
+  def = HudOptions 1.1 [defXAxis, defYAxis] [] [] []
       Nothing sixbyfour clear
 
 -- | Create a hud.

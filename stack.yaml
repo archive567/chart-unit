@@ -1,4 +1,4 @@
-resolver: lts-8.24
+resolver: lts-9.3
 
 packages:
   - '.'
@@ -6,15 +6,3 @@ packages:
 extra-deps:
   - numhask-0.1.2
   - numhask-range-0.1.1
-  - SVGFonts-1.6.0.2
-  - diagrams-lib-1.4.1.2
-  - diagrams-svg-1.4.1
-  - palette-0.1.0.5
-  - diagrams-rasterific-1.4
-  - diagrams-core-1.4.0.1
-  - diagrams-solve-0.1.1
-  - cereal-vector-0.2.0.1
-  - dual-tree-0.2.1
-  - svg-builder-0.1.0.2
-
-allow-newer: true

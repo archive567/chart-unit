@@ -1,5 +1,5 @@
 name: chart-unit
-version: 0.5.2
+version: 0.5.3
 synopsis:
   Native haskell charts.
 description:
@@ -19,7 +19,6 @@ description:
   See <https://tonyday567.github.io/chart-unit/index.html chart-unit> for a chart gallery.
   .
 extra-source-files:
-  readme.md,
   stack.yaml,
   other/*.svg
 extra-doc-files:
