@@ -1,8 +1,21 @@
-resolver: lts-9.3
+resolver: lts-9.9
+          # nightly-2017-10-18
 
 packages:
   - '.'
 
 extra-deps:
+  # nightly versions
   - numhask-0.1.2
   - numhask-range-0.1.1
+  # lts-9.9 versions
+  - palette-0.1.0.5
+  - SVGFonts-1.6.0.3
+  - diagrams-svg-1.4.1.1
+  - diagrams-lib-1.4.1.2
+  - diagrams-core-1.4.0.1
+  - diagrams-rasterific-1.4
+  - diagrams-solve-0.1.1
+  - dual-tree-0.2.1
+  - svg-builder-0.1.0.2
+
