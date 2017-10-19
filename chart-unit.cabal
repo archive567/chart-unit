@@ -1,5 +1,5 @@
 name: chart-unit
-version: 0.5.3
+version: 0.5.4
 synopsis:
   Native haskell charts.
 description:
@@ -61,19 +61,19 @@ library
     -fforce-recomp
   build-depends:
     base >= 4.7 && < 5,
+    SVGFonts,
     colour,
-    palette,
+    data-default,
     diagrams-lib,
     diagrams-svg,
     foldl,
     formatting,
     lens,
     linear,
-    data-default,
     numhask >= 0.0.5 && < 1,
     numhask-range >= 0.0.3 && < 1,
-    text,
-    SVGFonts
+    palette,
+    text
   default-language:
     Haskell2010
   default-extensions:
@@ -111,7 +111,9 @@ executable chart-source-examples
     chart-unit,
     containers,
     diagrams-lib,
+    diagrams-svg,
     foldl,
+    formatting,
     lens,
     mwc-probability,
     mwc-random,
@@ -119,10 +121,7 @@ executable chart-source-examples
     primitive,
     protolude,
     tdigest,
-    text,
-    diagrams-rasterific,
-    diagrams-svg,
-    formatting
+    text
   default-extensions:
     DeriveGeneric,
     DeriveTraversable,
