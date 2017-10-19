@@ -88,13 +88,6 @@ skinny
 
 ![](other/skinnyExample.svg)
 
-
-animation
----
-
-![](other/animationExample.gif)
-
-
 workflow
 ===
 

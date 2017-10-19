@@ -14,7 +14,7 @@ extra-deps:
   - diagrams-svg-1.4.1.1
   - diagrams-lib-1.4.1.2
   - diagrams-core-1.4.0.1
-  - diagrams-rasterific-1.4
+  # - diagrams-rasterific-1.4
   - diagrams-solve-0.1.1
   - dual-tree-0.2.1
   - svg-builder-0.1.0.2

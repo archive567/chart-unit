@@ -13,7 +13,6 @@ import NumHask.Prelude
 import Data.List (zipWith3)
 import Diagrams.Prelude hiding ((*.), scaleX, scaleY, (<>))
 import FakeData
-import Diagrams.Backend.Rasterific (renderRasterific, Rasterific, animatedGif, GifLooping(..))
 import Diagrams.Backend.SVG (B)
 import Formatting
 
@@ -413,7 +412,7 @@ scaleExample =
         hudRange_ .~ Just (Rect 0 12 0 0.2) $
         def)
       (lineChart (repeat def))
-      (vlineOneD ((0.1*) <$> [0..10]))
+      (vlineOneD ((0.01*) <$> [0..10]))
 
 -- gallery
 scatterHistExample :: [[Pair Double]] -> Chart b
@@ -573,8 +572,8 @@ parabola r f grain xscope =
 
 ceptLines :: Renderable (Path V2 Double) b => Aspect -> Rect Double -> (Double -> Double) -> Double -> QDiagram b V2 Double Any
 ceptLines (Aspect asp) r@(Ranges rx ry) f x =
-    mconcat $ lines (lineColor_ .~ ucolor 0.2 0.2 0.2 1 $ lineSize_ .~ 0.005 $ def) <$>
-    (fmap $ Chart.project r asp) <$>
+    mconcat $ lines (lineColor_ .~ ucolor 0.2 0.2 0.2 1 $ lineSize_ .~ 0.005 $ def) .
+    fmap (Chart.project r asp) <$>
     [ [Pair (lower rx) (f x), Pair x (f x)]
     , [Pair x (lower ry), Pair x (f x)]
     ]
@@ -600,16 +599,6 @@ schoolbookExample x =
     r = Rect -5 5 -5 5
     xscope = Range -3 3
     grain = 50
-
-animationExample :: FilePath -> IO ()
-animationExample f = do
-    let grain = 50
-    let xscope = Range 0 -3
-    let xs = reverse $ grid OuterPos xscope grain
-    let c = ((schoolbookExample :: Double -> QDiagram Rasterific V2 Double Any) <$> xs)
-    animatedGif f (mkSizeSpec (Just <$> r2 (400,400))) LoopingNever 10 c
-
--- scratch $ schoolbookExample <> bound def 1 (axis defYAxis one (Range -5 5)) <> bound def 1 (axis defXAxis one (Range -5 5)) <> parabola
 
 main :: IO ()
 main = do
@@ -674,12 +663,9 @@ main = do
   fileSvg "other/clippingExample.svg" (600,600) $
       exampleClipping (rectColor_ .~ ucolor 0.3 0.3 0.3 0.1 $ def) 1.1 5
       lineChart_Example
-  putStrLn ("animationExample" :: Text)
-  animationExample "other/animationExample.gif"
   putStrLn ("schoolbookExample" :: Text)
   fileSvg "other/schoolbookExample.svg" (400,400) (schoolbookExample -1)
 
   -- small hud examples
-  renderRasterific "other/hud.png" (dims (r2(100,100))) (showOrigin $ hud def :: QDiagram Rasterific V2 Double Any)
   fileSvg "other/hud.svg" (100,100) (showOrigin $ hud def)
   scaleExample
