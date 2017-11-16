@@ -66,6 +66,28 @@ labelled bar
 
 ![](other/labelledBarExample.svg)
 
+
+
+
+
+
+From the Haskell survey ...
+---
+
+q7
+---
+
+![](other/q7Example.svg)
+
+
+q24
+---
+
+![](other/q24Example.svg)
+
+
+
+
 histogram diff
 ---
 

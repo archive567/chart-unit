@@ -11,7 +11,7 @@ import Control.Lens hiding (beside)
 import qualified Data.Text as Text
 import NumHask.Prelude
 import Data.List (zipWith3)
-import Diagrams.Prelude hiding ((*.), scaleX, scaleY, (<>))
+import Diagrams.Prelude hiding ((*.), scaleX, scaleY, (<>), zero)
 import FakeData
 import Diagrams.Backend.SVG (B)
 import Formatting
@@ -471,6 +471,118 @@ labelledBarExample =
     rs = rectOneD ys
     ys = [1,2,3,5,8,0,-2,11,2,1]
 
+data LabelStyle = Flat | Angled
+
+data SurveyQ = SurveyQ
+    { surveyTitle :: Text
+    , surveyData :: [(Text,Int)]
+    , surveyBarGap :: Double
+    , surveyNumberDrop :: Double
+    , surveyBarColor :: AlphaColour Double
+    , surveyNumberColor :: AlphaColour Double
+    , surveyLabelStyle :: LabelStyle
+    }
+
+q7 :: SurveyQ
+q7 = SurveyQ
+    "How frequently do you use Haskell?"
+    [ ("Daily",469)
+    , ("Weekly",452)
+    , ("Monthly", 215)
+    , ("Yearly", 36)
+    , ("Rarely", 51)
+    ]
+    0.2
+    0.07
+    (ucolor 0.341 0.224 0.388 1)
+    (ucolor 1 1 0.33 1)
+    Flat
+
+q24 :: SurveyQ
+q24 = SurveyQ
+    "Which editors do you use for Haskell?"
+    [ ("Vim", 534)
+    , ("Emacs",501)
+    , ("VS Code", 202)
+    , ("Atom", 169)
+    , ("Sublime", 92)
+    , ("Notepad++", 28)
+    , ("VS", 3)
+    , ("Other", 134)
+    ]
+    0.2
+    (-0.03)
+    (ucolor 0.341 0.224 0.388 1)
+    (ucolor 0.33 0.33 0.33 1)
+    Angled
+
+-- | Convert a one-dimensional data set to bars with a gap as a proportion of width
+rectOneDGap :: (Enum a, FromInteger a, Ord a, BoundedField a) => a -> [a] -> [Rect a]
+rectOneDGap gap = zipWith (\x y -> abs (Rect (x+gap) (x+one-gap) zero y)) [zero..]
+
+surveyChart :: SurveyQ -> Chart b
+surveyChart (SurveyQ t d bgap ngap bc tc ls) =
+    surveyText tc ngap (snd <$> d) <>
+    surveyBars bc bgap (snd <$> d) <>
+    surveyHud ls t d
+
+surveyBars :: AlphaColour Double -> Double -> [Int] -> Chart b
+surveyBars rc gap d =
+    rectChart
+    [ rectBorderSize_ .~ 0
+    $ rectColor_ .~ rc
+    $ def
+    ]
+    sixbyfour
+    (barRange d)
+    [rectOneDGap gap $ fromIntegral <$> d]
+
+surveyHud :: LabelStyle -> Text -> [(Text, Int)] -> Chart b
+surveyHud ls t d =
+    hud
+    ( hudPad_ .~ 1
+    $ hudTitles_ .~ [(def, t)]
+    $ hudAxes_ .~
+      [ axisTickStyle_ .~ TickRound 4
+        $ defYAxis
+      , axisGap_ .~ 0
+        $ axisTickStyle_ .~ TickLabels (fst <$> d)
+        $ axisLabel_ .~ lopts
+        $ defXAxis
+      ]
+    $ hudRange_ .~ Just (barRange (snd <$> d) )
+    $ hudAspect_ .~ sixbyfour
+    $ def)
+  where
+    lopts = case ls of
+      Flat -> LabelOptions
+        (TextOptions 0.08 AlignCenter (withOpacity black 0.6) EvenOdd 0 lin2)
+        (Pair 0 -1)
+        0.015
+      Angled -> LabelOptions
+        (TextOptions 0.08 AlignLeft (withOpacity black 0.6) EvenOdd (-45) lin2)
+        (Pair 0 -1)
+        0.015
+
+
+surveyText :: AlphaColour Double -> Double -> [Int] -> Chart b
+surveyText tc gap ys =
+    textChart
+    (repeat (textColor_ .~ tc $ def))
+    sixbyfour
+    (barRange ys)
+    [zipWith (\x y ->
+                (show y
+                , Pair (x+0.5) ((if y>0 then -ngap else ngap) + fromIntegral y)))
+      [0..] ys]
+  where
+    ngap = gap * fromIntegral (maximum ys) :: Double
+
+barRange :: [Int] -> Rect Double
+barRange ys = Rect 0 (fromIntegral $ length ys) 0 (fromIntegral $ maximum ys)
+
+
+
 skinnyExample :: IO (Diagram B)
 skinnyExample = do
     qs <- makeQuantiles 20
@@ -669,3 +781,10 @@ main = do
   -- small hud examples
   fileSvg "other/hud.svg" (100,100) (showOrigin $ hud def)
   scaleExample
+
+  -- haskell survey examples
+  fileSvg "other/q7Example.svg" (600,400) $
+      surveyChart q7
+
+  fileSvg "other/q24Example.svg" (600,400) $
+      surveyChart q24
