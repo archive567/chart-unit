@@ -43,6 +43,10 @@ module Chart.Core
   , alignHTU
   , alignVU
 
+    -- * Types
+  , Orientation(..)
+  , Place(..)
+
     -- * Combinators
     --
     -- | The concept of a point on a chart is the polymorphic 'R2' from the 'linear' library.  Diagrams most often uses 'Point', which is a wrapped 'V2'.  The 'Pair' type from 'numhask-range' is often used as a point reference.
@@ -181,6 +185,19 @@ alignVU a =
     AlignTop -> -0.5
     AlignMid -> 0
     AlignBottom -> 0.5
+
+-- | Orientation for an element.  Watch this space for curvature!
+data Orientation
+  = Hori
+  | Vert
+
+-- | Placement of elements around (what is implicity but maybe shouldn't just be) a rectangular canvas
+data Place
+  = PlaceLeft
+  | PlaceRight
+  | PlaceTop
+  | PlaceBottom
+  deriving (Eq, Show)
 
 -- | position an element at a point
 positioned :: (R2 r) => r Double -> Chart b -> Chart b

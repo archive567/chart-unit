@@ -66,6 +66,12 @@ module Chart.Lenses
   , gridOrientation_
   , gridStyle_
   , gridLine_
+  , barRectOptions_
+  , barOuterGap_
+  , barInnerGap_
+  , barValueDisplay_
+  , barAdditive_
+  , barOrientation_
   ) where
 
 import Chart.Arrow
@@ -74,6 +80,7 @@ import Chart.Hud
 import Chart.Line
 import Chart.Rect
 import Chart.Text
+import Chart.Bar
 import Control.Lens
 
 makeLensesFor
@@ -184,3 +191,13 @@ makeLensesFor
   , ("gridLine", "gridLine_")
   ]
   ''GridOptions
+
+makeLensesFor
+  [ ("barRectOptions", "barRectOptions_")
+  , ("barOuterGap", "barOuterGap_")
+  , ("barInnerGap", "barInnerGap_")
+  , ("barValueDisplay", "barValueDisplay_")
+  , ("barAdditive", "barAdditive_")
+  , ("barOrientation", "barOrientation_")
+  ]
+  ''BarOptions

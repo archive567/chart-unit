@@ -21,6 +21,7 @@ module Chart
   , module Chart.Line
   , module Chart.Rect
   , module Chart.Text
+  , module Chart.Bar
   , module Chart.Lenses
 
     -- * numhask-range
@@ -48,6 +49,7 @@ module Chart
   ) where
 
 import Chart.Arrow
+import Chart.Bar
 import Chart.Core
 import Chart.Data
 import Chart.Glyph

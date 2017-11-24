@@ -15,6 +15,7 @@ module Chart.Data
   , rectXY
   , rectYX
   , rectF
+  , rectTrans
   ) where
 
 import Diagrams.Prelude hiding (zero, Additive, width)
@@ -64,3 +65,7 @@ rectYX f r g = (\x -> Rect zero (f x) (x-tick/(one+one)) (x+tick/(one+one))) <$>
 -- | Create rect data for a formulae c = f(x,y)
 rectF :: (Signed a, BoundedField a, Ord a, FromInteger a) => (Pair a -> b) -> Rect a -> Pair Int -> [(Rect a, b)]
 rectF f r g = (\x -> (x, f (mid x))) <$> gridSpace r g
+
+-- | transpose the dimensions of a Rect
+rectTrans :: Rect a -> Rect a
+rectTrans (Rect x y w z) = Rect y x z w

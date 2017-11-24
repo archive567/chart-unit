@@ -11,8 +11,6 @@ module Chart.Hud
   ( HudOptions(..)
   , hud
   , withHud
-  , Orientation(..)
-  , Place(..)
   , placeOutside
   , placeGap
   , TickStyle(..)
@@ -81,7 +79,7 @@ instance Default (HudOptions b) where
 -- and then the y-axis.  In setting that 'beside' the combination of the canvas, and the x-axis, it calculates the middle, which has moved slightly from the canvas middle.
 hud :: () => HudOptions b -> Chart b
 hud (HudOptions p axes grids titles legends mr asp@(Aspect ar@(Ranges ax ay)) can) =
-  (mconcat $ (\x -> gridl x asp r) <$> grids) <>
+  mconcat ((\x -> gridl x asp r) <$> grids) <>
   L.fold (L.Fold addTitle uptoLegend (pad p)) titles
   where
     r = fromMaybe one mr
@@ -145,14 +143,6 @@ withHud opts renderer d =
             []
         ]
 
--- | Placement of hud elements around (what is implicity but maybe shouldn't just be) a rectangular canvas
-data Place
-  = PlaceLeft
-  | PlaceRight
-  | PlaceTop
-  | PlaceBottom
-  deriving (Eq, Show)
-
 -- | Direction to place stuff on the outside of the built-up hud
 placeOutside :: Num n => Place -> V2 n
 placeOutside pl =
@@ -175,11 +165,6 @@ placeGap pl s x = beside (placeOutside pl) (strut' pl s) x
     strut' PlaceBottom = strutY
     strut' PlaceLeft = strutX
     strut' PlaceRight = strutX
-
--- | Orientation for a hud element.  Watch this space for curvature!
-data Orientation
-  = Hori
-  | Vert
 
 -- | Axes are somewhat complicated.  For instance, they contain a range within which tick marks need to be supplied or computed.
 data AxisOptions b = AxisOptions
@@ -503,16 +488,16 @@ gridl gopt (Aspect (Ranges aspx aspy)) (Ranges rx ry) = ls
   where
     ls = mconcat $ lines (gridLine gopt) <$> (l1d <$> lineLocations)
     lineLocations =
-        case (gridStyle gopt) of
+        case gridStyle gopt of
           GridNone -> []
           GridRound p n -> project r0 asp0 <$> gridSensible p r0 n
           GridExact p n -> project r0 asp0 <$> grid p r0 n
           GridPlaced xs -> project r0 asp0 <$> xs
     (asp0, r0) =
-        case (gridOrientation gopt) of
+        case gridOrientation gopt of
           Vert -> (aspx, rx)
           Hori -> (aspy, ry)
     l1d =
-        case (gridOrientation gopt) of
-          Hori -> (\y -> [Pair (lower aspx) y, Pair (upper aspx) y])
-          Vert -> (\x -> [Pair x (lower aspy), Pair x (upper aspy)])
+        case gridOrientation gopt of
+          Hori -> \y -> [Pair (lower aspx) y, Pair (upper aspx) y]
+          Vert -> \x -> [Pair x (lower aspy), Pair x (upper aspy)]

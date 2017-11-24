@@ -60,6 +60,7 @@ library:
   exposed-modules:
   - Chart
   - Chart.Arrow
+  - Chart.Bar
   - Chart.Core
   - Chart.Data
   - Chart.Glyph
