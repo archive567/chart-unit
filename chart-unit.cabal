@@ -1,66 +1,106 @@
-name: chart-unit
-version: 0.5.4
-synopsis:
-  Native haskell charts.
-description:
-  .
-  <<https://tonyday567.github.io/other/mainExample.svg>>
-  .
-  chart-unit is a native haskell charting library designed:
-  .
-  - as a chart DSL and algebra
-  .
-  - towards a minimalist look and feel
-  .
-  - to provide a set of default values that are robust across differet data and physical chart scales
-  .
-  - around provision of a small but core set of chart types.
-  .
-  See <https://tonyday567.github.io/chart-unit/index.html chart-unit> for a chart gallery.
-  .
+-- This file has been generated from package.yaml by hpack version 0.18.1.
+--
+-- see: https://github.com/sol/hpack
+
+name:           chart-unit
+version:        0.5.4
+synopsis:       Native haskell charts.
+description:    .
+                <<https://tonyday567.github.io/other/mainExample.svg>>
+                .
+                chart-unit is a native haskell charting library designed:
+                .
+                - as a chart DSL and algebra
+                .
+                - towards a minimalist look and feel
+                .
+                - to provide a set of default values that are robust across differet data and physical chart scales
+                .
+                - around provision of a small but core set of chart types.
+                .
+                See <https://tonyday567.github.io/chart-unit/index.html chart-unit> for a chart gallery.
+category:       charts
+homepage:       https://github.com/tonyday567/chart-unit#readme
+bug-reports:    https://github.com/tonyday567/chart-unit/issues
+license:        BSD3
+license-file:   LICENSE
+author:         Tony Day
+maintainer:     tonyday567@gmail.com
+copyright:      2016 Tony Day
+build-type:     Simple
+cabal-version:  >= 1.10
+
 extra-source-files:
-  stack.yaml,
-  other/*.svg
-extra-doc-files:
-  other/*.svg
-category:
-  charts
-homepage:
-  https://github.com/tonyday567/chart-unit
-license:
-  BSD3
-license-file:
-  LICENSE
-author:
-  Tony Day
-maintainer:
-  tonyday567@gmail.com
-copyright:
-  2016 Tony Day
-build-type:
-  Simple
-cabal-version:
-  >=1.18
+  other/arrowChart_Example.svg
+  other/arrowHudExample.svg
+  other/arrowsExample.svg
+  other/axisExample.svg
+  other/clippingExample.svg
+  other/glineChart_Example.svg
+  other/glineHudExample.svg
+  other/glyph_Example.svg
+  other/glyphChart_Example.svg
+  other/glyphHudExample.svg
+  other/glyphsExample.svg
+  other/histDiffExample.svg
+  other/hud.svg
+  other/hudExample.svg
+  other/labelledBarExample.svg
+  other/labelledExample.svg
+  other/legendExample.svg
+  other/lglyphChart_Example.svg
+  other/lglyphHudExample.svg
+  other/lglyphsExample.svg
+  other/lineChart_Example.svg
+  other/lineHudExample.svg
+  other/linesExample.svg
+  other/mainExample.svg
+  other/pixel_Example.svg
+  other/pixelChart_Example.svg
+  other/pixelHudExample.svg
+  other/pixelsExample.svg
+  other/q24Example.svg
+  other/q7Example.svg
+  other/rect_Example.svg
+  other/rectChart_Example.svg
+  other/rectHudExample.svg
+  other/rectsExample.svg
+  other/scaleExample.svg
+  other/scatterHistExample.svg
+  other/schoolbookExample.svg
+  other/scratchpad.svg
+  other/skinnyExample.svg
+  other/text_Example.svg
+  other/textChart_Example.svg
+  other/textHudExample.svg
+  other/textsExample.svg
+  other/withHudExample.svg
+  stack.yaml
+
+source-repository head
+  type: git
+  location: https://github.com/tonyday567/chart-unit
 
 library
   hs-source-dirs:
     src
   exposed-modules:
-    Chart,
-    Chart.Arrow,
-    Chart.Core,
-    Chart.Data,
-    Chart.Glyph,
-    Chart.Hud,
-    Chart.Line,
-    Chart.Rect,
-    Chart.Text,
+    Chart
+    Chart.Arrow
+    Chart.Core
+    Chart.Data
+    Chart.Glyph
+    Chart.Hud
+    Chart.Line
+    Chart.Rect
+    Chart.Text
     Chart.Lenses
-  ghc-options:
-    -funbox-strict-fields
-    -fforce-recomp
+  other-modules:
+    Paths_chart_unit
+  ghc-options: -funbox-strict-fields -fforce-recomp
   build-depends:
-    base >= 4.7 && < 5,
+    base >=4.7 && <5,
+    text,
     SVGFonts,
     colour,
     data-default,
@@ -70,44 +110,23 @@ library
     formatting,
     lens,
     linear,
-    numhask >= 0.0.5 && < 1,
-    numhask-range >= 0.0.3 && < 1,
-    palette,
-    text
-  default-language:
-    Haskell2010
-  default-extensions:
-    DeriveGeneric,
-    DeriveTraversable,
-    FlexibleContexts,
-    FlexibleInstances,
-    InstanceSigs,
-    MultiParamTypeClasses,
-    NegativeLiterals,
-    NoImplicitPrelude,
-    OverloadedStrings,
-    PatternSynonyms,
-    RankNTypes,
-    TypeFamilies,
-    UnicodeSyntax
+    numhask >=0.0.5 && <1,
+    numhask-range >=0.0.3 && <1,
+    palette
+  default-language: Haskell2010
+  default-extensions: DeriveGeneric DeriveTraversable FlexibleContexts FlexibleInstances InstanceSigs MultiParamTypeClasses NegativeLiterals NoImplicitPrelude OverloadedStrings PatternSynonyms RankNTypes TypeFamilies UnicodeSyntax
 
 executable chart-source-examples
-  default-language:
-    Haskell2010
-  ghc-options:
-    -funbox-strict-fields
-    -fforce-recomp
-    -threaded
-    -rtsopts
-    -with-rtsopts=-N
+  default-language: Haskell2010
+  ghc-options: -funbox-strict-fields -fforce-recomp -threaded -rtsopts -with-rtsopts=-N
   hs-source-dirs:
     examples
-  main-is:
-    sourceExamples.hs
+  main-is: sourceExamples.hs
   other-modules:
     FakeData
   build-depends:
-    base >= 4.7 && < 5,
+    base >=4.7 && <5,
+    text,
     chart-unit,
     containers,
     diagrams-lib,
@@ -120,56 +139,20 @@ executable chart-source-examples
     numhask,
     primitive,
     protolude,
-    tdigest,
-    text
-  default-extensions:
-    DeriveGeneric,
-    DeriveTraversable,
-    FlexibleContexts,
-    FlexibleInstances,
-    InstanceSigs,
-    MultiParamTypeClasses,
-    NegativeLiterals,
-    NoImplicitPrelude,
-    OverloadedStrings,
-    PatternSynonyms,
-    RankNTypes,
-    TypeFamilies,
-    UnicodeSyntax
+    tdigest
+  default-extensions: DeriveGeneric DeriveTraversable FlexibleContexts FlexibleInstances InstanceSigs MultiParamTypeClasses NegativeLiterals NoImplicitPrelude OverloadedStrings PatternSynonyms RankNTypes TypeFamilies UnicodeSyntax
 
 test-suite test
-  default-language:
-    Haskell2010
-  type:
-    exitcode-stdio-1.0
+  default-language: Haskell2010
+  type: exitcode-stdio-1.0
   hs-source-dirs:
     test
-  main-is:
-    test.hs
+  main-is: test.hs
   build-depends:
-    base >= 4.7 && < 5,
+    base >=4.7 && <5,
+    text,
     chart-unit,
     numhask,
     tasty,
-    tasty-hspec,
-    text
-  default-extensions:
-    DeriveGeneric,
-    DeriveTraversable,
-    FlexibleContexts,
-    FlexibleInstances,
-    InstanceSigs,
-    MultiParamTypeClasses,
-    NegativeLiterals,
-    NoImplicitPrelude,
-    OverloadedStrings,
-    PatternSynonyms,
-    RankNTypes,
-    TypeFamilies,
-    UnicodeSyntax
-
-source-repository head
-  type:
-    git
-  location:
-    https://github.com/tonyday567/chart-unit
+    tasty-hspec
+  default-extensions: DeriveGeneric DeriveTraversable FlexibleContexts FlexibleInstances InstanceSigs MultiParamTypeClasses NegativeLiterals NoImplicitPrelude OverloadedStrings PatternSynonyms RankNTypes TypeFamilies UnicodeSyntax

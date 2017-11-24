@@ -5,16 +5,17 @@
 {-# OPTIONS_GHC -Wno-type-defaults #-}
 {-# OPTIONS_GHC -fno-warn-name-shadowing #-}
 {-# OPTIONS_GHC -fno-warn-incomplete-patterns #-}
+{-# OPTIONS_GHC -Wno-unused-top-binds #-}
 
 import Chart
 import Control.Lens hiding (beside)
-import qualified Data.Text as Text
-import NumHask.Prelude
 import Data.List (zipWith3)
-import Diagrams.Prelude hiding ((*.), scaleX, scaleY, (<>), zero)
-import FakeData
 import Diagrams.Backend.SVG (B)
+import Diagrams.Prelude hiding ((*.), scaleX, scaleY, (<>))
+import FakeData
 import Formatting
+import NumHask.Prelude
+import qualified Data.Text as Text
 
 hudbits :: Text -> Maybe Text -> [Text] -> [LegendType b] -> HudOptions b -> HudOptions b
 hudbits t subt ts ls x =
@@ -227,7 +228,7 @@ rect_Example n =
 
 rectsExample :: Chart b
 rectsExample =
-  rects def (rectOneD [1, 2, 3, 5, 8, 0, -2, 11, 2, 1])
+  rects def (rectBars 0.1 [1, 2, 3, 5, 8, 0, -2, 11, 2, 1])
 
 ropts :: [RectOptions]
 ropts =
@@ -468,7 +469,7 @@ labelledBarExample =
     )
   where
     labels' = fmap Text.pack <$> take 10 $ (:[]) <$> ['a'..]
-    rs = rectOneD ys
+    rs = rectBars 0.1 ys
     ys = [1,2,3,5,8,0,-2,11,2,1]
 
 data LabelStyle = Flat | Angled
@@ -516,10 +517,6 @@ q24 = SurveyQ
     (ucolor 0.33 0.33 0.33 1)
     Angled
 
--- | Convert a one-dimensional data set to bars with a gap as a proportion of width
-rectOneDGap :: (Enum a, FromInteger a, Ord a, BoundedField a) => a -> [a] -> [Rect a]
-rectOneDGap gap = zipWith (\x y -> abs (Rect (x+gap) (x+one-gap) zero y)) [zero..]
-
 surveyChart :: SurveyQ -> Chart b
 surveyChart (SurveyQ t d bgap ngap bc tc ls) =
     surveyText tc ngap (snd <$> d) <>
@@ -535,7 +532,7 @@ surveyBars rc gap d =
     ]
     sixbyfour
     (barRange d)
-    [rectOneDGap gap $ fromIntegral <$> d]
+    [rectBars gap $ fromIntegral <$> d]
 
 surveyHud :: LabelStyle -> Text -> [(Text, Int)] -> Chart b
 surveyHud ls t d =

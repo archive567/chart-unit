@@ -21,7 +21,7 @@ import Chart.Core
 import Chart.Text
 import Diagrams.Prelude hiding (Color, D, scaleX, scaleY)
 import NumHask.Pair
-import NumHask.Prelude hiding (shape)
+import NumHask.Prelude
 import NumHask.Rect
 
 -- | The actual shape of a glyph can be any Chart element

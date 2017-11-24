@@ -9,7 +9,7 @@ module Chart.Data
   ( lineOneD
   , vlineOneD
   , hlineOneD
-  , rectOneD
+  , rectBars
   , dataXY
   , dataYX
   , rectXY
@@ -17,7 +17,7 @@ module Chart.Data
   , rectF
   ) where
 
-import Diagrams.Prelude hiding ((<>), zero, Additive)
+import Diagrams.Prelude hiding (zero, Additive, width)
 import NumHask.Pair
 import NumHask.Prelude
 import NumHask.Rect
@@ -36,10 +36,10 @@ vlineOneD = zipWith (\x y -> [Pair x zero, Pair x y]) [zero..]
 hlineOneD :: (Enum a, AdditiveUnital a) => [a] -> [[Pair a]]
 hlineOneD = zipWith (\x y -> [Pair zero x, Pair y x]) [zero..]
 
-
--- | Convert a one-dimensional data set to bars
-rectOneD :: (Enum a, FromInteger a, Ord a, BoundedField a, Additive a, MultiplicativeUnital a) => [a] -> [Rect a]
-rectOneD xs = zipWith (\x y -> abs (Rect x (x+one) zero y)) [zero..] xs
+-- | Convert a one-dimensional data set to rectangular bars
+-- with a gap between
+rectBars :: (Enum a, FromInteger a, Ord a, BoundedField a) => a -> [a] -> [Rect a]
+rectBars gap' = zipWith (\x y -> abs (Rect (x+gap') (x+one-gap') zero y)) [zero..]
 
 -- | Create line data for a formulae y = f(x)
 dataXY :: (BoundedField a, Ord a, FromInteger a) => (a -> a) -> Range a -> Int -> [Pair a]
@@ -53,13 +53,13 @@ dataYX f r g = (\x -> Pair (f x) x) <$> grid OuterPos r g
 rectXY :: (BoundedField a, Ord a, FromInteger a) => (a -> a) -> Range a -> Int -> [Rect a]
 rectXY f r g = (\x -> Rect (x-tick/(one+one)) (x+tick/(one+one)) zero (f x)) <$> grid MidPos r g
   where
-    tick = (NumHask.Space.width r) / fromIntegral g
+    tick = width r / fromIntegral g
 
 -- | Create rect data for a formulae x = f(y)
 rectYX :: (BoundedField a, Ord a, FromInteger a) => (a -> a) -> Range a -> Int -> [Rect a]
 rectYX f r g = (\x -> Rect zero (f x) (x-tick/(one+one)) (x+tick/(one+one))) <$> grid MidPos r g
   where
-    tick = (NumHask.Space.width r) / fromIntegral g
+    tick = width r / fromIntegral g
 
 -- | Create rect data for a formulae c = f(x,y)
 rectF :: (Signed a, BoundedField a, Ord a, FromInteger a) => (Pair a -> b) -> Rect a -> Pair Int -> [(Rect a, b)]

@@ -54,7 +54,7 @@ Charting is an age-old craft, and stuffed to the brim with cliche and jargon.  I
 Gallery
 ===
 
-The main chart types and the power of diagrams make it easy to invent new charts.  Hrere's some inspiration (all code for these charts is in [examples/sourceExamples.hs](https://github.com/tonyday567/chart-unit/blob/master/examples/sourceExamples.hs)).
+Composable chart types and the power of diagrams make it easy to invent new charts.  Here's some inspiration (all code for these charts is in [examples/sourceExamples.hs](https://github.com/tonyday567/chart-unit/blob/master/examples/sourceExamples.hs)).
 
 schoolbook
 ---
@@ -65,10 +65,6 @@ labelled bar
 ---
 
 ![](other/labelledBarExample.svg)
-
-
-
-
 
 
 From the Haskell survey ...

@@ -1,0 +1,116 @@
+name: chart-unit
+version: '0.5.4'
+synopsis: Native haskell charts.
+description: ! '
+
+  <<https://tonyday567.github.io/other/mainExample.svg>>
+
+
+  chart-unit is a native haskell charting library designed:
+
+
+  - as a chart DSL and algebra
+
+
+  - towards a minimalist look and feel
+
+
+  - to provide a set of default values that are robust across differet data and physical
+  chart scales
+
+
+  - around provision of a small but core set of chart types.
+
+
+  See <https://tonyday567.github.io/chart-unit/index.html chart-unit> for a chart
+  gallery.
+
+'
+category: charts
+author: Tony Day
+maintainer: tonyday567@gmail.com
+copyright: 2016 Tony Day
+license: BSD3
+github: tonyday567/chart-unit
+extra-source-files:
+- stack.yaml
+- other/*.svg
+default-extensions:
+- DeriveGeneric
+- DeriveTraversable
+- FlexibleContexts
+- FlexibleInstances
+- InstanceSigs
+- MultiParamTypeClasses
+- NegativeLiterals
+- NoImplicitPrelude
+- OverloadedStrings
+- PatternSynonyms
+- RankNTypes
+- TypeFamilies
+- UnicodeSyntax
+dependencies:
+- base >=4.7 && <5
+- text
+library:
+  source-dirs: src
+  ghc-options:
+  - -funbox-strict-fields
+  - -fforce-recomp
+  exposed-modules:
+  - Chart
+  - Chart.Arrow
+  - Chart.Core
+  - Chart.Data
+  - Chart.Glyph
+  - Chart.Hud
+  - Chart.Line
+  - Chart.Rect
+  - Chart.Text
+  - Chart.Lenses
+  dependencies:
+  - SVGFonts
+  - colour
+  - data-default
+  - diagrams-lib
+  - diagrams-svg
+  - foldl
+  - formatting
+  - lens
+  - linear
+  - numhask >=0.0.5 && <1
+  - numhask-range >=0.0.3 && <1
+  - palette
+executables:
+  chart-source-examples:
+    main: sourceExamples.hs
+    source-dirs: examples
+    ghc-options:
+    - -funbox-strict-fields
+    - -fforce-recomp
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - chart-unit
+    - containers
+    - diagrams-lib
+    - diagrams-svg
+    - foldl
+    - formatting
+    - lens
+    - mwc-probability
+    - mwc-random
+    - numhask
+    - primitive
+    - protolude
+    - tdigest
+tests:
+  test:
+    main: test.hs
+    source-dirs: test
+    dependencies:
+    - chart-unit
+    - numhask
+    - tasty
+    - tasty-hspec

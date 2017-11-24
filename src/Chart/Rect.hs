@@ -96,7 +96,7 @@ rect_ (RectOptions bs bc c) (Rect x z y w) =
 
 -- | Create rectangles (with the same configuration).
 --
--- > rects def (rectOneD [1, 2, 3, 5, 8, 0, -2, 11, 2, 1])
+-- > rects def (rectBars 0 [1, 2, 3, 5, 8, 0, -2, 11, 2, 1])
 --
 -- ![rects example](other/rectsExample.svg)
 --
