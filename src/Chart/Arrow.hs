@@ -1,10 +1,10 @@
 {-# OPTIONS_GHC -Wall #-}
 
 -- | Charts that depict gradients and similar data, using arrows in positions
-
 module Chart.Arrow (
     Arrow(..)
-  , ArrowOptions(..)
+  , ArrowHTStyle(..)
+  , ArrowOptions(ArrowOptions)
   , normArrows
   , arrows
   , arrowChart
@@ -13,7 +13,8 @@ module Chart.Arrow (
 
 import Chart.Core
 
-import NumHask.Prelude hiding (max,(&))
+import GHC.Generics
+import NumHask.Prelude hiding (max, (&))
 import NumHask.Space
 import NumHask.Range
 import NumHask.Rect
@@ -22,20 +23,71 @@ import NumHask.Pair
 import Data.Ord (max)
 import Diagrams.Prelude hiding (width, D, Color, project)
 
+data ArrowHTStyle a =
+    Tri |
+    Dart |
+    HalfDart |
+    Spike |
+    Thorn |
+    LineHead |
+    NoHead |
+    Tri2 a |
+    Dart2 a |
+    HalfDart2 a |
+    Spike2 a |
+    Thorn2 a |
+    Tri' |
+    Dart' |
+    HalfDart' |
+    Spike' |
+    Thorn' |
+    LineTail |
+    NoTail |
+    Quill |
+    Block |
+    Quill2 a |
+    Block2 a
+    deriving Show
+
+arrowHTStyle :: (RealFloat a) => ArrowHTStyle a -> ArrowHT a
+arrowHTStyle Tri = tri
+arrowHTStyle Dart = dart
+arrowHTStyle HalfDart = halfDart
+arrowHTStyle Spike = spike
+arrowHTStyle Thorn = thorn
+arrowHTStyle LineHead = lineHead
+arrowHTStyle NoHead = noHead
+arrowHTStyle (Tri2 a) = arrowheadTriangle (a @@ deg)
+arrowHTStyle (Dart2 a) = arrowheadDart (a @@ deg)
+arrowHTStyle (HalfDart2 a) = arrowheadHalfDart (a @@ deg)
+arrowHTStyle (Spike2 a) = arrowheadSpike (a @@ deg)
+arrowHTStyle (Thorn2 a) = arrowheadThorn (a @@ deg)
+arrowHTStyle Tri' = tri'
+arrowHTStyle Dart' = dart'
+arrowHTStyle HalfDart' = halfDart'
+arrowHTStyle Spike' = spike'
+arrowHTStyle Thorn' = thorn'
+arrowHTStyle LineTail = lineTail
+arrowHTStyle NoTail = noTail
+arrowHTStyle Quill = quill
+arrowHTStyle Block = block
+arrowHTStyle (Quill2 a) = arrowtailQuill (a @@ deg)
+arrowHTStyle (Block2 a) = arrowtailBlock (a @@ deg)
+
 -- | todo: quite a clunky specification of what an arrow is (or could be)
 data ArrowOptions a = ArrowOptions
-    { arrowMinLength :: a
-    , arrowMaxLength :: a
-    , arrowMinHeadLength :: a
-    , arrowMaxHeadLength :: a
-    , arrowMinStaffWidth :: a
-    , arrowMaxStaffWidth :: a
-    , arrowColor :: AlphaColour Double
-    , arrowHeadStyle :: ArrowHT a
-    }
+    { minLength :: a
+    , maxLength :: a
+    , minHeadLength :: a
+    , maxHeadLength :: a
+    , minStaffWidth :: a
+    , maxStaffWidth :: a
+    , color :: AlphaColour Double
+    , hStyle :: ArrowHTStyle a
+    } deriving (Show, Generic)
 
 instance Default (ArrowOptions Double) where
-    def = ArrowOptions 0.02 0.2 0.01 0.1 0.002 0.005 ublue dart
+    def = ArrowOptions 0.02 0.2 0.01 0.1 0.002 0.005 ublue Dart
 
 -- | Equalize the arrow space width with the data space one.
 -- this creates the right arrow sizing in physical chart space
@@ -63,7 +115,7 @@ data Arrow = Arrow
 --
 -- note that, due to this auto-scaling, there is no such thing as a single arrow_ chart
 --
--- > arrows (def {arrowMaxLength=0.5,arrowMaxHeadLength=0.2,arrowMaxStaffWidth=0.01})
+-- > arrows (def {maxLength=0.5,maxHeadLength=0.2,maxStaffWidth=0.01})
 -- >     [Arrow (Pair x (sin (5*x))) (Pair x (cos x)) |
 -- >      x<-grid MidPos (one::Range Double) 100]
 --
@@ -72,7 +124,7 @@ data Arrow = Arrow
 arrows :: (Traversable f) => ArrowOptions Double -> f Arrow -> Chart b
 arrows opts xs = c
   where
-    c = fcA (arrowColor opts) $ position $  getZipList $
+    c = fcA (color opts) $ position $  getZipList $
         (\ps' as' hrel' wrel' srel' ->
                     (ps',
                      arrowAt' (arropts hrel' wrel') (p2 (0, 0))
@@ -92,21 +144,21 @@ arrows opts xs = c
     -- the maximum arrow vector norm
     (Range _ anormMax) = space anorm
     -- the overall size of the arrows, as a proportion to the data space
-    arel = (\x -> max (anormMax * arrowMinLength opts)
-                 (x / anormMax * arrowMaxLength opts)) <$> anorm
+    arel = (\x -> max (anormMax * minLength opts)
+                 (x / anormMax * maxLength opts)) <$> anorm
     -- size of the head (as a proportion of the data space)
-    hrel = (\x -> max (arrowMinHeadLength opts) (arrowMaxHeadLength opts * x)) <$>
+    hrel = (\x -> max (minHeadLength opts) (maxHeadLength opts * x)) <$>
         arel
     -- widt of the staff
-    wrel = (\x -> max (arrowMinStaffWidth opts) (arrowMaxStaffWidth opts * x)) <$>
+    wrel = (\x -> max (minStaffWidth opts) (maxStaffWidth opts * x)) <$>
         arel
     -- length of the staff (taking into account the head length)
     srel = zipWith (\la lh -> max 1e-12 (la - lh)) (toList arel) (toList hrel)
     -- diagrams arrow options
-    arropts lh lw'' = with & arrowHead .~ arrowHeadStyle opts &
+    arropts lh lw'' = with & arrowHead .~ arrowHTStyle (hStyle opts) &
                  headLength .~ global lh &
-                 shaftStyle %~ (lwG lw'' & lcA (arrowColor opts)) &
-                 headStyle %~ (lcA (arrowColor opts) & fcA (arrowColor opts))
+                 shaftStyle %~ (lwG lw'' & lcA (color opts)) &
+                 headStyle %~ (lcA (color opts) & fcA (color opts))
 
 -- | A chart of arrows
 arrowChart ::

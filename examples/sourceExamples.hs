@@ -1,6 +1,7 @@
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE NoImplicitPrelude #-}
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE OverloadedLabels #-}
 {-# OPTIONS_GHC -Wall #-}
 {-# OPTIONS_GHC -Wno-type-defaults #-}
 {-# OPTIONS_GHC -fno-warn-name-shadowing #-}
@@ -16,31 +17,32 @@ import FakeData
 import Formatting
 import NumHask.Prelude
 import qualified Data.Text as Text
-
+import Data.Generics.Labels()
+ 
 hudbits :: Text -> Maybe Text -> [Text] -> [LegendType b] -> HudOptions b -> HudOptions b
 hudbits t subt ts ls x =
-    hudTitles_ .~
-    [ (titlePlace_ .~ PlaceLeft $
-       titleAlign_ .~ AlignLeft $
-       titleText_ . textRotation_ .~ 90 $
-       titleText_ . textSize_ .~ 0.25 $
-       titleText_ . textColor_ .~ d3Colors1 0 `withOpacity` 1 $
+    #titles .~
+    [ (#place .~ PlaceLeft $
+       #align .~ AlignLeft $
+       #text . #rotation .~ 90 $
+       #text . #size .~ 0.25 $
+       #text . #color .~ d3Colors1 0 `withOpacity` 1 $
        def, t)] <>
     (case subt of
       Nothing -> []
       Just subt' -> 
-        [(titlePlace_ .~ PlaceBottom $
-          titleAlign_ .~ AlignRight $
-          titleText_ . textRotation_ .~ 0 $
-          titleText_ . textSize_ .~ 0.14 $
-          titleText_ . textColor_ .~ d3Colors1 0 `withOpacity` 1 $
+        [(#place .~ PlaceBottom $
+          #align .~ AlignRight $
+          #text . #rotation .~ 0 $
+          #text . #size .~ 0.14 $
+          #text . #color .~ d3Colors1 0 `withOpacity` 1 $
           def, subt')]) $ 
-    hudLegends_ .~
-    [ legendChartType_ .~
-      zip ls ts $
-      legendAlign_ .~ AlignRight $ def
+    #legends .~
+    [ #chartType .~ zip ls ts
+    $ #align .~ AlignRight
+    $ def
     ] $
-    hudAxes_ . each . axisGap_ .~ 0.1 $
+    #axes . each . #gap .~ 0.1 $
     x
 
 text_Example :: Chart b
@@ -59,20 +61,20 @@ ts =
 
 textChart_Example :: Chart b
 textChart_Example =
-  textChart_ (repeat $ def {textSize = 0.33}) widescreen [ts]
+  textChart_ (repeat $ #size .~ 0.33 $ def) widescreen [ts]
 
 textHudExample :: Chart b
 textHudExample = hud
     ( hudbits "Text Chart" (Just "text and glyphs have a similar feel") [] [] $
-      hudRange_ .~ Just (range ts) $
-      hudAspect_ .~ widescreen $
+      #range .~ Just (range ts) $
+      #aspect .~ widescreen $
       def)
 
 labelledExample :: Chart b
 labelledExample =
   labelled
     (LabelOptions
-       (def {textAlignH = AlignLeft, textRotation = 45})
+       (#alignH .~ AlignLeft $ #rotation .~ 45 $ def)
        (Pair 1 1)
        0.05)
     "a label"
@@ -85,11 +87,11 @@ glyphsExample :: Chart b
 glyphsExample = glyphs def (dataXY sin (Range 0 (2*pi)) 30)
 
 gopts :: [GlyphOptions b]
-gopts = [ glyphBorderSize_ .~ 0.001 $ def
-        , glyphBorderSize_ .~ 0.001 $
-          glyphSize_ .~ 0.1 $
-          glyphColor_ .~ rybColor 7 `withOpacity` 0.4 $
-          def {glyphShape = triangle}
+gopts = [ #borderSize .~ 0.001 $ def
+        , #borderSize .~ 0.001 $
+          #size .~ 0.1 $
+          #color .~ rybColor 7 `withOpacity` 0.4 $
+          #shape .~ Triangle $ def
         ]
 
 gdata :: [[Pair Double]]
@@ -102,14 +104,14 @@ glyphChart_Example = glyphChart_ gopts widescreen gdata
 
 glyphHudExample :: Chart b
 glyphHudExample = 
-    hud (hudLegends_ . each . legendAlign_ .~ AlignLeft $
+    hud (#legends . each . #align .~ AlignLeft $
          hudbits "Glyph Chart" Nothing ["sin", "cos"]
           (LegendGlyph <$> gopts) $
-          hudRange_ .~ Just (range gdata) $
-          hudAspect_ .~ widescreen $
-          hudAxes_ .~ [ axisLabel_ . labelText_ . textSize_ .~ 0.2 $
-                        axisTickStyle_ .~ TickPlaced pis $
-                        axisLabel_ . labelText_ . textFont_ .~ lin $
+          #range .~ Just (range gdata) $
+          #aspect .~ widescreen $
+          #axes .~ [ #label . #text . #size .~ 0.2 $
+                        #tickStyle .~ TickPlaced pis $
+                        #label . #text . #font .~ Lin $
                         defXAxis
                       , defYAxis
                       ] $
@@ -137,25 +139,26 @@ lgdata =
 lglyphChart_Example :: Aspect -> Chart b
 lglyphChart_Example a =
   lglyphChart_
-    [labelGap_ .~ 0.015 $ labelText_ . textSize_ .~ 0.12 $ def]
-    [glyphColor_ .~ black `withOpacity` 1 $
-     glyphBorderSize_ .~ 0 $
-     glyphSize_ .~ 0.01 $
+    [#gap .~ 0.015 $ #text . #size .~ 0.12 $ def]
+    [#color .~ black `withOpacity` 1 $
+     #borderSize .~ 0 $
+     #size .~ 0.01 $
      def]
     a
     lgdata
 
 lglyphHudExample :: Chart b
 lglyphHudExample = hud
-    ( hudTitles_ . each . _1 . titleGap_ .~ 0.2 $
+    ( #titles . each . _1 . #gap .~ 0.2 $
       hudbits "LGlyph Chart" (Just "Glyphs with text labels are very useful") [] [] $
-      hudAxes_ .~ [] $
-      hudRange_ .~ Just (range (fmap snd <$> lgdata)) $
-      hudAspect_ .~ widescreen $
+      #axes .~ [] $
+      #range .~ Just (range (fmap snd <$> lgdata)) $
+      #aspect .~ widescreen $
       def)
 
 linesExample :: Int -> Chart b
-linesExample n = lines def (dataXY cos (Range 0 (4*pi)) n)
+linesExample n = lines (#color .~ red `withOpacity` 0.5 $ def)
+    (dataXY cos (Range 0 (4*pi)) n)
 
 ls :: [[Pair Double]]
 ls =
@@ -179,34 +182,33 @@ lineHudExample :: Chart b
 lineHudExample = 
     hud (hudbits "Line Chart" Nothing ["hockey stick", "slope", "vertical"]
           ((`LegendLine` 0.05) <$> lopts) $
-          hudRange_ .~ Just (range ls) $
+          #range .~ Just (range ls) $
           def)
 
 gopts3 :: (Renderable (Path V2 Double) b) => [GlyphOptions b]
 gopts3 =
       zipWith
         (\x y ->
-           def
-           { glyphColor = withOpacity (d3Colors1 x) 0.2
-           , glyphBorderColor = withOpacity (d3Colors1 x) 1
-           , glyphBorderSize = 0.005
-           , glyphShape = y
-           , glyphSize = 0.08
-           })
+           #color .~ withOpacity (d3Colors1 x) 0.2 $
+           #borderColor .~ withOpacity (d3Colors1 x) 1 $
+           #borderSize .~ 0.005 $
+           #shape .~ y $
+           #size .~ 0.08 $
+           def)
         [6,8,2]
-        [triangle, square, circle . (0.5*)]
+        [Triangle, Square, Circle]
 
 glineChart_Example :: Chart b
 glineChart_Example = glineChart_ lopts gopts3 sixbyfour ls
 
 glineHudExample :: Chart b
 glineHudExample = 
-    hud ( hudLegends_ . each . legendGap_ .~ 0.2 $
-          hudTitles_ . each . _1 . titleGap_ .~ 0.2 $
+    hud ( #legends . each . #gap .~ 0.2 $
+          #titles . each . _1 . #gap .~ 0.2 $
           hudbits "Gline Chart" Nothing ["triangle", "square", "circle"]
           (zipWith (\x y -> LegendGLine x y 0.1) gopts3 lopts) $
-          hudAxes_ .~ [] $
-          hudRange_ .~ Just (Rect 0 5 0 5) $
+          #axes .~ [] $
+          #range .~ Just (Rect 0 5 0 5) $
           def) <>
     glineChart lopts gopts3 sixbyfour (Rect 0 5 0 5) ls <>
     lglyphChart_Example sixbyfour
@@ -219,12 +221,13 @@ rect_Example n =
   labelled (opts (Pair (-n) -1)) "x,y" $
   rect_ def (Ranges (n *. one) one)
   where
+    opts :: Pair Double -> LabelOptions
     opts o =
+      #text %~
+        ( (#color .~ black `withOpacity` 0.8) .
+          (#size .~ 0.3)) $
+      #orientation .~ o $
       def
-      { labelText =
-          (labelText def) {textColor = withOpacity black 0.8, textSize = 0.3}
-      , labelOrientation = o
-      }
 
 rectsExample :: Chart b
 rectsExample =
@@ -232,10 +235,10 @@ rectsExample =
 
 ropts :: [RectOptions]
 ropts =
-      [ def {rectBorderSize = 0}
-      , def {rectBorderSize = 0, rectColor = ucolor 0.3 0.3 0.3 0.2}
+      [ #borderSize .~ 0 $ def
+      , #borderSize .~ 0 $ #color .~ ucolor 0.3 0.3 0.3 0.2 $ def
       ]
-
+ 
 rss :: [[Rect Double]]
 rss = [ rectXY (\x -> exp (-(x ** 2) / 2)) (Range -5 5) 50
       , rectXY (\x -> 0.5 * exp (-(x ** 2) / 8)) (Range -5 5) 50
@@ -246,19 +249,21 @@ rectChart_Example = rectChart_ ropts widescreen rss
 
 rectHudExample :: Chart b
 rectHudExample =
-    hud ( hudLegends_ . each . legendPlace_ .~ PlaceBottom $
-          hudLegends_ . each . legendAlign_ .~ AlignCenter $
+    hud ( #legends . each . #place .~ PlaceBottom $
+          #legends . each . #align .~ AlignCenter $
           hudbits "Rect Chart" Nothing ["blue gaussian", "grey wider distribution"]
           ((`LegendRect` 0.05) <$> ropts) $
-          hudRange_ .~ Just (fold $ fold rss) $
-          hudAspect_ .~ widescreen $
-          hudAxes_ .~ [defXAxis] $
+          #range .~ Just (fold $ fold rss) $
+          #aspect .~ widescreen $
+          #axes .~ [defXAxis] $
           def)
 
 pixel_Example :: Chart b
 pixel_Example = text_ opt "I'm a pixel!" <> pixel_ (Pixel one ublue)
   where
-    opt = def {textColor = withOpacity black 0.8, textSize = 0.2}
+    opt = #color .~ withOpacity black 0.8 $
+          #size .~ 0.2 $
+          def
 
 pixelsExample :: Chart b
 pixelsExample =
@@ -288,15 +293,16 @@ pixelHudExample :: Chart b
 pixelHudExample =
     hud (hudbits "Pixel Chart" Nothing ["red", "blue"]
           ((`LegendPixel` 0.05) <$> ropts) $
-          hudRange_ .~ Just one $
-          hudAspect_ .~ asquare $
+          #range .~ Just one $
+          #aspect .~ asquare $
           def)
 
 arrowsExample :: Chart b
 arrowsExample =
   arrows
-    (def
-     {arrowMaxLength = 0.5, arrowMaxHeadLength = 0.2, arrowMaxStaffWidth = 0.01})
+    ( #maxLength .~ 0.5 $
+      #maxHeadLength .~ 0.2 $
+      #maxStaffWidth .~ 0.01 $ def)
     [ Arrow (Pair x (sin (5 * x))) (Pair x (cos x))
     | x <- grid MidPos (one :: Range Double) 100
     ]
@@ -315,8 +321,8 @@ arrowHudExample :: Chart b
 arrowHudExample = 
     hud ( hudbits "Arrow Chart" Nothing ["this way up"] [] $
 --          ((`LegendArrow` 0.05) <$> [def]) $
-          hudRange_ .~ Nothing $
-          hudAspect_ .~ asquare $
+          #range .~ Nothing $
+          #aspect .~ asquare $
           def)
 
 hudExample :: Chart b
@@ -326,38 +332,33 @@ withHudExample :: Chart b
 withHudExample = withHud hopts (lineChart lopts) ls
   where
     hopts =
-      def
-      { hudTitles = [(def, "withHud Example")]
-      , hudLegends =
-          [ def
-            { legendChartType =
-                zipWith
+      #titles .~ [(def, "withHud Example")] $
+      #legends .~
+          [ #chartType .~ zipWith
                   (\x y -> (LegendLine x 0.05, y))
                   lopts
                   ["line1", "line2", "line3"]
-            }
+                  $ def
           ]
-      }
+          $ def
 
 axisExample :: Chart b
 axisExample = axis aopts one (Range 0 100000)
   where
+    aopts :: AxisOptions b
     aopts =
-      def
-      { axisLabel =
-          (axisLabel def)
-          { labelGap = 0.0001
-          , labelText =
-              (labelText (axisLabel def))
-              {textSize = 0.06, textAlignH = AlignLeft, textRotation = -45}
-          }
-      }
+        #label . #text %~
+        ((#rotation .~ -45) .
+         (#size .~ 0.06) .
+         (#alignH .~ AlignLeft)) $
+        #gap .~ 0.0001 $
+        def
 
 legends :: [(LegendType b, Text)]
 legends =
   [(LegendText def, "legend")] <> [(LegendPixel (blob ublue) 0.05, "pixel")] <>
-    -- [ (LegendArrow (def {arrowMinStaffWidth=0.01,
-    --                     arrowMinHeadLength=0.03}) 0.05, "arrow")] <>
+    -- [ (LegendArrow (def {minStaffWidth=0.01,
+    --                      minHeadLength=0.03}) 0.05, "arrow")] <>
   [(LegendRect def 0.05, "rect")] <>
   [(LegendGLine def def 0.10, "glyph+line")] <>
   [(LegendGlyph def, "just a glyph")] <>
@@ -367,40 +368,40 @@ legends =
     ["short", "much longer name", "line 3"]
 
 legendExample :: Chart b
-legendExample = legend $ def {legendChartType = legends}
+legendExample = legend $ #chartType .~ legends $ def
 
 mainExample :: Chart b
 mainExample = withHud opts (lineChart lopts) ls
   where
     opts =
-      hudTitles_ .~ titles $ hudAxes_ .~
+      #titles .~ titles $ #axes .~
       [ defXAxis
       , defYAxis
-      , axisLabel_ . labelOrientation_ .~ Pair 0 1 $ axisPlace_ .~ PlaceTop $
+      , #label . #orientation .~ Pair 0 1 $ #place .~ PlaceTop $
         defXAxis
-      , axisLabel_ . labelOrientation_ .~ Pair 1 0 $ axisPlace_ .~ PlaceRight $
+      , #label . #orientation .~ Pair 1 0 $ #place .~ PlaceRight $
         defYAxis
       ] $
-      hudAxes_ %~
-      map (axisPad_ .~ 1) $
-      hudLegends_ .~
-      [legendChartType_ .~ legends $ def] $
+      #axes %~
+      map (#outerPad .~ 1) $
+      #legends .~
+      [#chartType .~ legends $ def] $
       def
 
 titles :: [(TitleOptions, Text)]
 titles =
   [ (def, "Example Chart")
-  , ( titleAlign_ .~ AlignCenter $ titleText_ . textRotation_ .~ 90 $ titleText_ .
-      textSize_ .~
+  , ( #align .~ AlignCenter $ #text . #rotation .~ 90 $ #text .
+      #size .~
       0.12 $
-      titlePlace_ .~
+      #place .~
       PlaceLeft $
       def
     , "left axis title")
-  , ( titleText_ . textColor_ .~ ublue $ titleText_ . textSize_ .~ 0.08 $
-      titleAlign_ .~
+  , ( #text . #color .~ ublue $ #text . #size .~ 0.08 $
+      #align .~
       AlignRight $
-      titlePlace_ .~
+      #place .~
       PlaceBottom $
       def
     , "bottom right, non-essential note")
@@ -409,8 +410,8 @@ titles =
 scaleExample :: IO ()
 scaleExample =
     fileSvg "other/scaleExample.svg" (300,120) $ withHud
-      ( hudAspect_ .~ widescreen $
-        hudRange_ .~ Just (Rect 0 12 0 0.2) $
+      ( #aspect .~ widescreen $
+        #range .~ Just (Rect 0 12 0 0.2) $
         def)
       (lineChart (repeat def))
       (vlineOneD ((0.01*) <$> [0..10]))
@@ -428,22 +429,22 @@ scatterHistExample xys =
         zipWith3 (\x y z -> GlyphOptions x y (ucolor 0 0 0 0) 0 z)
         [0.01,0.02,0.03]
         ((\x -> withOpacity (d3Colors1 x) 0.3) <$> [6,8])
-        [circle, triangle, square]
+        [Circle, Triangle, Square]
 
     mainAspect = Aspect $ Rect -0.5 0.5 -0.5 0.5
     minorAspect = Aspect $ Rect -0.5 0.5 -0.1 0.1
     sc1 = glyphChart_ sopts mainAspect xys
     histx = rectChart_ defHist minorAspect hx
     histy = rectChart_ defHist minorAspect hy
-    hud1 = hud (hudAxes_ .~ [axisPlace_ .~ PlaceTop $
-                             axisLabel_ . labelOrientation_ .~ Pair 0 1 $
+    hud1 = hud (#axes .~ [#place .~ PlaceTop $
+                             #label . #orientation .~ Pair 0 1 $
                              def] $
-                hudAspect_ .~ mainAspect $
-                hudRange_ .~ Just (range xys) $
+                #aspect .~ mainAspect $
+                #range .~ Just (range xys) $
                 def)
     defHist =
-        (\x -> rectBorderSize_ .~ 0 $
-         rectColor_ .~ d3Colors1 x `withOpacity` 0.5 $
+        (\x -> #borderSize .~ 0 $
+         #color .~ d3Colors1 x `withOpacity` 0.5 $
          def) <$> [6,8]
     hx = makeHist 50 . fmap (view _x) <$> xys
     hy = makeHist 50 . fmap (view _y) <$> xys
@@ -454,17 +455,17 @@ labelledBarExample =
     rectChart_ [def]
     sixbyfour
     [rs] <>
-    textChart (repeat (textColor_ .~ ucolor 0.33 0.33 0.33 0.8 $ def)) sixbyfour
+    textChart (repeat (#color .~ ucolor 0.33 0.33 0.33 0.8 $ def)) sixbyfour
     (Rect -0.5 9.5 (-2) 11)
     [zipWith (\x y -> (show y, Pair x ((if y>0 then -1 else 0.5) + y))) [0..] ys] <>
     hud
-    ( hudAxes_ .~
-      [ axisTickStyle_ .~
+    ( #axes .~
+      [ #tickStyle .~
         TickLabels labels' $
         def
       ]
-      $ hudAspect_ .~ sixbyfour
-      $ hudRange_ .~ Just (fold (abs <$> rs))
+      $ #aspect .~ sixbyfour
+      $ #range .~ Just (fold (abs <$> rs))
       $ def
     )
   where
@@ -526,8 +527,8 @@ surveyChart (SurveyQ t d bgap ngap bc tc ls) =
 surveyBars :: AlphaColour Double -> Double -> [Int] -> Chart b
 surveyBars rc gap d =
     rectChart
-    [ rectBorderSize_ .~ 0
-    $ rectColor_ .~ rc
+    [ #borderSize .~ 0
+    $ #color .~ rc
     $ def
     ]
     sixbyfour
@@ -537,27 +538,27 @@ surveyBars rc gap d =
 surveyHud :: LabelStyle -> Text -> [(Text, Int)] -> Chart b
 surveyHud ls t d =
     hud
-    ( hudPad_ .~ 1
-    $ hudTitles_ .~ [(def, t)]
-    $ hudAxes_ .~
-      [ axisTickStyle_ .~ TickRound 4
+    ( #outerPad .~ 1
+    $ #titles .~ [(def, t)]
+    $ #axes .~
+      [ #tickStyle .~ TickRound 4
         $ defYAxis
-      , axisGap_ .~ 0
-        $ axisTickStyle_ .~ TickLabels (fst <$> d)
-        $ axisLabel_ .~ lopts
+      , #gap .~ 0
+        $ #tickStyle .~ TickLabels (fst <$> d)
+        $ #label .~ lopts
         $ defXAxis
       ]
-    $ hudRange_ .~ Just (barRange (snd <$> d) )
-    $ hudAspect_ .~ sixbyfour
+    $ #range .~ Just (barRange (snd <$> d) )
+    $ #aspect .~ sixbyfour
     $ def)
   where
     lopts = case ls of
       Flat -> LabelOptions
-        (TextOptions 0.08 AlignCenter (withOpacity black 0.6) EvenOdd 0 lin2)
+        (TextOptions 0.08 AlignCenter (withOpacity black 0.6) EvenOdd 0 Lin2)
         (Pair 0 -1)
         0.015
       Angled -> LabelOptions
-        (TextOptions 0.08 AlignLeft (withOpacity black 0.6) EvenOdd (-45) lin2)
+        (TextOptions 0.08 AlignLeft (withOpacity black 0.6) EvenOdd (-45) Lin2)
         (Pair 0 -1)
         0.015
 
@@ -565,7 +566,7 @@ surveyHud ls t d =
 surveyText :: AlphaColour Double -> Double -> [Int] -> Chart b
 surveyText tc gap ys =
     textChart
-    (repeat (textColor_ .~ tc $ def))
+    (repeat (#color .~ tc $ def))
     sixbyfour
     (barRange ys)
     [zipWith (\x y ->
@@ -587,13 +588,13 @@ skinnyExample = do
     let r = Ranges (space qs) (Range 0 0.2)
     let hud' =
             hud (HudOptions 1.1
-                 [axisLabel_ . labelText_ . textSize_ .~ 0.25 $ def] [] [] []
+                 [#label . #text . #size .~ 0.25 $ def] [] [] []
                  (Just r)
                  skinny clear)
     let labels' = textChart
-            [textAlignH_ .~ AlignLeft $
-             textRotation_ .~ 45 $
-             textSize_ .~ 0.2 $
+            [#alignH .~ AlignLeft $
+             #rotation .~ 45 $
+             #size .~ 0.2 $
              def] skinny r
             [zipWith (\x y -> (x,Pair y 0.05))
              ["min","3rd Q","median","1st Q","max"] qs']
@@ -611,26 +612,25 @@ histDiffExample (h1, h2) =
       pad 1.1 $
         beside (r2 (0,-1))
           (rectChart
-            [ rectBorderColor_ .~ ucolor 0 0 0 0 $
-              rectColor_ .~ ucolor 0.365 0.647 0.855 0.2 $
+            [ #borderColor .~ ucolor 0 0 0 0 $
+              #color .~ ucolor 0.365 0.647 0.855 0.2 $
               def
-            , rectBorderColor_ .~ ucolor 0 0 0 0 $
-              rectColor_ .~ ucolor 0.333 0.333 0.333 0.2 $
+            , #borderColor .~ ucolor 0 0 0 0 $
+              #color .~ ucolor 0.88 0.53 0.23 0.8 $
               def ]
             mainAspect
             (Ranges rx ry)
             [h1,h2])
-         (rectChart
-          [ rectBorderColor_ .~ ucolor 0 0 0 0 $
-            rectColor_ .~ ucolor 0.88 0.53 0.23 0.8 $
+          (rectChart
+          [ #borderColor .~ ucolor 0 0 0 0 $
+            #color .~ ucolor 0.88 0.53 0.23 0.8 $
             def ]
-         botAspect
-         (Ranges rx deltary)
-         [deltah] <>
-         hud (hudAspect_ .~ botAspect $
-              hudRange_ .~ Just (Ranges rx deltary) $
-              def))
-
+          botAspect
+          (Ranges rx deltary)
+          [deltah] <>
+          hud ( #aspect .~ botAspect $
+                #range .~ Just (Ranges rx deltary) $
+                def))
 
 clip :: Rect Double -> Chart b -> Chart b
 clip (Rect xl xu yl yu) c =
@@ -660,15 +660,15 @@ exampleClipping rcfg p n ch =
 
 schoolbookHud :: Chart b
 schoolbookHud = hud
-    ( hudAxes_ .~ [] $
-      hudAspect_ .~ asquare $
-      hudTitles_ .~ [(def,"y = x² - 3")] $
-      hudRange_ .~ Just (Rect -5 5 -5 5) $
-      hudGrids_ .~
-      [ GridOptions Vert (GridExact OuterPos 10) (LineOptions 0.005 schoolBlue)
-      , GridOptions Hori (GridExact OuterPos 10) (LineOptions 0.005 schoolBlue)
-      , GridOptions Vert (GridExact OuterPos 50) (LineOptions 0.002 schoolBlue)
-      , GridOptions Hori (GridExact OuterPos 50) (LineOptions 0.002 schoolBlue)
+    ( #axes .~ [] $
+      #aspect .~ asquare $
+      #titles .~ [(def,"y = x² - 3")] $
+      #range .~ Just (Rect -5 5 -5 5) $
+      #grids .~
+      [ GridOptions Vert (GridExact GridOuterPos 10) (LineOptions 0.005 schoolBlue)
+      , GridOptions Hori (GridExact GridOuterPos 10) (LineOptions 0.005 schoolBlue)
+      , GridOptions Vert (GridExact GridOuterPos 50) (LineOptions 0.002 schoolBlue)
+      , GridOptions Hori (GridExact GridOuterPos 50) (LineOptions 0.002 schoolBlue)
       ] $
       def)
   where
@@ -676,12 +676,12 @@ schoolbookHud = hud
 
 parabola :: Rect Double -> (Double -> Double) -> Int -> Range Double -> Chart b
 parabola r f grain xscope = 
-    lineChart [lineSize_ .~ 0.01 $ lineColor_ .~ ucolor 0.6 0.6 0.6 1 $ def] asquare r
+    lineChart [#size .~ 0.01 $ #color .~ ucolor 0.6 0.6 0.6 1 $ def] asquare r
     [dataXY f xscope grain]
 
 ceptLines :: Renderable (Path V2 Double) b => Aspect -> Rect Double -> (Double -> Double) -> Double -> QDiagram b V2 Double Any
 ceptLines (Aspect asp) r@(Ranges rx ry) f x =
-    mconcat $ lines (lineColor_ .~ ucolor 0.2 0.2 0.2 1 $ lineSize_ .~ 0.005 $ def) .
+    mconcat $ lines (#color .~ ucolor 0.2 0.2 0.2 1 $ #size .~ 0.005 $ def) .
     fmap (Chart.project r asp) <$>
     [ [Pair (lower rx) (f x), Pair x (f x)]
     , [Pair x (lower ry), Pair x (f x)]
@@ -689,7 +689,7 @@ ceptLines (Aspect asp) r@(Ranges rx ry) f x =
 
 cepts :: Renderable (Path V2 Double) b => Aspect -> Rect Double -> (Double -> Double) -> Double -> QDiagram b V2 Double Any
 cepts a r@(Ranges rx ry) f x =
-    textChart [def, textAlignH_ .~ AlignCenter $ textRotation_ .~ 0 $ def]
+    textChart [def, #alignH .~ AlignCenter $ #rotation .~ 0 $ def]
     a r
     [ [("x = " <> sformat (fixed 1) x, Pair x (lower ry - 1))]
     , [("y = " <> sformat (fixed 1) (f x), Pair (lower rx - 1.5) (f x))]
@@ -697,11 +697,11 @@ cepts a r@(Ranges rx ry) f x =
 
 schoolbookExample :: Double -> Chart b
 schoolbookExample x =
-    bound (rectColor_ .~ ucolor 1 1 1 0.1 $ def) 1.05 $
+    bound (#color .~ ucolor 1 1 1 0.1 $ def) 1.05 $
     schoolbookHud <>
     parabola r f grain xscope <>
     ceptLines asquare r f x <>
-    glyphChart [glyphColor_ .~ red `withOpacity` 0.5 $ def] asquare r [[Pair x (f x)]] <>
+    glyphChart [#color .~ red `withOpacity` 0.5 $ def] asquare r [[Pair x (f x)]] <>
     cepts asquare r f x
   where
     f x = x*x - 3
@@ -770,7 +770,7 @@ main = do
       histDiffExample hs
   putStrLn ("clippingExample" :: Text)
   fileSvg "other/clippingExample.svg" (600,600) $
-      exampleClipping (rectColor_ .~ ucolor 0.3 0.3 0.3 0.1 $ def) 1.1 5
+      exampleClipping (#color .~ ucolor 0.3 0.3 0.3 0.1 $ def) 1.1 5
       lineChart_Example
   putStrLn ("schoolbookExample" :: Text)
   fileSvg "other/schoolbookExample.svg" (400,400) (schoolbookExample -1)

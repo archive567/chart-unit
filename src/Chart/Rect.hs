@@ -7,9 +7,11 @@
 #if ( __GLASGOW_HASKELL__ < 820 )
 {-# OPTIONS_GHC -fno-warn-incomplete-patterns #-}
 #endif
+{-# OPTIONS_GHC -Wno-unused-top-binds #-}
+
 -- | rectangular chart elements
 module Chart.Rect
-  ( RectOptions(..)
+  ( RectOptions(RectOptions)
   , blob
   , box
   , clear
@@ -23,7 +25,7 @@ module Chart.Rect
   , pixels
   , pixelChart
   , pixelChart_
-  , PixelationOptions(..)
+  , PixelationOptions(PixelationOptions)
   , pixelate
   , pixelateChart
   ) where
@@ -38,10 +40,10 @@ import NumHask.Space
 
 -- | Just about everything on a chart is a rectangle.
 data RectOptions = RectOptions
-  { rectBorderSize :: Double
-  , rectBorderColor :: AlphaColour Double
-  , rectColor :: AlphaColour Double
-  }
+  { borderSize :: Double
+  , borderColor :: AlphaColour Double
+  , color :: AlphaColour Double
+  } deriving (Show, Generic)
 
 instance Default RectOptions where
   def = RectOptions 0.005 ugrey ublue

@@ -1,5 +1,5 @@
 name: chart-unit
-version: '0.5.4'
+version: '0.6.0.0'
 synopsis: Native haskell charts.
 description: ! '
 
@@ -51,6 +51,10 @@ default-extensions:
 - UnicodeSyntax
 dependencies:
 - base >=4.7 && <5
+- generic-lens
+- lens
+- numhask >=0.0.5 && <1
+- protolude
 - text
 library:
   source-dirs: src
@@ -68,7 +72,7 @@ library:
   - Chart.Line
   - Chart.Rect
   - Chart.Text
-  - Chart.Lenses
+  - Data.Generics.Labels
   dependencies:
   - SVGFonts
   - colour
@@ -77,9 +81,7 @@ library:
   - diagrams-svg
   - foldl
   - formatting
-  - lens
   - linear
-  - numhask >=0.0.5 && <1
   - numhask-range >=0.0.3 && <1
   - palette
 executables:
@@ -99,12 +101,9 @@ executables:
     - diagrams-svg
     - foldl
     - formatting
-    - lens
     - mwc-probability
     - mwc-random
-    - numhask
     - primitive
-    - protolude
     - tdigest
 tests:
   test:
@@ -112,6 +111,5 @@ tests:
     source-dirs: test
     dependencies:
     - chart-unit
-    - numhask
     - tasty
     - tasty-hspec

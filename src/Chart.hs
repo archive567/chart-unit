@@ -1,3 +1,5 @@
+{-# LANGUAGE OverloadedLabels #-}
+{-# LANGUAGE DuplicateRecordFields #-}
 {-# OPTIONS_GHC -Wall #-}
 {-# OPTIONS_HADDOCK prune, not-home #-}
 
@@ -6,7 +8,7 @@
 -- Chart is designed to be used in conjunction with both the numhask and diagrams preludes. Diagrams.Prelude conatins much of the lens library and many re-exports that clash with NumHask, so best to import qualified.
 --
 -- > {-# NoImplicitPrelude #-}
--- > {-# OverloadedString #-}
+-- > {-# DuplicateRecordFields #-}
 -- > import NumHask.Prelude
 -- > import qualified Diagrams.Prelude as D
 -- > import Chart
@@ -22,7 +24,6 @@ module Chart
   , module Chart.Rect
   , module Chart.Text
   , module Chart.Bar
-  , module Chart.Lenses
 
     -- * numhask-range
   , module NumHask.Pair
@@ -54,7 +55,6 @@ import Chart.Core
 import Chart.Data
 import Chart.Glyph
 import Chart.Hud
-import Chart.Lenses
 import Chart.Line
 import Chart.Rect
 import Chart.Text
