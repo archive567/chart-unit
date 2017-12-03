@@ -22,6 +22,10 @@ module Chart.Hud
   , defXAxis
   , defYAxis
   , axis
+  , AutoOptions(AutoOptions)
+  , adjustAxis
+  , axisSane
+  , computeTicks
   , TitleOptions(TitleOptions)
   , title
   , LegendType(..)
@@ -55,7 +59,7 @@ import NumHask.Range
 import NumHask.Rect
 import NumHask.Space
 import Data.Generics.Labels()
-
+import Diagrams.Backend.SVG (SVG)
 
 -- | Various options for a hud.
 --
@@ -81,8 +85,6 @@ instance Default (HudOptions b) where
 --
 -- ![hud example](other/hudExample.svg)
 --
--- todo: the example highlights the issues with using beside.  The x-axis is placed first,
--- and then the y-axis.  In setting that 'beside' the combination of the canvas, and the x-axis, it calculates the middle, which has moved slightly from the canvas middle.
 hud :: () => HudOptions b -> Chart b
 hud (HudOptions p as gs ts ls mr asp@(Aspect ar@(Ranges ax ay)) can) =
   mconcat ((\x -> gridl x asp r) <$> gs) <>
@@ -122,9 +124,10 @@ hud (HudOptions p as gs ts ls mr asp@(Aspect ar@(Ranges ax ay)) can) =
 -- > withHudExample :: Chart b
 -- > withHudExample = withHud hopts (lineChart lopts) ls
 -- >     where
--- >       hopts = def {hudTitles=[(def,"withHud Example")],
--- >                    hudLegends=[def {legendChartType=zipWith (\x y ->
--- >                    (LegendLine x 0.05, y)) lopts ["line1", "line2", "line3"]}]}
+-- >       hopts = def &
+-- >         #titles .~ [(def,"withHud Example")] &
+-- >         #legends .~ [def & #chartType .~ zipWith (\x y ->
+-- >                     (LegendLine x 0.05, y)) lopts ["line1", "line2", "line3"]]
 --
 -- ![withHud example](other/withHudExample.svg)
 --
@@ -199,7 +202,7 @@ defXAxis =
     0
     0.04
     (LabelOptions
-       (TextOptions 0.08 AlignCenter (withOpacity black 0.6) EvenOdd 0 Lin2)
+       (TextOptions 0.08 AlignCenter AlignMid (withOpacity black 0.6) EvenOdd 0 Lin2)
        (Pair 0 -1)
        0.015)
     (TickRound 8)
@@ -217,7 +220,7 @@ defYAxis =
     0
     0.04
     (LabelOptions
-       (TextOptions 0.08 AlignCenter (withOpacity black 0.6) EvenOdd 0 Lin2)
+       (TextOptions 0.08 AlignCenter AlignMid (withOpacity black 0.6) EvenOdd 0 Lin2)
        (Pair -1 0)
        0.015)
     (TickRound 8)
@@ -243,7 +246,6 @@ axis opts asp r =
   mo $
   pad (opts ^. #outerPad) $
   astrut $
-  centerXY $
   atPoints
     (pl <$> tickLocations)
     ((\x -> labelled (opts ^. #label) x (glyph_ (opts ^. #mark))) <$> tickLabels)
@@ -271,23 +273,66 @@ axis opts asp r =
                p2 ((-0.5 * gs) + opts ^. #rectHeight + opts ^. #markStart, y)
            PlaceTop -> \x -> p2 (x, (0.5 * gs) + opts ^. #markStart)
            PlaceRight -> \y -> p2 ((0.5 * gs) + opts ^. #markStart, y)
-    (tickLocations, tickLabels) =
-      case opts ^. #tickStyle of
-        TickNone -> ([], [])
-      {- To Do:
-        rounded ticks introduce the possibility of marks beyond the existing range.
-        if this happens, it should really be fed into the chart rendering as a new,
-        revised range.
-      -}
-        TickRound n -> (project r asp <$> ticks0, precision 0 ticks0)
-          where ticks0 = gridSensible OuterPos r n
-        TickExact n -> (project r asp <$> ticks0, precision 3 ticks0)
-          where ticks0 = grid OuterPos r n
-        TickLabels ls ->
+    (tickLocations, tickLabels) = computeTicks opts r asp
+
+data AutoOptions =
+  AutoOptions
+  { maxXRatio :: Double
+  , maxYRatio :: Double
+  , angledRatio :: Double
+  , allowDiagonal :: Bool
+  } deriving (Show, Generic)
+
+instance Default AutoOptions where
+  def = AutoOptions 0.08 0.06 0.12 True
+
+adjustAxis :: AutoOptions -> Range Double -> Range Double ->
+  AxisOptions b -> AxisOptions b
+adjustAxis (AutoOptions mrx ma mry ad) asp r opts = case opts ^. #orientation of
+  Hori -> case ad of
+    False -> (#label . #text . #size %~ (/adjustSizeX)) opts
+    True ->
+        case adjustSizeX > one of
+          True -> (#label . #text . #rotation .~ (-45)) . (#label . #text . #alignH .~ AlignLeft) $ (#label . #text . #size %~ (/adjustSizeA)) opts
+          False -> (#label . #text . #size %~ (/adjustSizeA)) opts
+  Vert -> (#label . #text . #size %~ (/adjustSizeY)) opts
+
+  where
+        tickl = snd (computeTicks opts r asp)
+        maxWidth =
+          maximum $
+          (\x ->
+              D.width
+              (text_ (opts ^. #label . #text) x :: QDiagram SVG V2 Double Any))
+              <$> tickl
+        maxHeight =
+          maximum $
+          (\x ->
+              D.height
+              (text_ (opts ^. #label . #text) x :: QDiagram SVG V2 Double Any))
+              <$> tickl
+        adjustSizeX = maximum [(maxWidth / (upper asp - lower asp)) / mrx, one]
+        adjustSizeY = maximum [(maxHeight / (upper asp - lower asp)) / mry, one]
+        adjustSizeA = maximum [(maxHeight / (upper asp - lower asp)) / ma, one]
+
+-- | create an axis, with adjustment to axis options if needed
+axisSane :: () => AutoOptions -> AxisOptions b -> Range Double -> Range Double -> Chart b
+axisSane ao opts asp r =
+    axis (adjustAxis ao asp r opts) asp r
+
+computeTicks :: AxisOptions a -> Range Double -> Range Double -> ([Double], [Text])
+computeTicks opts r asp =
+    case opts ^. #tickStyle of
+      TickNone -> ([], [])
+      TickRound n -> (project r asp <$> ticks0, precision 0 ticks0)
+        where ticks0 = gridSensible OuterPos r n
+      TickExact n -> (project r asp <$> ticks0, precision 3 ticks0)
+        where ticks0 = grid OuterPos r n
+      TickLabels ls ->
           ( project (Range 0 (fromIntegral $ length ls)) asp <$>
             ((\x -> x - 0.5) . fromIntegral <$> [1 .. length ls])
           , ls)
-        TickPlaced xs -> (project r asp . fst <$> xs, snd <$> xs)
+      TickPlaced xs -> (project r asp . fst <$> xs, snd <$> xs)
 
 -- | Style of tick marks on an axis.
 data TickStyle
@@ -329,7 +374,7 @@ data TitleOptions = TitleOptions
 instance Default TitleOptions where
   def =
     TitleOptions
-      (TextOptions 0.12 AlignCenter (withOpacity black 0.6) EvenOdd 0 Lin2)
+      (TextOptions 0.12 AlignCenter AlignMid (withOpacity black 0.6) EvenOdd 0 Lin2)
       AlignCenter
       PlaceTop
       0.04
@@ -392,7 +437,8 @@ instance Default (LegendOptions b) where
       AlignRight
       0.02
       (RectOptions 0.002 (withOpacity black 0.2) transparent)
-      (TextOptions 0.07 AlignCenter (withOpacity black 0.63) EvenOdd 0 Lin2)
+      (TextOptions 0.07 AlignCenter AlignMid
+       (withOpacity black 0.63) EvenOdd 0 Lin2)
 
 -- | Create a legend based on a LegendOptions
 --

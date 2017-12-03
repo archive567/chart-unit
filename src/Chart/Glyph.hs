@@ -53,7 +53,7 @@ data GlyphShape =
     deriving Show
 
 glyphShape :: GlyphShape -> (Double -> Chart b)
-glyphShape Circle = circle
+glyphShape Circle = \x -> circle (x/2)
 glyphShape Square = square
 glyphShape (Ellipse a) = ellipseXY a
 glyphShape Triangle = triangle

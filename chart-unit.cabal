@@ -3,7 +3,7 @@
 -- see: https://github.com/sol/hpack
 
 name:           chart-unit
-version:        0.5.4
+version:        0.6.0.0
 synopsis:       Native haskell charts.
 description:    .
                 <<https://tonyday567.github.io/other/mainExample.svg>>
@@ -35,13 +35,16 @@ extra-source-files:
   other/arrowHudExample.svg
   other/arrowsExample.svg
   other/axisExample.svg
+  other/axist.svg
   other/clippingExample.svg
+  other/exacto.svg
   other/glineChart_Example.svg
   other/glineHudExample.svg
   other/glyph_Example.svg
   other/glyphChart_Example.svg
   other/glyphHudExample.svg
   other/glyphsExample.svg
+  other/gridExample.svg
   other/histDiffExample.svg
   other/hud.svg
   other/hudExample.svg

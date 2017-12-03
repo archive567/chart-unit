@@ -29,6 +29,7 @@ import NumHask.Rect
 data TextOptions = TextOptions
   { size :: Double
   , alignH :: AlignH
+  , alignV :: AlignV
   , color :: AlphaColour Double
   , textFillRule :: FillRule
   , rotation :: Double
@@ -36,7 +37,7 @@ data TextOptions = TextOptions
   } deriving (Show, Generic)
 
 instance Default TextOptions where
-  def = TextOptions 0.08 AlignCenter (withOpacity black 0.33) EvenOdd 0 Lin2
+  def = TextOptions 0.08 AlignCenter AlignMid (withOpacity black 0.33) EvenOdd 0 Lin2
 
 data TextFont = Lin2 | Lin deriving (Show)
 
@@ -51,8 +52,8 @@ textFont Lin2 = lin2
 -- ![text_ example](other/text_Example.svg)
 --
 text_ :: TextOptions -> Text -> Chart b
-text_ (TextOptions s a c fr rot f) t =
-  moveTo (p_ (Pair (alignHTU a * D.width path) 0)) $
+text_ (TextOptions s ah av c fr rot f) t =
+  moveTo (p_ (Pair (alignHTU ah * D.width path) (alignVTU av * D.height path))) $
   path # fcA c # lw 0 # fillRule fr # rotate (rot @@ deg)
   where
     path = textSVG_ (TextOpts (textFont f) INSIDE_H KERN False s s) (Text.unpack t)

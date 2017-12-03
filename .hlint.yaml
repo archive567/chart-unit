@@ -52,7 +52,7 @@
 # - ignore: {name: Use const, within: SpecialModule} # Only within certain modules
 - ignore: {name: Eta reduce}
 - ignore: {name: Use camelCase}
-
+- ignore: {name: Use if}
 # Define some custom infix operators
 # - fixity: infixr 3 ~^#^~
 

@@ -42,6 +42,7 @@ module Chart.Core
   , alignHU
   , alignHTU
   , alignVU
+  , alignVTU
 
     -- * Types
   , Orientation(..)
@@ -187,6 +188,14 @@ alignVU a =
     AlignTop -> -0.5
     AlignMid -> 0
     AlignBottom -> 0.5
+
+-- | svg text is lower by default
+alignVTU :: AlignV -> Double
+alignVTU a =
+  case a of
+    AlignTop -> 0.5
+    AlignMid -> 0
+    AlignBottom -> -0.5
 
 -- | Orientation for an element.  Watch this space for curvature!
 data Orientation

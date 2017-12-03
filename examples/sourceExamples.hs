@@ -18,14 +18,14 @@ import Formatting
 import NumHask.Prelude
 import qualified Data.Text as Text
 import Data.Generics.Labels()
- 
+
 hudbits :: Text -> Maybe Text -> [Text] -> [LegendType b] -> HudOptions b -> HudOptions b
 hudbits t subt ts ls x =
     #titles .~
     [ (#place .~ PlaceLeft $
        #align .~ AlignLeft $
        #text . #rotation .~ 90 $
-       #text . #size .~ 0.25 $
+       #text . #size .~ 0.2 $
        #text . #color .~ d3Colors1 0 `withOpacity` 1 $
        def, t)] <>
     (case subt of
@@ -34,7 +34,7 @@ hudbits t subt ts ls x =
         [(#place .~ PlaceBottom $
           #align .~ AlignRight $
           #text . #rotation .~ 0 $
-          #text . #size .~ 0.14 $
+          #text . #size .~ 0.12 $
           #text . #color .~ d3Colors1 0 `withOpacity` 1 $
           def, subt')]) $ 
     #legends .~
@@ -105,7 +105,7 @@ glyphChart_Example = glyphChart_ gopts widescreen gdata
 glyphHudExample :: Chart b
 glyphHudExample = 
     hud (#legends . each . #align .~ AlignLeft $
-         hudbits "Glyph Chart" Nothing ["sin", "cos"]
+         hudbits "Glyph Chart" (Just "text elements are paths not svg text") ["sin", "cos"]
           (LegendGlyph <$> gopts) $
           #range .~ Just (range gdata) $
           #aspect .~ widescreen $
@@ -473,8 +473,6 @@ labelledBarExample =
     rs = rectBars 0.1 ys
     ys = [1,2,3,5,8,0,-2,11,2,1]
 
-data LabelStyle = Flat | Angled
-
 data SurveyQ = SurveyQ
     { surveyTitle :: Text
     , surveyData :: [(Text,Int)]
@@ -482,8 +480,8 @@ data SurveyQ = SurveyQ
     , surveyNumberDrop :: Double
     , surveyBarColor :: AlphaColour Double
     , surveyNumberColor :: AlphaColour Double
-    , surveyLabelStyle :: LabelStyle
-    }
+    , surveyAutoOptions :: AutoOptions
+    } deriving (Show, Generic)
 
 q7 :: SurveyQ
 q7 = SurveyQ
@@ -498,7 +496,7 @@ q7 = SurveyQ
     0.07
     (ucolor 0.341 0.224 0.388 1)
     (ucolor 1 1 0.33 1)
-    Flat
+    (#allowDiagonal .~ False $ #maxXRatio .~ 0.16 $ def)
 
 q24 :: SurveyQ
 q24 = SurveyQ
@@ -516,13 +514,13 @@ q24 = SurveyQ
     (-0.03)
     (ucolor 0.341 0.224 0.388 1)
     (ucolor 0.33 0.33 0.33 1)
-    Angled
+    def
 
 surveyChart :: SurveyQ -> Chart b
-surveyChart (SurveyQ t d bgap ngap bc tc ls) =
+surveyChart (SurveyQ t d bgap ngap bc tc ao) =
     surveyText tc ngap (snd <$> d) <>
     surveyBars bc bgap (snd <$> d) <>
-    surveyHud ls t d
+    surveyHud ao t d
 
 surveyBars :: AlphaColour Double -> Double -> [Int] -> Chart b
 surveyBars rc gap d =
@@ -535,33 +533,25 @@ surveyBars rc gap d =
     (barRange d)
     [rectBars gap $ fromIntegral <$> d]
 
-surveyHud :: LabelStyle -> Text -> [(Text, Int)] -> Chart b
-surveyHud ls t d =
-    hud
+surveyHud :: AutoOptions -> Text -> [(Text, Int)] -> Chart b
+surveyHud ao t d =
+    hud 
     ( #outerPad .~ 1
     $ #titles .~ [(def, t)]
     $ #axes .~
       [ #tickStyle .~ TickRound 4
         $ defYAxis
-      , #gap .~ 0
-        $ #tickStyle .~ TickLabels (fst <$> d)
-        $ #label .~ lopts
-        $ defXAxis
+      , adjustAxis ao aspx rx $
+        #gap .~ 0 $
+        #tickStyle .~ TickLabels (fst <$> d) $
+        defXAxis
       ]
     $ #range .~ Just (barRange (snd <$> d) )
     $ #aspect .~ sixbyfour
     $ def)
   where
-    lopts = case ls of
-      Flat -> LabelOptions
-        (TextOptions 0.08 AlignCenter (withOpacity black 0.6) EvenOdd 0 Lin2)
-        (Pair 0 -1)
-        0.015
-      Angled -> LabelOptions
-        (TextOptions 0.08 AlignLeft (withOpacity black 0.6) EvenOdd (-45) Lin2)
-        (Pair 0 -1)
-        0.015
-
+    (Ranges rx _) = barRange (snd <$> d)
+    (Aspect (Ranges aspx _)) = sixbyfour
 
 surveyText :: AlphaColour Double -> Double -> [Int] -> Chart b
 surveyText tc gap ys =
@@ -578,8 +568,6 @@ surveyText tc gap ys =
 
 barRange :: [Int] -> Rect Double
 barRange ys = Rect 0 (fromIntegral $ length ys) 0 (fromIntegral $ maximum ys)
-
-
 
 skinnyExample :: IO (Diagram B)
 skinnyExample = do
@@ -709,6 +697,24 @@ schoolbookExample x =
     xscope = Range -3 3
     grain = 50
 
+gridExample :: Chart b
+gridExample =
+    hud
+    (def & #grids .~
+     [ GridOptions Vert
+       (GridExact GridOuterPos 10) (LineOptions 0.001 (black `withOpacity` 1))
+     , GridOptions Hori
+       (GridExact GridOuterPos 10) (LineOptions 0.001 (black `withOpacity` 1))
+     ] &
+     #axes . ix 0 %~
+     ( (#tickStyle .~ TickPlaced
+        (zip (grid OuterPos (Range -0.5 0.5) 10) (replicate 11 "abcdef"))
+       ) .
+       (#label . #text . #alignH .~ AlignLeft) .
+       (#gap .~ 0) .
+       (#label . #text . #rotation .~ -45))
+    & #axes . ix 1 %~ (#label . #text . #alignH .~ AlignLeft))
+
 main :: IO ()
 main = do
   fileSvg "other/text_Example.svg" (400, 100) text_Example
@@ -754,6 +760,9 @@ main = do
       pixelHudExample <> pixelateChartExample
   fileSvg "other/arrowHudExample.svg" (600, 400) $
       arrowHudExample <> arrowChart_Example
+
+  fileSvg "other/gridExample.svg" (600, 400) gridExample
+
 
   -- gallery
   xys <- mkScatterData
