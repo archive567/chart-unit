@@ -1,31 +1,40 @@
+{-# LANGUAGE DuplicateRecordFields #-}
+{-# LANGUAGE OverloadedLabels #-}
 {-# OPTIONS_GHC -Wall #-}
 {-# LANGUAGE CPP #-}
 #if ( __GLASGOW_HASKELL__ < 820 )
 {-# OPTIONS_GHC -fno-warn-incomplete-patterns #-}
 #endif
+{-# OPTIONS_GHC -Wno-unused-top-binds #-}
 
 -- | Hud (Heads up display) is a collective noun for axes, titles & legends
 --
 -- todo: refactor me please. A hud for a chart uses 'beside' to combine elements, and this restricts the hud to the outside of the chart canvas.  This tends to make hud elements (such as gridlines) harder to implement than they should be.
 module Chart.Hud
-  ( HudOptions(..)
+  ( HudOptions(HudOptions)
   , hud
   , withHud
   , placeOutside
   , placeGap
   , TickStyle(..)
   , precision
-  , AxisOptions(..)
+  , AxisOptions(AxisOptions)
   , defXAxis
   , defYAxis
   , axis
-  , TitleOptions(..)
+  , AutoOptions(AutoOptions)
+  , adjustAxis
+  , axisSane
+  , computeTicks
+  , TitleOptions(TitleOptions)
   , title
   , LegendType(..)
-  , LegendOptions(..)
+  , LegendOptions(LegendOptions)
   , legend
   , GridStyle(..)
-  , GridOptions(..)
+  , GridOptions(GridOptions)
+  , GridPos(..)
+  , gridPos
   , defXGrid
   , defYGrid
   , gridl
@@ -34,7 +43,7 @@ module Chart.Hud
 import Chart.Arrow
 import Chart.Core
 import Chart.Glyph
-import Chart.Line
+import Chart.Line (LineOptions(LineOptions), lines, oneline)
 import Chart.Rect
 import Chart.Text
 import qualified Control.Foldl as L
@@ -49,21 +58,22 @@ import NumHask.Prelude hiding (max)
 import NumHask.Range
 import NumHask.Rect
 import NumHask.Space
-import Graphics.SVGFonts
+import Data.Generics.Labels()
+import Diagrams.Backend.SVG (SVG)
 
 -- | Various options for a hud.
 --
 -- Defaults to the classical x- and y-axis, a sixbyfour aspect, no titles and no legends
 data HudOptions b = HudOptions
-  { hudPad :: Double
-  , hudAxes :: [AxisOptions b]
-  , hudGrids :: [GridOptions]
-  , hudTitles :: [(TitleOptions, Text)]
-  , hudLegends :: [LegendOptions b]
-  , hudRange :: Maybe (Rect Double)
-  , hudAspect :: Aspect
-  , hudCanvas :: RectOptions
-  }
+  { outerPad :: Double
+  , axes :: [AxisOptions b]
+  , grids :: [GridOptions]
+  , titles :: [(TitleOptions, Text)]
+  , legends :: [LegendOptions b]
+  , range :: Maybe (Rect Double)
+  , aspect :: Aspect
+  , canvas :: RectOptions
+  } deriving (Show, Generic)
 
 instance Default (HudOptions b) where
   def = HudOptions 1.1 [defXAxis, defYAxis] [] [] []
@@ -75,22 +85,20 @@ instance Default (HudOptions b) where
 --
 -- ![hud example](other/hudExample.svg)
 --
--- todo: the example highlights the issues with using beside.  The x-axis is placed first,
--- and then the y-axis.  In setting that 'beside' the combination of the canvas, and the x-axis, it calculates the middle, which has moved slightly from the canvas middle.
 hud :: () => HudOptions b -> Chart b
-hud (HudOptions p axes grids titles legends mr asp@(Aspect ar@(Ranges ax ay)) can) =
-  mconcat ((\x -> gridl x asp r) <$> grids) <>
-  L.fold (L.Fold addTitle uptoLegend (pad p)) titles
+hud (HudOptions p as gs ts ls mr asp@(Aspect ar@(Ranges ax ay)) can) =
+  mconcat ((\x -> gridl x asp r) <$> gs) <>
+  L.fold (L.Fold addTitle uptoLegend (pad p)) ts
   where
     r = fromMaybe one mr
     addTitle x (topts, t) =
-      beside (placeOutside (titlePlace topts)) x (title asp topts t)
+      beside (placeOutside (topts ^. #place)) x (title asp topts t)
     addLegend x lopts =
-      beside (placeOutside (legendPlace lopts)) x $
-      if 0 == length (legendChartType lopts)
+      beside (placeOutside (lopts ^. #place)) x $
+      if 0 == length (lopts ^. #chartType)
         then mempty
         else (\x' ->
-                moveTo (p_ $ pos' (legendAlign lopts) (legendPlace lopts) x') x') $
+                moveTo (p_ $ pos' (lopts ^. #align) (lopts ^. #place) x') x') $
              legend lopts
     pos' AlignCenter _ _ = Pair 0 0
     pos' AlignLeft PlaceTop x = Pair (lower ax - 0.5 * D.width x) 0
@@ -101,13 +109,13 @@ hud (HudOptions p axes grids titles legends mr asp@(Aspect ar@(Ranges ax ay)) ca
     pos' AlignRight PlaceBottom x = Pair (upper ax + 0.5 * D.width x) 0
     pos' AlignRight PlaceLeft x = Pair 0 (upper ay + 0.5 * D.height x)
     pos' AlignRight PlaceRight x = Pair 0 (lower ay + 0.5 * D.height x)
-    uptoLegend = L.fold (L.Fold addLegend uptoAxes identity) legends
-    uptoAxes = L.fold (L.Fold addAxis canvas identity) axes
-    canvas = rect_ can ar
+    uptoLegend = L.fold (L.Fold addLegend uptoAxes identity) ls
+    uptoAxes = L.fold (L.Fold addAxis canvas' identity) as
+    canvas' = rect_ can ar
     addAxis x aopts =
-      case axisOrientation aopts of
-        Hori -> beside (placeOutside (axisPlace aopts)) x (axis aopts ax rx)
-        Vert -> beside (placeOutside (axisPlace aopts)) x (axis aopts ay ry)
+      case aopts ^. #orientation of
+        Hori -> beside (placeOutside (aopts ^. #place)) x (axis aopts ax rx)
+        Vert -> beside (placeOutside (aopts ^. #place)) x (axis aopts ay ry)
       where
         (Ranges rx ry) = fromMaybe one mr
 
@@ -116,9 +124,10 @@ hud (HudOptions p axes grids titles legends mr asp@(Aspect ar@(Ranges ax ay)) ca
 -- > withHudExample :: Chart b
 -- > withHudExample = withHud hopts (lineChart lopts) ls
 -- >     where
--- >       hopts = def {hudTitles=[(def,"withHud Example")],
--- >                    hudLegends=[def {legendChartType=zipWith (\x y ->
--- >                    (LegendLine x 0.05, y)) lopts ["line1", "line2", "line3"]}]}
+-- >       hopts = def &
+-- >         #titles .~ [(def,"withHud Example")] &
+-- >         #legends .~ [def & #chartType .~ zipWith (\x y ->
+-- >                     (LegendLine x 0.05, y)) lopts ["line1", "line2", "line3"]]
 --
 -- ![withHud example](other/withHudExample.svg)
 --
@@ -129,16 +138,16 @@ withHud ::
   -> [f (Pair Double)]
   -> Chart b
 withHud opts renderer d =
-  case hudRange opts of
+  case opts ^. #range of
     Nothing ->
-      renderer (hudAspect opts) (foldMap space d) d <>
-      hud (opts {hudRange = Just (foldMap space d)})
+      renderer (opts ^. #aspect) (foldMap space d) d <>
+      hud (#range .~ Just (foldMap space d) $ opts)
     Just r ->
       combine
-        (hudAspect opts)
+        (opts ^. #aspect)
         [ UChart renderer r d
         , UChart
-            (\asp _ _ -> hud (opts {hudAspect = asp, hudRange = Just r}))
+            (\asp _ _ -> hud (#aspect .~ asp $ #range .~ Just r $ opts))
             r
             []
         ]
@@ -168,17 +177,17 @@ placeGap pl s x = beside (placeOutside pl) (strut' pl s) x
 
 -- | Axes are somewhat complicated.  For instance, they contain a range within which tick marks need to be supplied or computed.
 data AxisOptions b = AxisOptions
-  { axisPad :: Double
-  , axisOrientation :: Orientation
-  , axisPlace :: Place
-  , axisRect :: RectOptions
-  , axisRectHeight :: Double
-  , axisMark :: GlyphOptions b
-  , axisMarkStart :: Double
-  , axisGap :: Double -- distance of axis from plane
-  , axisLabel :: LabelOptions
-  , axisTickStyle :: TickStyle
-  }
+  { outerPad :: Double
+  , orientation :: Orientation
+  , place :: Place
+  , rect :: RectOptions
+  , rectHeight :: Double
+  , mark :: GlyphOptions b
+  , markStart :: Double
+  , gap :: Double -- distance of axis from plane
+  , label :: LabelOptions
+  , tickStyle :: TickStyle
+  } deriving (Show, Generic)
 
 -- | default X axis
 defXAxis :: AxisOptions b
@@ -189,11 +198,11 @@ defXAxis =
     PlaceBottom
     (RectOptions 0 transparent (withOpacity black 0.1))
     0.02
-    (GlyphOptions 0.03 transparent (withOpacity black 0.6) 0.005 (vline_ 1))
+    (GlyphOptions 0.03 transparent (withOpacity black 0.6) 0.005 (VLine 1.0))
     0
     0.04
     (LabelOptions
-       (TextOptions 0.08 AlignCenter (withOpacity black 0.6) EvenOdd 0 lin2)
+       (TextOptions 0.08 AlignCenter AlignMid (withOpacity black 0.6) EvenOdd 0 Lin2)
        (Pair 0 -1)
        0.015)
     (TickRound 8)
@@ -207,11 +216,11 @@ defYAxis =
     PlaceLeft
     (RectOptions 0 transparent (withOpacity black 0.1))
     0.02
-    (GlyphOptions 0.03 transparent (withOpacity black 0.6) 0.005 (hline_ 1))
+    (GlyphOptions 0.03 transparent (withOpacity black 0.6) 0.005 (HLine 1.0))
     0
     0.04
     (LabelOptions
-       (TextOptions 0.08 AlignCenter (withOpacity black 0.6) EvenOdd 0 lin2)
+       (TextOptions 0.08 AlignCenter AlignMid (withOpacity black 0.6) EvenOdd 0 Lin2)
        (Pair -1 0)
        0.015)
     (TickRound 8)
@@ -235,52 +244,95 @@ instance Default (AxisOptions b) where
 axis :: () => AxisOptions b -> Range Double -> Range Double -> Chart b
 axis opts asp r =
   mo $
-  pad (axisPad opts) $
+  pad (opts ^. #outerPad) $
   astrut $
-  centerXY $
   atPoints
     (pl <$> tickLocations)
-    ((\x -> labelled (axisLabel opts) x (glyph_ (axisMark opts))) <$> tickLabels) `atop`
-  arect (axisOrientation opts)
+    ((\x -> labelled (opts ^. #label) x (glyph_ (opts ^. #mark))) <$> tickLabels)
+    `atop`
+  arect (opts ^. #orientation )
   where
     mo = moveOriginTo (p2 ((-lower asp) - width asp / 2, 0))
     arect Hori =
-      rect_ (axisRect opts) (Ranges asp (Range 0 (axisRectHeight opts)))
+      rect_ (opts ^. #rect) (Ranges asp (Range 0 (opts ^. #rectHeight)))
     arect Vert =
-      rect_ (axisRect opts) (Ranges (Range 0 (axisRectHeight opts)) asp)
+      rect_ (opts ^. #rect) (Ranges (Range 0 (opts ^. #rectHeight)) asp)
     astrut =
-      beside (placeOutside (axisPlace opts))
-        (case axisOrientation opts of
-           Hori -> strutY (axisGap opts)
-           Vert -> strutX (axisGap opts))
+      beside (placeOutside (opts ^. #place))
+        (case opts ^. #orientation of
+           Hori -> strutY (opts ^. #gap)
+           Vert -> strutX (opts ^. #gap))
     pl =
-      let gs = glyphSize (axisMark opts)
-      in case axisPlace opts of
+      let gs = (opts ^. #mark . #size)
+      in case opts ^. #place of
            PlaceBottom ->
              \x ->
-               p2 (x, (-0.5 * gs) + axisRectHeight opts + axisMarkStart opts)
+               p2 (x, (-0.5 * gs) + opts ^. #rectHeight + opts ^. #markStart)
            PlaceLeft ->
              \y ->
-               p2 ((-0.5 * gs) + axisRectHeight opts + axisMarkStart opts, y)
-           PlaceTop -> \x -> p2 (x, (0.5 * gs) + axisMarkStart opts)
-           PlaceRight -> \y -> p2 ((0.5 * gs) + axisMarkStart opts, y)
-    (tickLocations, tickLabels) =
-      case axisTickStyle opts of
-        TickNone -> ([], [])
-      {- To Do:
-        rounded ticks introduce the possibility of marks beyond the existing range.
-        if this happens, it should really be fed into the chart rendering as a new,
-        revised range.
-      -}
-        TickRound n -> (project r asp <$> ticks0, precision 0 ticks0)
-          where ticks0 = gridSensible OuterPos r n
-        TickExact n -> (project r asp <$> ticks0, precision 3 ticks0)
-          where ticks0 = grid OuterPos r n
-        TickLabels ls ->
+               p2 ((-0.5 * gs) + opts ^. #rectHeight + opts ^. #markStart, y)
+           PlaceTop -> \x -> p2 (x, (0.5 * gs) + opts ^. #markStart)
+           PlaceRight -> \y -> p2 ((0.5 * gs) + opts ^. #markStart, y)
+    (tickLocations, tickLabels) = computeTicks opts r asp
+
+data AutoOptions =
+  AutoOptions
+  { maxXRatio :: Double
+  , maxYRatio :: Double
+  , angledRatio :: Double
+  , allowDiagonal :: Bool
+  } deriving (Show, Generic)
+
+instance Default AutoOptions where
+  def = AutoOptions 0.08 0.06 0.12 True
+
+adjustAxis :: AutoOptions -> Range Double -> Range Double ->
+  AxisOptions b -> AxisOptions b
+adjustAxis (AutoOptions mrx ma mry ad) asp r opts = case opts ^. #orientation of
+  Hori -> case ad of
+    False -> (#label . #text . #size %~ (/adjustSizeX)) opts
+    True ->
+        case adjustSizeX > one of
+          True -> (#label . #text . #rotation .~ (-45)) . (#label . #text . #alignH .~ AlignLeft) $ (#label . #text . #size %~ (/adjustSizeA)) opts
+          False -> (#label . #text . #size %~ (/adjustSizeA)) opts
+  Vert -> (#label . #text . #size %~ (/adjustSizeY)) opts
+
+  where
+        tickl = snd (computeTicks opts r asp)
+        maxWidth =
+          maximum $
+          (\x ->
+              D.width
+              (text_ (opts ^. #label . #text) x :: QDiagram SVG V2 Double Any))
+              <$> tickl
+        maxHeight =
+          maximum $
+          (\x ->
+              D.height
+              (text_ (opts ^. #label . #text) x :: QDiagram SVG V2 Double Any))
+              <$> tickl
+        adjustSizeX = maximum [(maxWidth / (upper asp - lower asp)) / mrx, one]
+        adjustSizeY = maximum [(maxHeight / (upper asp - lower asp)) / mry, one]
+        adjustSizeA = maximum [(maxHeight / (upper asp - lower asp)) / ma, one]
+
+-- | create an axis, with adjustment to axis options if needed
+axisSane :: () => AutoOptions -> AxisOptions b -> Range Double -> Range Double -> Chart b
+axisSane ao opts asp r =
+    axis (adjustAxis ao asp r opts) asp r
+
+computeTicks :: AxisOptions a -> Range Double -> Range Double -> ([Double], [Text])
+computeTicks opts r asp =
+    case opts ^. #tickStyle of
+      TickNone -> ([], [])
+      TickRound n -> (project r asp <$> ticks0, precision 0 ticks0)
+        where ticks0 = gridSensible OuterPos r n
+      TickExact n -> (project r asp <$> ticks0, precision 3 ticks0)
+        where ticks0 = grid OuterPos r n
+      TickLabels ls ->
           ( project (Range 0 (fromIntegral $ length ls)) asp <$>
             ((\x -> x - 0.5) . fromIntegral <$> [1 .. length ls])
           , ls)
-        TickPlaced xs -> (project r asp . fst <$> xs, snd <$> xs)
+      TickPlaced xs -> (project r asp . fst <$> xs, snd <$> xs)
 
 -- | Style of tick marks on an axis.
 data TickStyle
@@ -289,6 +341,7 @@ data TickStyle
   | TickRound Int -- ^ sensibly rounded ticks and a guide to how many
   | TickExact Int -- ^ exactly n equally spaced ticks
   | TickPlaced [(Double, Text)] -- ^ specific labels and placement
+  deriving (Show, Generic)
 
 -- | Provide formatted text for a list of numbers so that they are just distinguished.  'precision 2 ticks' means give the tick labels as much precision as is needed for them to be distinguished, but with at least 2 significant figues.
 precision :: Int -> [Double] -> [Text]
@@ -312,16 +365,16 @@ precision n0 xs
 
 -- | Options for titles.  Defaults to center aligned, and placed at Top of the hud
 data TitleOptions = TitleOptions
-  { titleText :: TextOptions
-  , titleAlign :: AlignH
-  , titlePlace :: Place
-  , titleGap :: Double
-  }
+  { text :: TextOptions
+  , align :: AlignH
+  , place :: Place
+  , gap :: Double
+  } deriving (Show, Generic)
 
 instance Default TitleOptions where
   def =
     TitleOptions
-      (TextOptions 0.12 AlignCenter (withOpacity black 0.6) EvenOdd 0 lin2)
+      (TextOptions 0.12 AlignCenter AlignMid (withOpacity black 0.6) EvenOdd 0 Lin2)
       AlignCenter
       PlaceTop
       0.04
@@ -329,7 +382,7 @@ instance Default TitleOptions where
 -- | Create a title for a chart. The logic used to work out placement is flawed due to being able to freely specify text rotation.  It works for specific rotations (Top, Bottom at 0, Left at 90, Right @ 270)
 title :: Aspect -> TitleOptions -> Text -> Chart b
 title (Aspect (Ranges aspx aspy)) (TitleOptions textopts a p s) t =
-  placeGap p s (positioned (pos a p) (text_ (textopts {textAlignH = a}) t))
+  placeGap p s (positioned (pos a p) (text_ ( #alignH .~ a $ textopts) t))
   where
     pos AlignCenter _ = Pair 0 0
     pos AlignLeft PlaceTop = Pair (lower aspx) 0
@@ -356,20 +409,21 @@ data LegendType b
                 Double
   | LegendPixel RectOptions
                 Double
+    deriving (Show, Generic)
 
 -- | Legend options. todo: allow for horizontal concatenation.
 data LegendOptions b = LegendOptions
-  { legendChartType :: [(LegendType b, Text)]
-  , legendInnerPad :: Double
-  , legendInnerSep :: Double
-  , legendGap :: Double
-  , legendRowPad :: Double
-  , legendPlace :: Place
-  , legendAlign :: AlignH
-  , legendSep :: Double
-  , legendRect :: RectOptions
-  , legendText :: TextOptions
-  }
+  { chartType :: [(LegendType b, Text)]
+  , innerPad :: Double
+  , innerSep :: Double
+  , gap :: Double
+  , rowPad :: Double
+  , place :: Place
+  , align :: AlignH
+  , sep :: Double
+  , canvasRect :: RectOptions
+  , text :: TextOptions
+  } deriving (Show, Generic)
 
 instance Default (LegendOptions b) where
   def =
@@ -383,7 +437,8 @@ instance Default (LegendOptions b) where
       AlignRight
       0.02
       (RectOptions 0.002 (withOpacity black 0.2) transparent)
-      (TextOptions 0.07 AlignCenter (withOpacity black 0.63) EvenOdd 0 lin2)
+      (TextOptions 0.07 AlignCenter AlignMid
+       (withOpacity black 0.63) EvenOdd 0 Lin2)
 
 -- | Create a legend based on a LegendOptions
 --
@@ -406,77 +461,86 @@ instance Default (LegendOptions b) where
 --
 legend :: LegendOptions b -> Chart b
 legend opts =
-  placeGap (legendPlace opts) (legendGap opts) $
-  bound (legendRect opts) 1 $
-  pad (legendInnerPad opts) $
+  placeGap (opts ^. #place) (opts ^. #gap) $
+  bound (opts ^. #canvasRect) 1 $
+  pad (opts ^. #innerPad) $
   centerXY $
   vert
-    (pad (legendRowPad opts))
-    (intersperse (strutY (legendInnerSep opts)) $
-     legend__ <$> legendChartType opts)
+    (pad (opts ^. #rowPad))
+    (intersperse (strutY (opts ^. #innerSep)) $
+     legend__ <$> opts ^. #chartType)
   where
     legend__ (LegendText c, t) = text_ c t
     legend__ (LegendGlyph c, t) =
       hori
         identity
-        [glyph_ c, strutX (legendSep opts), text_ (legendText opts) t]
+        [glyph_ c, strutX (opts ^. #sep), text_ (opts ^. #text) t]
     legend__ (LegendLine c l, t) =
       hori
         identity
         [ oneline c (Pair (Pair 0 0) (Pair l 0))
-        , strutX (legendSep opts)
-        , text_ (legendText opts) t
+        , strutX (opts ^. #sep)
+        , text_ (opts ^. #text) t
         ]
     legend__ (LegendGLine gc lopts l, t) =
       hori
         identity
         [ glyph_ gc `atop` oneline lopts (Pair (Pair (-l) 0) (Pair l 0))
-        , strutX (legendSep opts)
-        , text_ (legendText opts) t
+        , strutX (opts ^. #sep)
+        , text_ (opts ^. #text) t
         ]
     legend__ (LegendRect c s, t) =
       hori
         identity
-        [rect_ c (s *. one), strutX (legendSep opts), text_ (legendText opts) t]
+        [rect_ c (s *. one), strutX (opts ^. #sep), text_ (opts ^. #text) t]
     legend__ (LegendArrow c s, t) =
       hori
         identity
         [ arrows c [Arrow zero (s *. one), Arrow (s *. one) zero]
-        , strutX (legendSep opts)
-        , text_ (legendText opts) t
+        , strutX (opts ^. #sep)
+        , text_ (opts ^. #text) t
         ]
     legend__ (LegendPixel c s, t) =
       hori
         identity
-        [rect_ c (s *. one), strutX (legendSep opts), text_ (legendText opts) t]
+        [rect_ c (s *. one), strutX (opts ^. #sep), text_ (opts ^. #text) t]
 
+data GridPos = GridOuterPos | GridInnerPos | GridLowerPos | GridUpperPos | GridMidPos deriving (Show, Generic, Eq)
+
+gridPos :: GridPos -> Pos
+gridPos GridOuterPos = OuterPos
+gridPos GridInnerPos = InnerPos
+gridPos GridLowerPos = LowerPos
+gridPos GridUpperPos = UpperPos
+gridPos GridMidPos = MidPos
 
 -- | Style of grid lines
 data GridStyle
   = GridNone -- ^ no ticks on axis
-  | GridRound Pos Int -- ^ sensibly rounded line placement and a guide to how many
-  | GridExact Pos Int -- ^ exactly n lines using Pos
+  | GridRound GridPos Int -- ^ sensibly rounded line placement and a guide to how many
+  | GridExact GridPos Int -- ^ exactly n lines using Pos
   | GridPlaced [Double] -- ^ specific line placement
+  deriving (Show, Generic)
 
 -- | Options for gridlines.
 data GridOptions = GridOptions
   { gridOrientation :: Orientation
   , gridStyle :: GridStyle
   , gridLine :: LineOptions
-  }
+  } deriving (Show, Generic)
 
 defXGrid :: GridOptions
 defXGrid =
     GridOptions
-    Hori
-    (GridRound OuterPos 10)
+    Hori 
+    (GridRound GridOuterPos 10)
     (LineOptions 0.002 ublue)
 
 defYGrid :: GridOptions
 defYGrid =
     GridOptions
     Vert
-    (GridRound OuterPos 10)
+    (GridRound GridOuterPos 10)
     (LineOptions 0.002 ublue)
 
 instance Default GridOptions where
@@ -490,8 +554,8 @@ gridl gopt (Aspect (Ranges aspx aspy)) (Ranges rx ry) = ls
     lineLocations =
         case gridStyle gopt of
           GridNone -> []
-          GridRound p n -> project r0 asp0 <$> gridSensible p r0 n
-          GridExact p n -> project r0 asp0 <$> grid p r0 n
+          GridRound p n -> project r0 asp0 <$> gridSensible (gridPos p) r0 n
+          GridExact p n -> project r0 asp0 <$> grid (gridPos p) r0 n
           GridPlaced xs -> project r0 asp0 <$> xs
     (asp0, r0) =
         case gridOrientation gopt of

@@ -1,12 +1,17 @@
+{-# LANGUAGE OverloadedLabels #-}
 {-# OPTIONS_GHC -Wall #-}
+{-# OPTIONS_GHC -Wno-unused-top-binds #-}
+
 -- | textual chart elements
 module Chart.Text
-  ( TextOptions(..)
+  ( TextOptions(TextOptions)
+  , TextFont(..)
+  , textFont
   , text_
   , texts
   , textChart
   , textChart_
-  , LabelOptions(..)
+  , LabelOptions(LabelOptions)
   , labelled
   ) where
 
@@ -14,7 +19,7 @@ import Chart.Core
 import qualified Data.Text as Text
 import Diagrams.Prelude hiding (Color, D, scale)
 import qualified Diagrams.TwoD.Size as D
-import Graphics.SVGFonts
+import Graphics.SVGFonts hiding (textFont)
 import Graphics.SVGFonts.ReadFont
 import NumHask.Pair
 import NumHask.Prelude hiding (rotate)
@@ -22,16 +27,23 @@ import NumHask.Rect
 
 -- | text options
 data TextOptions = TextOptions
-  { textSize :: Double
-  , textAlignH :: AlignH
-  , textColor :: AlphaColour Double
+  { size :: Double
+  , alignH :: AlignH
+  , alignV :: AlignV
+  , color :: AlphaColour Double
   , textFillRule :: FillRule
-  , textRotation :: Double
-  , textFont :: PreparedFont Double
-  }
+  , rotation :: Double
+  , font :: TextFont
+  } deriving (Show, Generic)
 
 instance Default TextOptions where
-  def = TextOptions 0.08 AlignCenter (withOpacity black 0.33) EvenOdd 0 lin2
+  def = TextOptions 0.08 AlignCenter AlignMid (withOpacity black 0.33) EvenOdd 0 Lin2
+
+data TextFont = Lin2 | Lin deriving (Show)
+
+textFont :: TextFont -> PreparedFont Double
+textFont Lin = lin
+textFont Lin2 = lin2
 
 -- | Create a textual chart element
 --
@@ -40,11 +52,11 @@ instance Default TextOptions where
 -- ![text_ example](other/text_Example.svg)
 --
 text_ :: TextOptions -> Text -> Chart b
-text_ (TextOptions s a c fr rot f) t =
-  moveTo (p_ (Pair (alignHTU a * D.width path) 0)) $
+text_ (TextOptions s ah av c fr rot f) t =
+  moveTo (p_ (Pair (alignHTU ah * D.width path) (alignVTU av * D.height path))) $
   path # fcA c # lw 0 # fillRule fr # rotate (rot @@ deg)
   where
-    path = textSVG_ (TextOpts f INSIDE_H KERN False s s) (Text.unpack t)
+    path = textSVG_ (TextOpts (textFont f) INSIDE_H KERN False s s) (Text.unpack t)
 
 -- | Creatye positioned text from a list
 --
@@ -84,10 +96,10 @@ textChart_ optss asp xyss =
 
 -- | A label is a text element attached to a chart element
 data LabelOptions = LabelOptions
-  { labelText :: TextOptions
-  , labelOrientation :: Pair Double -- ^ direction of label
-  , labelGap :: Double -- ^ distance to label
-  }
+  { text :: TextOptions
+  , orientation :: Pair Double -- ^ direction of label
+  , gap :: Double -- ^ distance to label
+  } deriving (Show, Generic)
 
 instance Default LabelOptions where
   def = LabelOptions def (Pair 0 1) 0.05

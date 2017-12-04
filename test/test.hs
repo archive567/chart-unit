@@ -1,8 +1,11 @@
+{-# LANGUAGE OverloadedLabels #-}
 {-# OPTIONS_GHC -Wall #-}
 
 module Main where
 
 import Chart
+import Control.Lens
+import Data.Generics.Labels()
 import NumHask.Prelude
 import Test.Tasty (defaultMain, testGroup)
 import Test.Tasty.Hspec
@@ -28,7 +31,7 @@ testWithChart =
     line1Chart = withHud def (lineChart (repeat def)) lineData
     line2Chart =
       lineChart_ (repeat def) sixbyfour lineData <>
-      hud (def {hudRange = Just (range lineData)})
+      hud (#range .~ Just (range lineData) $ def)
     lineData :: [[Pair Double]]
     lineData =
       fmap (uncurry Pair) <$>

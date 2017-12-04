@@ -42,6 +42,7 @@ module Chart.Core
   , alignHU
   , alignHTU
   , alignVU
+  , alignVTU
 
     -- * Types
   , Orientation(..)
@@ -124,7 +125,7 @@ range xyss = foldMap space xyss
 --
 -- - independent of the data range
 -- - expressed in terms around a width magnitude of one.  chart default options are callibrated to this convention.
-newtype Aspect = Aspect (Rect Double)
+newtype Aspect = Aspect (Rect Double) deriving (Show)
 
 -- | the rendering aspect of a chart expressed as a ratio of x-plane : y-plane.
 aspect :: Double -> Aspect
@@ -155,12 +156,14 @@ data AlignH
   = AlignLeft
   | AlignCenter
   | AlignRight
+  deriving (Eq, Show)
 
 -- | vertical alignment
 data AlignV
   = AlignTop
   | AlignMid
   | AlignBottom
+  deriving (Eq, Show)
 
 -- | conversion of horizontal alignment to (one :: Range Double) limits
 alignHU :: AlignH -> Double
@@ -186,10 +189,19 @@ alignVU a =
     AlignMid -> 0
     AlignBottom -> 0.5
 
+-- | svg text is lower by default
+alignVTU :: AlignV -> Double
+alignVTU a =
+  case a of
+    AlignTop -> 0.5
+    AlignMid -> 0
+    AlignBottom -> -0.5
+
 -- | Orientation for an element.  Watch this space for curvature!
 data Orientation
   = Hori
   | Vert
+  deriving (Eq, Show)
 
 -- | Placement of elements around (what is implicity but maybe shouldn't just be) a rectangular canvas
 data Place

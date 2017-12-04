@@ -3,10 +3,11 @@
 #if ( __GLASGOW_HASKELL__ < 820 )
 {-# OPTIONS_GHC -fno-warn-incomplete-patterns #-}
 #endif
+{-# OPTIONS_GHC -Wno-unused-top-binds #-}
 
 -- | Points on a chart connected by lines.
 module Chart.Line
-  ( LineOptions(..)
+  ( LineOptions(LineOptions)
   , oneline
   , lines
   , glines
@@ -20,6 +21,7 @@ import Chart.Core
 import Chart.Glyph
 import Data.Default (Default(..))
 import Diagrams.Prelude hiding ((<>))
+import GHC.Generics
 import NumHask.Pair
 import NumHask.Prelude
 import NumHask.Rect
@@ -31,9 +33,9 @@ import NumHask.Rect
 -- - line rendering is normalized to the eventual physical chart
 --
 data LineOptions = LineOptions
-  { lineSize :: Double -- ^ normalized
-  , lineColor :: AlphaColour Double
-  }
+  { size :: Double -- ^ normalized
+  , color :: AlphaColour Double
+  } deriving (Show, Generic)
 
 instance Default LineOptions where
   def = LineOptions 0.02 ublue
@@ -108,8 +110,8 @@ glineChart ls gs (Aspect asp) r xyss =
 
 -- | A chart of glyphs_lines scaled to its own range
 --
--- > let gopts = zipWith (\x y -> def {glyphColor=transparent,
--- >         glyphBorderColor=withOpacity x 0.6, glyphShape=y}) (tetrad green)
+-- > let gopts = zipWith (\x y -> def {color=transparent,
+-- >         borderColor=withOpacity x 0.6, shape=y}) (tetrad green)
 -- >         [triangle, square, circle]
 -- >
 -- > glineChart_ lopts gopts sixbyfour ls

@@ -33,6 +33,12 @@ Why the name chart-unit?
 
 Most of the behind-the-scenes grunt work is scaling data, projecting points from one range to another, and computing position.  A key to making these computations neat was `one = Range -0.5 0.5` and `one = Rect -0.5 0.5 -0.5 0.5` as the (multiplicative) units of a chart range.  See [numhask-range](https://github.com/tonyday567/numhask-range) for a monologue.
 
+generic-lens rocks
+===
+
+https://www.reddit.com/r/haskell/comments/7e8bom/slides_joy_frustration_of_putting_34000_lines_of/
+
+
 What's with the funny names?
 ===
 

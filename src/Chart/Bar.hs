@@ -7,10 +7,11 @@
 #if ( __GLASGOW_HASKELL__ < 820 )
 {-# OPTIONS_GHC -fno-warn-incomplete-patterns #-}
 #endif
+{-# OPTIONS_GHC -Wno-unused-top-binds #-}
 
 -- | bar charts
 module Chart.Bar
-  ( BarOptions(..)
+  ( BarOptions(BarOptions)
   , BarValueAcc(..)
   , BarData(..)
   , barDataLowerUpper
@@ -20,7 +21,7 @@ module Chart.Bar
 import Chart.Core
 import Chart.Data
 import Chart.Hud
-import Diagrams.Prelude hiding (Color, D, zero, Additive, (<>))
+import Diagrams.Prelude hiding (Color, D, zero, Additive)
 import NumHask.Prelude
 import NumHask.Range
 import NumHask.Rect
@@ -29,26 +30,24 @@ import Chart.Rect
 import Data.Colour.Palette.ColorSet
 import qualified Control.Foldl as L
 
-data BarValueAcc = BarValueSeparate | BarValueAccumulate
+data BarValueAcc = BarValueSeparate | BarValueAccumulate deriving (Show, Generic)
 
 -- | the usual bar chart eye-candy
 data BarOptions a = BarOptions
-  { barRectOptions :: [RectOptions]
-  , barOuterGap :: a
-  , barInnerGap :: a
-  , barValueDisplay :: Bool
-  , barAdditive :: BarValueAcc
-  , barOrientation :: Orientation
-  , barHudOptions :: HudOptions a
-  , barTitle :: Maybe Text
-  , barSubtitle :: Maybe Text
-  }
+  { rectOptions :: [RectOptions]
+  , outerGap :: a
+  , innerGap :: a
+  , displayValues :: Bool
+  , accumulateValues :: BarValueAcc
+  , orientation :: Orientation
+  , hudOptions :: HudOptions a
+  } deriving (Show, Generic)
 
 instance (AdditiveUnital a, Fractional a) => Default (BarOptions a) where
   def =
       BarOptions
       ((\x -> RectOptions 0.002 ugrey (d3Colors1 x `withOpacity` 0.5)) <$> [0..10])
-      0.1 zero True BarValueSeparate Hori def Nothing Nothing
+      0.1 zero True BarValueSeparate Hori def
 
 data BarData a =
     BarData
@@ -60,7 +59,7 @@ data BarData a =
 -- Convert BarData to rectangles
 barRects :: (Enum a, FromInteger a, Ord a, BoundedField a) =>
     BarOptions a -> [[a]] -> [[Rect a]]
-barRects (BarOptions _ ogap igap _ add orient _ _ _) bs = rects'' orient
+barRects (BarOptions _ ogap igap _ add orient _) bs = rects'' orient
     where
       rects'' Hori = rects'
       rects'' Vert = fmap rectTrans <$> rects'
@@ -101,7 +100,7 @@ barRange ys =
     (Range l u) = foldMap space ys
 
 barChart :: BarOptions Double -> BarData Double -> Chart b
-barChart opt@(BarOptions bopts _ _ _ _ _ _ _ _) (BarData bs _ _) = ch <> h
+barChart opt@(BarOptions bopts _ _ _ _ _ _) (BarData bs _ _) = ch
   where
     ch = rectChart bopts sixbyfour (barRange bs) (barRects opt bs)
 

@@ -1,10 +1,11 @@
 {-# OPTIONS_GHC -Wall #-}
+{-# OPTIONS_GHC -Wno-unused-top-binds #-}
 
 -- | Glyphs are (typically) small shapes symbolically representing a data point.
 module Chart.Glyph
-  ( GlyphOptions(..)
-  , hline_
-  , vline_
+  ( GlyphOptions(GlyphOptions)
+  , GlyphShape(..)
+  , glyphShape
   , glyph_
   , glyphs
   , lglyphs
@@ -26,15 +27,44 @@ import NumHask.Rect
 
 -- | The actual shape of a glyph can be any Chart element
 data GlyphOptions b = GlyphOptions
-  { glyphSize :: Double -- ^ glyph radius
-  , glyphColor :: AlphaColour Double
-  , glyphBorderColor :: AlphaColour Double
-  , glyphBorderSize :: Double -- ^ normalized
-  , glyphShape :: Double -> Chart b
-  }
+  { size :: Double -- ^ glyph radius
+  , color :: AlphaColour Double
+  , borderColor :: AlphaColour Double
+  , borderSize :: Double -- ^ normalized
+  , shape :: GlyphShape
+  } deriving (Show, Generic)
 
 instance Default (GlyphOptions b) where
-  def = GlyphOptions 0.03 ublue ugrey 0.015 circle
+  def = GlyphOptions 0.03 ublue ugrey 0.015 Circle
+
+data GlyphShape =
+    Circle |
+    Square |
+    Ellipse Double |
+    Triangle |
+    Pentagon |
+    Hexagon |
+    Septagon |
+    Octagaon |
+    RectSharp Double |
+    RectRounded Double Double |
+    VLine Double |
+    HLine Double
+    deriving Show
+
+glyphShape :: GlyphShape -> (Double -> Chart b)
+glyphShape Circle = \x -> circle (x/2)
+glyphShape Square = square
+glyphShape (Ellipse a) = ellipseXY a
+glyphShape Triangle = triangle
+glyphShape Pentagon = pentagon
+glyphShape Hexagon = hexagon
+glyphShape Septagon = septagon
+glyphShape Octagaon = octagon
+glyphShape (RectSharp a) = \x -> rect (a*x) x
+glyphShape (RectRounded a r) = \x -> roundedRect (a*x) x r
+glyphShape (VLine a) = vline_ a
+glyphShape (HLine a) = hline_ a
 
 -- | Vertical line glyph shape with a reasonable thickness at "vline_ 1"
 vline_ :: Double -> Double -> Chart b
@@ -51,7 +81,7 @@ hline_ fatness x = hrule x # scaleY (1.6 / 0.5 * fatness)
 -- ![glyph_ example](other/glyph_Example.svg)
 --
 glyph_ :: GlyphOptions b -> Chart b
-glyph_ (GlyphOptions s c bc bs shape) = shape s # fcA c # lcA bc # lwN bs
+glyph_ (GlyphOptions s c bc bs sh) = glyphShape sh s # fcA c # lcA bc # lwN bs
 
 -- | Create positioned glyphs.
 --
