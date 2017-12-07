@@ -56,6 +56,7 @@ dependencies:
 - numhask >=0.0.5 && <1
 - protolude
 - text
+- time
 library:
   source-dirs: src
   ghc-options:
@@ -67,6 +68,7 @@ library:
   - Chart.Bar
   - Chart.Core
   - Chart.Data
+  - Chart.Data.Time
   - Chart.Glyph
   - Chart.Hud
   - Chart.Line
@@ -111,5 +113,6 @@ tests:
     source-dirs: test
     dependencies:
     - chart-unit
+    - doctest
     - tasty
     - tasty-hspec

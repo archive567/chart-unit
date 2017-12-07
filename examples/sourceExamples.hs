@@ -10,14 +10,16 @@
 
 import Chart
 import Control.Lens hiding (beside)
-import Data.List (zipWith3)
-import Diagrams.Backend.SVG (B)
+import Data.List (zipWith3, (!!), head)
+import Diagrams.Backend.SVG (B, SVG)
 import Diagrams.Prelude hiding ((*.), scaleX, scaleY, (<>))
 import FakeData
 import Formatting
 import NumHask.Prelude
 import qualified Data.Text as Text
 import Data.Generics.Labels()
+import Data.Time
+import Data.Time.Calendar.WeekDate
 
 hudbits :: Text -> Maybe Text -> [Text] -> [LegendType b] -> HudOptions b -> HudOptions b
 hudbits t subt ts ls x =
@@ -715,6 +717,44 @@ gridExample =
        (#label . #text . #rotation .~ -45))
     & #axes . ix 1 %~ (#label . #text . #alignH .~ AlignLeft))
 
+timeData :: Int -> IO [Day]
+timeData n = do
+    now <- getCurrentTime
+    let (UTCTime today _) = now
+    let toWeekDay x = let (_,_,d) = toWeekDate x in d
+    let isWeekend x = toWeekDay x `elem` [6,7]
+    pure $ filter (not . isWeekend) $ take n $ (`addDays` today) <$> [0..]
+
+timeExample :: [Day] -> QDiagram SVG V2 Double Any
+timeExample dates = do
+    hud
+        ( #axes .~ [ adef, defYAxis] $
+          #range .~ Just r $ def) <>
+        glyphChart [ #color .~ red `withOpacity` 1
+                   $ #borderSize .~ 0
+                   $ #size .~ 0.01
+                   $ def] sixbyfour r [xs']
+        <> lglyphChart [def]
+        [ #shape .~ Square
+        $ #color .~ blue `withOpacity` 1
+        $ #borderSize .~ 0
+        $ #size .~ 0.04 $ def] sixbyfour r
+        [zip
+         (Text.pack . formatTime defaultTimeLocale "%a, %d %b" . (\x -> dates !! x) . fst <$> ts)
+         ((\x -> xs' !! x) . fst <$> ts)]
+  where
+    today = Data.List.head dates
+    g = 6
+    xs = fromIntegral . (`diffDays` today) <$> dates
+    xs' = lineOneD xs
+    r = range [xs']
+    (Ranges rx _) = r
+    (ts, _) = 
+            placedTimeLabelDiscontinuous PosInnerOnly Nothing g ((`UTCTime` 0) <$> dates)
+    ts' = (\(x,y) -> (fromIntegral x,y)) <$> ts
+    (Aspect (Ranges aspx _)) = sixbyfour
+    adef = adjustAxis def aspx rx $ #tickStyle .~ TickPlaced ts' $ defXAxis
+
 main :: IO ()
 main = do
   fileSvg "other/text_Example.svg" (400, 100) text_Example
@@ -763,6 +803,8 @@ main = do
 
   fileSvg "other/gridExample.svg" (600, 400) gridExample
 
+  ts <- timeData 200
+  fileSvg "other/timeExample.svg" (600, 400) $ timeExample ts
 
   -- gallery
   xys <- mkScatterData

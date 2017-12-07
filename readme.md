@@ -62,6 +62,14 @@ Gallery
 
 Composable chart types and the power of diagrams make it easy to invent new charts.  Here's some inspiration (all code for these charts is in [examples/sourceExamples.hs](https://github.com/tonyday567/chart-unit/blob/master/examples/sourceExamples.hs)).
 
+
+time
+---
+
+`Chart.Data.Time` deals with the scenario where you want to plot a time series consecutively (y values are [0..]) but there are gaps in the seris such as no data on weekend days.
+
+![](other/timeExample.svg)
+
 schoolbook
 ---
 

@@ -35,9 +35,7 @@ extra-source-files:
   other/arrowHudExample.svg
   other/arrowsExample.svg
   other/axisExample.svg
-  other/axist.svg
   other/clippingExample.svg
-  other/exacto.svg
   other/glineChart_Example.svg
   other/glineHudExample.svg
   other/glyph_Example.svg
@@ -77,6 +75,7 @@ extra-source-files:
   other/textChart_Example.svg
   other/textHudExample.svg
   other/textsExample.svg
+  other/timeExample.svg
   other/withHudExample.svg
   stack.yaml
 
@@ -93,6 +92,7 @@ library
     Chart.Bar
     Chart.Core
     Chart.Data
+    Chart.Data.Time
     Chart.Glyph
     Chart.Hud
     Chart.Line
@@ -109,6 +109,7 @@ library
     numhask >=0.0.5 && <1,
     protolude,
     text,
+    time,
     SVGFonts,
     colour,
     data-default,
@@ -137,6 +138,7 @@ executable chart-source-examples
     numhask >=0.0.5 && <1,
     protolude,
     text,
+    time,
     chart-unit,
     containers,
     diagrams-lib,
@@ -162,7 +164,9 @@ test-suite test
     numhask >=0.0.5 && <1,
     protolude,
     text,
+    time,
     chart-unit,
+    doctest,
     tasty,
     tasty-hspec
   default-extensions: DeriveGeneric DeriveTraversable FlexibleContexts FlexibleInstances InstanceSigs MultiParamTypeClasses NegativeLiterals NoImplicitPrelude OverloadedStrings PatternSynonyms RankNTypes TypeFamilies UnicodeSyntax

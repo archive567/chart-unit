@@ -17,6 +17,7 @@ module Chart
   ( -- * chart-unit
     module Chart.Core
   , module Chart.Data
+  , module Chart.Data.Time
   , module Chart.Arrow
   , module Chart.Glyph
   , module Chart.Hud
@@ -53,6 +54,7 @@ import Chart.Arrow
 import Chart.Bar
 import Chart.Core
 import Chart.Data
+import Chart.Data.Time
 import Chart.Glyph
 import Chart.Hud
 import Chart.Line

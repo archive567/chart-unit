@@ -9,6 +9,7 @@ import Data.Generics.Labels()
 import NumHask.Prelude
 import Test.Tasty (defaultMain, testGroup)
 import Test.Tasty.Hspec
+import Test.DocTest
 
 testWithChart :: SpecWith ()
 testWithChart =
@@ -42,5 +43,6 @@ testWithChart =
 
 main :: IO ()
 main = do
+  doctest ["src/Chart/Data/Time.hs"]
   t1 <- testSpec "withChart" testWithChart
   defaultMain $ testGroup "chart-unit" [t1]
