@@ -71,7 +71,7 @@ data HudOptions b = HudOptions
   , titles :: [(TitleOptions, Text)]
   , legends :: [LegendOptions b]
   , range :: Maybe (Rect Double)
-  , aspect :: Aspect
+  , aspect :: Rect Double
   , canvas :: RectOptions
   } deriving (Show, Generic)
 
@@ -86,13 +86,13 @@ instance Default (HudOptions b) where
 -- ![hud example](other/hudExample.svg)
 --
 hud :: () => HudOptions b -> Chart b
-hud (HudOptions p as gs ts ls mr asp@(Aspect ar@(Ranges ax ay)) can) =
-  mconcat ((\x -> gridl x asp r) <$> gs) <>
+hud (HudOptions p as gs ts ls mr ar@(Ranges ax ay) can) =
+  mconcat ((\x -> gridl x ar r) <$> gs) <>
   L.fold (L.Fold addTitle uptoLegend (pad p)) ts
   where
     r = fromMaybe one mr
     addTitle x (topts, t) =
-      beside (placeOutside (topts ^. #place)) x (title asp topts t)
+      beside (placeOutside (topts ^. #place)) x (title ar topts t)
     addLegend x lopts =
       beside (placeOutside (lopts ^. #place)) x $
       if 0 == length (lopts ^. #chartType)
@@ -134,7 +134,7 @@ hud (HudOptions p as gs ts ls mr asp@(Aspect ar@(Ranges ax ay)) can) =
 withHud ::
      (Foldable f)
   => HudOptions b
-  -> (Aspect -> Rect Double -> [f (Pair Double)] -> Chart b)
+  -> (Rect Double -> Rect Double -> [f (Pair Double)] -> Chart b)
   -> [f (Pair Double)]
   -> Chart b
 withHud opts renderer d =
@@ -235,9 +235,14 @@ instance Default (AxisOptions b) where
 -- > axisExample :: Chart b
 -- > axisExample = axis aopts one (Range 0 100000)
 -- >   where
--- >     aopts = def {axisLabel=(axisLabel def) {
--- >                  labelGap=0.0001, labelText=(labelText (axisLabel def)) {
--- >                  textSize=0.06, textAlignH=AlignLeft, textRotation=(-45)}}}
+-- >     aopts :: AxisOptions b
+-- >     aopts =
+-- >         #label . #text %~
+-- >         ((#rotation .~ -45) .
+-- >          (#size .~ 0.06) .
+-- >          (#alignH .~ AlignLeft)) $
+-- >         #gap .~ 0.0001 $
+-- >         def
 --
 -- ![axis example](other/axisExample.svg)
 --
@@ -275,6 +280,7 @@ axis opts asp r =
            PlaceRight -> \y -> p2 ((0.5 * gs) + opts ^. #markStart, y)
     (tickLocations, tickLabels) = computeTicks opts r asp
 
+-- | options for prettifying axis decorations
 data AutoOptions =
   AutoOptions
   { maxXRatio :: Double
@@ -286,6 +292,7 @@ data AutoOptions =
 instance Default AutoOptions where
   def = AutoOptions 0.08 0.06 0.12 True
 
+-- | adjust an axis for sane font sizes etc
 adjustAxis :: AutoOptions -> Range Double -> Range Double ->
   AxisOptions b -> AxisOptions b
 adjustAxis (AutoOptions mrx ma mry ad) asp r opts = case opts ^. #orientation of
@@ -320,6 +327,7 @@ axisSane :: () => AutoOptions -> AxisOptions b -> Range Double -> Range Double -
 axisSane ao opts asp r =
     axis (adjustAxis ao asp r opts) asp r
 
+-- | compute tick values and labels given options and ranges
 computeTicks :: AxisOptions a -> Range Double -> Range Double -> ([Double], [Text])
 computeTicks opts r asp =
     case opts ^. #tickStyle of
@@ -380,8 +388,8 @@ instance Default TitleOptions where
       0.04
 
 -- | Create a title for a chart. The logic used to work out placement is flawed due to being able to freely specify text rotation.  It works for specific rotations (Top, Bottom at 0, Left at 90, Right @ 270)
-title :: Aspect -> TitleOptions -> Text -> Chart b
-title (Aspect (Ranges aspx aspy)) (TitleOptions textopts a p s) t =
+title :: Rect Double -> TitleOptions -> Text -> Chart b
+title (Ranges aspx aspy) (TitleOptions textopts a p s) t =
   placeGap p s (positioned (pos a p) (text_ ( #alignH .~ a $ textopts) t))
   where
     pos AlignCenter _ = Pair 0 0
@@ -547,8 +555,8 @@ instance Default GridOptions where
   def = defXGrid
 
 -- | Create a grid line for a chart.
-gridl :: GridOptions -> Aspect -> Rect Double -> Chart b
-gridl gopt (Aspect (Ranges aspx aspy)) (Ranges rx ry) = ls
+gridl :: GridOptions -> Rect Double -> Rect Double -> Chart b
+gridl gopt (Ranges aspx aspy) (Ranges rx ry) = ls
   where
     ls = mconcat $ lines (gridLine gopt) <$> (l1d <$> lineLocations)
     lineLocations =

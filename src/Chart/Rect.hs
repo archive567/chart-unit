@@ -71,10 +71,21 @@ bound (RectOptions bs bc c) p x =
 -- (x,y) is location of lower left corner
 -- (z,w) is location of upper right corner
 --
--- > let opts o = def {labelText = (labelText def) {textColor=withOpacity black 0.8,
--- >         textSize = 0.3}, labelOrientation=o}
--- > labelled (opts (Pair 2 1)) ("z,w") $ labelled (opts (Pair -2 -1)) ("x,y")
--- >     (rect_ def (Ranges (2*.one) one))
+-- > rect_Example :: Double -> Chart b
+-- > rect_Example n =
+-- >   labelled (opts (Pair n 1)) "z,w" $
+-- >   labelled (opts (Pair n -1)) "z,y" $
+-- >   labelled (opts (Pair (-n) 1)) "x,w" $
+-- >   labelled (opts (Pair (-n) -1)) "x,y" $
+-- >   rect_ def (Ranges (n *. one) one)
+-- >   where
+-- >     opts :: Pair Double -> LabelOptions
+-- >     opts o =
+-- >       #text %~
+-- >         ( (#color .~ black `withOpacity` 0.8) .
+-- >           (#size .~ 0.3)) $
+-- >       #orientation .~ o $
+-- >       def
 --
 -- ![rect_ example](other/rect_Example.svg)
 --
@@ -122,26 +133,33 @@ rects opts xs = mconcat $ toList $ rect_ opts <$> xs
 rectChart ::
      (Traversable f)
   => [RectOptions]
-  -> Aspect
+  -> Rect Double
   -> Rect Double
   -> [f (Rect Double)]
   -> Chart b
-rectChart optss (Aspect asp) r rs =
+rectChart optss asp r rs =
   mconcat . zipWith rects optss $ fmap (projectRect r asp) <$> rs
 
 -- | A chart of rectangles scaled to its own range
 --
--- > let ropts = [def {rectBorderSize=0}, def
--- >         {rectBorderSize=0,rectColor=ucolor 0.3 0.3 0.3 0.2}]
--- > let rss = [ rectXY (\x -> exp (-(x ** 2) / 2)) (Range -5 5) 50
--- >           , rectXY (\x -> 0.5 * exp (-(x ** 2) / 8)) (Range -5 5) 50
--- >           ]
--- > rectChart_ ropts widescreen rss
+-- > ropts :: [RectOptions]
+-- > ropts =
+-- >       [ #borderSize .~ 0 $ def
+-- >       , #borderSize .~ 0 $ #color .~ ucolor 0.3 0.3 0.3 0.2 $ def
+-- >       ]
+-- >  
+-- > rss :: [[Rect Double]]
+-- > rss = [ rectXY (\x -> exp (-(x ** 2) / 2)) (Range -5 5) 50
+-- >       , rectXY (\x -> 0.5 * exp (-(x ** 2) / 8)) (Range -5 5) 50
+-- >       ]
+-- > 
+-- > rectChart_Example :: Chart b
+-- > rectChart_Example = rectChart_ ropts widescreen rss
 --
 -- ![rectChart_ example](other/rectChart_Example.svg)
 --
 rectChart_ ::
-     (Traversable f) => [RectOptions] -> Aspect -> [f (Rect Double)] -> Chart b
+     (Traversable f) => [RectOptions] -> Rect Double -> [f (Rect Double)] -> Chart b
 rectChart_ optss asp rs = rectChart optss asp (fold $ fold <$> rs) rs
 
 -- | At some point, a color of a rect becomes more about data than stylistic option, hence the pixel.  Echewing rect border leaves a Pixel with no stylistic options to choose.
@@ -152,7 +170,7 @@ data Pixel = Pixel
 
 -- | A pixel is a rectangle with a color.
 --
--- > let opt = def {textColor=withOpacity black 0.8, textSize = 0.2}
+-- > let opt = #color .~ withOpacity black 0.8 $ #size .~ 0.2 $ def
 -- > text_ opt "I'm a pixel!" <> pixel_ (Pixel one ublue)
 --
 -- ![pixel_ example](other/pixel_Example.svg)
@@ -175,8 +193,8 @@ pixels :: (Traversable f) => f Pixel -> Chart b
 pixels ps = mconcat $ toList $ pixel_ <$> ps
 
 -- | A chart of pixels
-pixelChart :: (Traversable f) => Aspect -> Rect Double -> [f Pixel] -> Chart b
-pixelChart (Aspect asp) r pss =
+pixelChart :: (Traversable f) => Rect Double -> Rect Double -> [f Pixel] -> Chart b
+pixelChart asp r pss =
   mconcat $ pixels . projectPixels r asp . toList <$> pss
   where
     projectPixels r0 r1 ps =
@@ -197,7 +215,7 @@ pixelChart (Aspect asp) r pss =
 --
 -- ![pixelChart_ example](other/pixelChart_Example.svg)
 --
-pixelChart_ :: (Traversable f) => Aspect -> [f Pixel] -> Chart b
+pixelChart_ :: (Traversable f) => Rect Double -> [f Pixel] -> Chart b
 pixelChart_ asp ps = pixelChart asp (fold $ fold . map pixelRect <$> ps) ps
 
 -- | Options to pixelate a Rect using a function
@@ -228,7 +246,7 @@ pixelate (PixelationOptions (Range lc0 uc0) grain) xy f = zipWith Pixel g cs
 --
 pixelateChart ::
      PixelationOptions
-  -> Aspect
+  -> Rect Double
   -> Rect Double
   -> (Pair Double -> Double)
   -> Chart b

@@ -1,5 +1,5 @@
 name: chart-unit
-version: '0.6.0.0'
+version: '0.5.4.1'
 synopsis: Native haskell charts.
 description: ! '
 
@@ -53,7 +53,7 @@ dependencies:
 - base >=4.7 && <5
 - generic-lens
 - lens
-- numhask >=0.0.5 && <1
+- numhask
 - protolude
 - text
 - time
@@ -84,7 +84,7 @@ library:
   - foldl
   - formatting
   - linear
-  - numhask-range >=0.0.3 && <1
+  - numhask-range
   - palette
 executables:
   chart-source-examples:

@@ -10,7 +10,7 @@
 
 </div>
 <h1 id="chart-types">Chart Types</h1>
-<p>So far, there are 8 major chart types:</p>
+<p>So far, there are 9 major chart types:</p>
 <div class="figure">
 <img src="other/textHudExample.svg" />
 
@@ -43,9 +43,14 @@
 <img src="other/arrowHudExample.svg" />
 
 </div>
+<div class="figure">
+<img src="other/barExample.svg" />
+
+</div>
 <h1 id="why-the-name-chart-unit">Why the name chart-unit?</h1>
 <p>Most of the behind-the-scenes grunt work is scaling data, projecting points from one range to another, and computing position. A key to making these computations neat was <code>one = Range -0.5 0.5</code> and <code>one = Rect -0.5 0.5 -0.5 0.5</code> as the (multiplicative) units of a chart range. See <a href="https://github.com/tonyday567/numhask-range">numhask-range</a> for a monologue.</p>
 <h1 id="generic-lens-rocks">generic-lens rocks</h1>
+<p>generic lens is the future of api in haskell:</p>
 <p>https://www.reddit.com/r/haskell/comments/7e8bom/slides_joy_frustration_of_putting_34000_lines_of/</p>
 <h1 id="whats-with-the-funny-names">What's with the funny names?</h1>
 <p>Charting is an age-old craft, and stuffed to the brim with cliche and jargon. I wanted to cut through the cruft of what is thought of as a chart (and charting has been dominated by excel for 30 years), and approach charting from a haskelly perspective. The funny names were the cohorts that popped out. A rough translation:</p>
@@ -97,14 +102,20 @@
 </table>
 <h1 id="gallery">Gallery</h1>
 <p>Composable chart types and the power of diagrams make it easy to invent new charts. Here's some inspiration (all code for these charts is in <a href="https://github.com/tonyday567/chart-unit/blob/master/examples/sourceExamples.hs">examples/sourceExamples.hs</a>).</p>
+<h2 id="grid">grid</h2>
+<div class="figure">
+<img src="other/gridExample.svg" />
+
+</div>
+<h2 id="time">time</h2>
+<p><code>Chart.Data.Time</code> deals with the scenario where you want to plot a time series consecutively (y values are [0..]) but there are gaps in the seris such as no data on weekend days.</p>
+<div class="figure">
+<img src="other/timeExample.svg" />
+
+</div>
 <h2 id="schoolbook">schoolbook</h2>
 <div class="figure">
 <img src="other/schoolbookExample.svg" />
-
-</div>
-<h2 id="labelled-bar">labelled bar</h2>
-<div class="figure">
-<img src="other/labelledBarExample.svg" />
 
 </div>
 <h2 id="from-the-haskell-survey-...">From the Haskell survey ...</h2>

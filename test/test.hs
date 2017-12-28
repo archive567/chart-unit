@@ -43,6 +43,9 @@ testWithChart =
 
 main :: IO ()
 main = do
-  doctest ["src/Chart/Data/Time.hs"]
+  doctest
+      [ "src/Chart/Data/Time.hs"
+      -- , "src/Chart/Core.hs"
+      ]
   t1 <- testSpec "withChart" testWithChart
   defaultMain $ testGroup "chart-unit" [t1]

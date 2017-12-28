@@ -39,8 +39,10 @@ data TextOptions = TextOptions
 instance Default TextOptions where
   def = TextOptions 0.08 AlignCenter AlignMid (withOpacity black 0.33) EvenOdd 0 Lin2
 
+-- | ADT of fonts
 data TextFont = Lin2 | Lin deriving (Show)
 
+-- | transform from chart-unit to SVGFonts rep of font
 textFont :: TextFont -> PreparedFont Double
 textFont Lin = lin
 textFont Lin2 = lin2
@@ -72,11 +74,11 @@ texts opts ts ps = mconcat $ zipWith (\p t -> positioned p (text_ opts t)) ps ts
 textChart ::
      (Traversable f)
   => [TextOptions]
-  -> Aspect
+  -> Rect Double
   -> Rect Double
   -> [f (Text, Pair Double)]
   -> Chart b
-textChart optss (Aspect asp) r xyss =
+textChart optss asp r xyss =
   mconcat $
   getZipList $
   texts <$> ZipList optss <*> ZipList (map fst . toList <$> xyss) <*>
@@ -86,11 +88,11 @@ textChart optss (Aspect asp) r xyss =
 --
 -- > import qualified Data.Text as Text
 -- > let ps = [Pair (sin (x*0.1)) x | x<-[0..25]]
--- > textChart_ (repeat $ def {textSize=0.33}) widescreen [zip ts ps]
+-- > textChart_ (repeat $ def & #textSize .~ 0.33) widescreen [zip ts ps]
 --
 -- ![textChart_ example](other/textChart_Example.svg)
 --
-textChart_ :: [TextOptions] -> Aspect -> [[(Text, Pair Double)]] -> Chart b
+textChart_ :: [TextOptions] -> Rect Double -> [[(Text, Pair Double)]] -> Chart b
 textChart_ optss asp xyss =
   textChart optss asp (range $ fmap snd . toList <$> xyss) xyss
 
@@ -106,7 +108,7 @@ instance Default LabelOptions where
 
 -- | Label a chart element with some text
 --
--- > let lopts = def {textAlignH = AlignLeft, textRotation=45}
+-- > let lopts = def & #textAlignH .~ AlignLeft & #textRotation .~ 45}
 -- > labelled (LabelOptions lopts (Pair 1 1) 0.05) "a label" (glyph_ def)
 --
 -- ![labelled example](other/labelledExample.svg)

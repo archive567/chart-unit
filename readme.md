@@ -10,7 +10,7 @@
 Chart Types
 ===
 
-So far, there are 8 major chart types:
+So far, there are 9 major chart types:
 
 ![](other/textHudExample.svg)
 
@@ -28,6 +28,10 @@ So far, there are 8 major chart types:
 
 ![](other/arrowHudExample.svg)
 
+![](other/barExample.svg)
+
+
+
 Why the name chart-unit?
 ===
 
@@ -35,6 +39,8 @@ Most of the behind-the-scenes grunt work is scaling data, projecting points from
 
 generic-lens rocks
 ===
+
+generic lens is the future of api in haskell:
 
 https://www.reddit.com/r/haskell/comments/7e8bom/slides_joy_frustration_of_putting_34000_lines_of/
 
@@ -62,6 +68,10 @@ Gallery
 
 Composable chart types and the power of diagrams make it easy to invent new charts.  Here's some inspiration (all code for these charts is in [examples/sourceExamples.hs](https://github.com/tonyday567/chart-unit/blob/master/examples/sourceExamples.hs)).
 
+grid
+---
+
+![](other/gridExample.svg)
 
 time
 ---
@@ -74,11 +84,6 @@ schoolbook
 ---
 
 ![](other/schoolbookExample.svg)
-
-labelled bar
----
-
-![](other/labelledBarExample.svg)
 
 
 From the Haskell survey ...

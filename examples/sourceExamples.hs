@@ -138,7 +138,7 @@ lgdata =
   where
     g = Pair <$> [0 .. 5] <*> [0 .. 5] :: [Pair Int]
 
-lglyphChart_Example :: Aspect -> Chart b
+lglyphChart_Example :: Rect Double -> Chart b
 lglyphChart_Example a =
   lglyphChart_
     [#gap .~ 0.015 $ #text . #size .~ 0.12 $ def]
@@ -359,8 +359,7 @@ axisExample = axis aopts one (Range 0 100000)
 legends :: [(LegendType b, Text)]
 legends =
   [(LegendText def, "legend")] <> [(LegendPixel (blob ublue) 0.05, "pixel")] <>
-    -- [ (LegendArrow (def {minStaffWidth=0.01,
-    --                      minHeadLength=0.03}) 0.05, "arrow")] <>
+    -- [ (LegendArrow (def & #minStaffWidth .~ 0.01 & #minHeadLength .~ 0.03) 0.05, "arrow")] <>
   [(LegendRect def 0.05, "rect")] <>
   [(LegendGLine def def 0.10, "glyph+line")] <>
   [(LegendGlyph def, "just a glyph")] <>
@@ -433,8 +432,8 @@ scatterHistExample xys =
         ((\x -> withOpacity (d3Colors1 x) 0.3) <$> [6,8])
         [Circle, Triangle, Square]
 
-    mainAspect = Aspect $ Rect -0.5 0.5 -0.5 0.5
-    minorAspect = Aspect $ Rect -0.5 0.5 -0.1 0.1
+    mainAspect = Rect -0.5 0.5 -0.5 0.5
+    minorAspect = Rect -0.5 0.5 -0.1 0.1
     sc1 = glyphChart_ sopts mainAspect xys
     histx = rectChart_ defHist minorAspect hx
     histy = rectChart_ defHist minorAspect hy
@@ -452,21 +451,16 @@ scatterHistExample xys =
     hy = makeHist 50 . fmap (view _y) <$> xys
 
 
-labelledBarExample :: Chart b
-labelledBarExample =
-    rectChart_ [def]
-    sixbyfour
-    [rs] <>
-    textChart (repeat (#color .~ ucolor 0.33 0.33 0.33 0.8 $ def)) sixbyfour
-    (Rect -0.5 9.5 (-2) 11)
-    [zipWith (\x y -> (show y, Pair x ((if y>0 then -1 else 0.5) + y))) [0..] ys] <>
+barExample :: Chart b
+barExample  =
+    barChart def (BarData [ys] Nothing Nothing) <>
     hud
-    ( #axes .~
+    ( #titles .~ [(def,"Bar Chart")] $
+      #axes .~
       [ #tickStyle .~
         TickLabels labels' $
         def
       ]
-      $ #aspect .~ sixbyfour
       $ #range .~ Just (fold (abs <$> rs))
       $ def
     )
@@ -553,7 +547,7 @@ surveyHud ao t d =
     $ def)
   where
     (Ranges rx _) = barRange (snd <$> d)
-    (Aspect (Ranges aspx _)) = sixbyfour
+    (Ranges aspx _) = sixbyfour
 
 surveyText :: AlphaColour Double -> Double -> [Int] -> Chart b
 surveyText tc gap ys =
@@ -594,8 +588,8 @@ skinnyExample = do
 histDiffExample :: ([Rect Double],[Rect Double]) -> Chart b
 histDiffExample (h1, h2) =
     let deltah = zipWith (\(Rect x y z w) (Rect _ _ _ w') -> Rect x y z (w-w')) h1 h2
-        mainAspect = Aspect (Rect -0.75 0.75 -0.5 0.5)
-        botAspect = Aspect (Rect -0.75 0.75 -0.2 0.2)
+        mainAspect = Rect -0.75 0.75 -0.5 0.5
+        botAspect = Rect -0.75 0.75 -0.2 0.2
         (Ranges rx ry) = fold $ fold [h1,h2]
         (Ranges _ deltary) = fold (abs <$> deltah)
     in
@@ -669,15 +663,15 @@ parabola r f grain xscope =
     lineChart [#size .~ 0.01 $ #color .~ ucolor 0.6 0.6 0.6 1 $ def] asquare r
     [dataXY f xscope grain]
 
-ceptLines :: Renderable (Path V2 Double) b => Aspect -> Rect Double -> (Double -> Double) -> Double -> QDiagram b V2 Double Any
-ceptLines (Aspect asp) r@(Ranges rx ry) f x =
+ceptLines :: Renderable (Path V2 Double) b => Rect Double -> Rect Double -> (Double -> Double) -> Double -> QDiagram b V2 Double Any
+ceptLines asp r@(Ranges rx ry) f x =
     mconcat $ lines (#color .~ ucolor 0.2 0.2 0.2 1 $ #size .~ 0.005 $ def) .
     fmap (Chart.project r asp) <$>
     [ [Pair (lower rx) (f x), Pair x (f x)]
     , [Pair x (lower ry), Pair x (f x)]
     ]
 
-cepts :: Renderable (Path V2 Double) b => Aspect -> Rect Double -> (Double -> Double) -> Double -> QDiagram b V2 Double Any
+cepts :: Renderable (Path V2 Double) b => Rect Double -> Rect Double -> (Double -> Double) -> Double -> QDiagram b V2 Double Any
 cepts a r@(Ranges rx ry) f x =
     textChart [def, #alignH .~ AlignCenter $ #rotation .~ 0 $ def]
     a r
@@ -726,7 +720,7 @@ timeData n = do
     pure $ filter (not . isWeekend) $ take n $ (`addDays` today) <$> [0..]
 
 timeExample :: [Day] -> QDiagram SVG V2 Double Any
-timeExample dates = do
+timeExample dates =
     hud
         ( #axes .~ [ adef, defYAxis] $
           #range .~ Just r $ def) <>
@@ -752,7 +746,7 @@ timeExample dates = do
     (ts, _) = 
             placedTimeLabelDiscontinuous PosInnerOnly Nothing g ((`UTCTime` 0) <$> dates)
     ts' = (\(x,y) -> (fromIntegral x,y)) <$> ts
-    (Aspect (Ranges aspx _)) = sixbyfour
+    (Ranges aspx _) = sixbyfour
     adef = adjustAxis def aspx rx $ #tickStyle .~ TickPlaced ts' $ defXAxis
 
 main :: IO ()
@@ -800,18 +794,21 @@ main = do
       pixelHudExample <> pixelateChartExample
   fileSvg "other/arrowHudExample.svg" (600, 400) $
       arrowHudExample <> arrowChart_Example
+  putStrLn ("barExample" :: Text)
+  fileSvg "other/barExample.svg" (600,400) barExample
 
+
+  -- A few helper examples
+  putStrLn ("gridExample" :: Text)
   fileSvg "other/gridExample.svg" (600, 400) gridExample
-
   ts <- timeData 200
+  putStrLn ("timeExample" :: Text)
   fileSvg "other/timeExample.svg" (600, 400) $ timeExample ts
 
   -- gallery
   xys <- mkScatterData
   putStrLn ("scatterHistExample" :: Text)
   fileSvg "other/scatterHistExample.svg" (600,400) (scatterHistExample xys)
-  putStrLn ("labelledBarExample" :: Text)
-  fileSvg "other/labelledBarExample.svg" (600,400) labelledBarExample
   putStrLn ("skinnyExample" :: Text)
   skinnyExample' <- skinnyExample
   fileSvg "other/skinnyExample.svg" (600,150) skinnyExample'

@@ -1,3 +1,4 @@
+{-# LANGUAGE OverloadedLabels #-}
 {-# OPTIONS_GHC -Wall #-}
 {-# OPTIONS_GHC -Wno-unused-top-binds #-}
 
@@ -37,6 +38,7 @@ data GlyphOptions b = GlyphOptions
 instance Default (GlyphOptions b) where
   def = GlyphOptions 0.03 ublue ugrey 0.015 Circle
 
+-- | shape of the glyph expressed in diagrams terms
 data GlyphShape =
     Circle |
     Square |
@@ -52,6 +54,7 @@ data GlyphShape =
     HLine Double
     deriving Show
 
+-- | convert from chart-unit to diagrams shapes
 glyphShape :: GlyphShape -> (Double -> Chart b)
 glyphShape Circle = \x -> circle (x/2)
 glyphShape Square = square
@@ -97,37 +100,38 @@ glyphs opts xs = mconcat $ toList $ (\x -> positioned x (glyph_ opts)) <$> xs
 glyphChart ::
      (Traversable f)
   => [GlyphOptions b]
-  -> Aspect
+  -> Rect Double
   -> Rect Double
   -> [f (Pair Double)]
   -> Chart b
-glyphChart optss (Aspect asp) r xyss =
+glyphChart optss asp r xyss = 
   mconcat $ zipWith glyphs optss (projectss r asp xyss)
 
 -- | A chart of glyphs scaled to its own range
 --
--- > gopts :: [GlyphOptions b]
--- > gopts = [ glyphBorderSize_ .~ 0.001 $ def
--- >         , glyphBorderSize_ .~ 0.001 $
--- >           glyphSize_ .~ 0.1 $
--- >           glyphColor_ .~ rybColor 7 `withOpacity` 0.4 $
--- >           def {glyphShape = triangle}
--- >         ]
--- > 
--- > gdata :: [[Pair Double]]
--- > gdata = [ dataXY sin (Range 0 (2*pi)) 30
--- >         , dataXY cos (Range 0 (2*pi)) 30
--- >         ]
--- > 
 -- > glyphChart_Example :: Chart b
 -- > glyphChart_Example = glyphChart_ gopts widescreen gdata
+-- >   where
+-- >     gopts :: [GlyphOptions b]
+-- >     gopts = [ #borderSize .~ 0.001 $ def
+-- >             , #borderSize .~ 0.001 $
+-- >               #size .~ 0.1 $
+-- >               #color .~ rybColor 7 `withOpacity` 0.4 $
+-- >               #shape .~ Triangle $ def
+-- >             ]
+-- >
+-- >     gdata :: [[Pair Double]]
+-- >     gdata = [ dataXY sin (Range 0 (2*pi)) 30
+-- >             , dataXY cos (Range 0 (2*pi)) 30
+-- >             ]
+-- >
 --
 -- ![glyphChart_ example](other/glyphChart_Example.svg)
 --
 glyphChart_ ::
      (Traversable f)
   => [GlyphOptions b]
-  -> Aspect
+  -> Rect Double
   -> [f (Pair Double)]
   -> Chart b
 glyphChart_ optss asp xyss = glyphChart optss asp (range xyss) xyss
@@ -153,11 +157,11 @@ lglyphChart ::
      (Traversable f)
   => [LabelOptions]
   -> [GlyphOptions b]
-  -> Aspect
+  -> Rect Double
   -> Rect Double
   -> [f (Text, Pair Double)]
   -> Chart b
-lglyphChart ls gs (Aspect asp) r xyss =
+lglyphChart ls gs asp r xyss =
   mconcat $
   getZipList $
   lglyphs <$> ZipList ls <*> ZipList gs <*>
@@ -169,9 +173,22 @@ lglyphChart ls gs (Aspect asp) r xyss =
 
 -- | A chart of labelled glyphs scaled to its own range
 --
--- > let g = Pair <$> [0..5] <*> [0..5] :: [Pair Int]
--- > let xs = [(\(p@(Pair x y)) -> ((show x <> "," <> show y), fromIntegral <$> p)) <$> g]
--- > lglyphChart_ [def {labelGap=0.01}] [def] sixbyfour xs
+-- > lgdata :: [[(Text, Pair Double)]]
+-- > lgdata =
+-- >     [(\(p@(Pair x y)) -> (show x <> "," <> show y, fromIntegral <$> p)) <$> g]
+-- >   where
+-- >     g = Pair <$> [0 .. 5] <*> [0 .. 5] :: [Pair Int]
+-- >
+-- > lglyphChart_Example :: Rect Double -> Chart b
+-- > lglyphChart_Example a =
+-- >   lglyphChart_
+-- >     [#gap .~ 0.015 $ #text . #size .~ 0.12 $ def]
+-- >     [#color .~ black `withOpacity` 1 $
+-- >      #borderSize .~ 0 $
+-- >      #size .~ 0.01 $
+-- >      def]
+-- >     a
+-- >     lgdata
 --
 -- ![lglyphChart_ example](other/lglyphChart_Example.svg)
 --
@@ -179,7 +196,7 @@ lglyphChart_ ::
      (Traversable f)
   => [LabelOptions]
   -> [GlyphOptions b]
-  -> Aspect
+  -> Rect Double
   -> [f (Text, Pair Double)]
   -> Chart b
 lglyphChart_ ls gs asp xyss =
