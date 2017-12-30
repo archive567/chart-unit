@@ -1,3 +1,5 @@
+{-# LANGUAGE DataKinds #-}
+{-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE DuplicateRecordFields #-}
 {-# LANGUAGE OverloadedLabels #-}
 {-# OPTIONS_GHC -Wall #-}
@@ -49,16 +51,17 @@ import Chart.Text
 import qualified Control.Foldl as L
 import Data.List (nub)
 import Data.Ord (max)
+import Data.Scientific
 import Diagrams.Prelude
        hiding (Color, D, (*.), (<>), project, width, zero, (<>))
 import qualified Diagrams.TwoD.Size as D
 import Formatting
+import Data.Generics.Product
 import NumHask.Pair
 import NumHask.Prelude hiding (max)
 import NumHask.Range
 import NumHask.Rect
 import NumHask.Space
-import Data.Generics.Labels()
 import Diagrams.Backend.SVG (SVG)
 
 -- | Various options for a hud.
@@ -92,13 +95,13 @@ hud (HudOptions p as gs ts ls mr ar@(Ranges ax ay) can) =
   where
     r = fromMaybe one mr
     addTitle x (topts, t) =
-      beside (placeOutside (topts ^. #place)) x (title ar topts t)
+      beside (placeOutside (topts ^. field @"place")) x (title ar topts t)
     addLegend x lopts =
-      beside (placeOutside (lopts ^. #place)) x $
-      if 0 == length (lopts ^. #chartType)
+      beside (placeOutside (lopts ^. field @"place")) x $
+      if 0 == length (lopts ^. field @"chartType")
         then mempty
         else (\x' ->
-                moveTo (p_ $ pos' (lopts ^. #align) (lopts ^. #place) x') x') $
+                moveTo (p_ $ pos' (lopts ^. field @"align") (lopts ^. field @"place") x') x') $
              legend lopts
     pos' AlignCenter _ _ = Pair 0 0
     pos' AlignLeft PlaceTop x = Pair (lower ax - 0.5 * D.width x) 0
@@ -113,9 +116,9 @@ hud (HudOptions p as gs ts ls mr ar@(Ranges ax ay) can) =
     uptoAxes = L.fold (L.Fold addAxis canvas' identity) as
     canvas' = rect_ can ar
     addAxis x aopts =
-      case aopts ^. #orientation of
-        Hori -> beside (placeOutside (aopts ^. #place)) x (axis aopts ax rx)
-        Vert -> beside (placeOutside (aopts ^. #place)) x (axis aopts ay ry)
+      case aopts ^. field @"orientation" of
+        Hori -> beside (placeOutside (aopts ^. field @"place")) x (axis aopts ax rx)
+        Vert -> beside (placeOutside (aopts ^. field @"place")) x (axis aopts ay ry)
       where
         (Ranges rx ry) = fromMaybe one mr
 
@@ -125,8 +128,8 @@ hud (HudOptions p as gs ts ls mr ar@(Ranges ax ay) can) =
 -- > withHudExample = withHud hopts (lineChart lopts) ls
 -- >     where
 -- >       hopts = def &
--- >         #titles .~ [(def,"withHud Example")] &
--- >         #legends .~ [def & #chartType .~ zipWith (\x y ->
+-- >         field @"titles" .~ [(def,"withHud Example")] &
+-- >         field @"legends" .~ [def & field @"chartType" .~ zipWith (\x y ->
 -- >                     (LegendLine x 0.05, y)) lopts ["line1", "line2", "line3"]]
 --
 -- ![withHud example](other/withHudExample.svg)
@@ -138,16 +141,16 @@ withHud ::
   -> [f (Pair Double)]
   -> Chart b
 withHud opts renderer d =
-  case opts ^. #range of
+  case opts ^. field @"range" of
     Nothing ->
-      renderer (opts ^. #aspect) (foldMap space d) d <>
-      hud (#range .~ Just (foldMap space d) $ opts)
+      renderer (opts ^. field @"aspect") (foldMap space d) d <>
+      hud (field @"range" .~ Just (foldMap space d) $ opts)
     Just r ->
       combine
-        (opts ^. #aspect)
+        (opts ^. field @"aspect")
         [ UChart renderer r d
         , UChart
-            (\asp _ _ -> hud (#aspect .~ asp $ #range .~ Just r $ opts))
+            (\asp _ _ -> hud (field @"aspect" .~ asp $ field @"range" .~ Just r $ opts))
             r
             []
         ]
@@ -237,11 +240,11 @@ instance Default AxisOptions where
 -- >   where
 -- >     aopts :: AxisOptions b
 -- >     aopts =
--- >         #label . #text %~
--- >         ((#rotation .~ -45) .
--- >          (#size .~ 0.06) .
--- >          (#alignH .~ AlignLeft)) $
--- >         #gap .~ 0.0001 $
+-- >         field @"label" . field @"text" %~
+-- >         ((field @"rotation" .~ -45) .
+-- >          (field @"size" .~ 0.06) .
+-- >          (field @"align"H .~ AlignLeft)) $
+-- >         field @"gap" .~ 0.0001 $
 -- >         def
 --
 -- ![axis example](other/axisExample.svg)
@@ -249,35 +252,35 @@ instance Default AxisOptions where
 axis :: () => AxisOptions -> Range Double -> Range Double -> Chart b
 axis opts asp r =
   mo $
-  pad (opts ^. #outerPad) $
+  pad (opts ^. field @"outerPad") $
   astrut $
   atPoints
     (pl <$> tickLocations)
-    ((\x -> labelled (opts ^. #label) x (glyph_ (opts ^. #mark))) <$> tickLabels)
+    ((\x -> labelled (opts ^. field @"label") x (glyph_ (opts ^. field @"mark"))) <$> tickLabels)
     `atop`
-  arect (opts ^. #orientation )
+  arect (opts ^. field @"orientation" )
   where
     mo = moveOriginTo (p2 ((-lower asp) - width asp / 2, 0))
     arect Hori =
-      rect_ (opts ^. #rect) (Ranges asp (Range 0 (opts ^. #rectHeight)))
+      rect_ (opts ^. field @"rect") (Ranges asp (Range 0 (opts ^. field @"rectHeight")))
     arect Vert =
-      rect_ (opts ^. #rect) (Ranges (Range 0 (opts ^. #rectHeight)) asp)
+      rect_ (opts ^. field @"rect") (Ranges (Range 0 (opts ^. field @"rectHeight")) asp)
     astrut =
-      beside (placeOutside (opts ^. #place))
-        (case opts ^. #orientation of
-           Hori -> strutY (opts ^. #gap)
-           Vert -> strutX (opts ^. #gap))
+      beside (placeOutside (opts ^. field @"place"))
+        (case opts ^. field @"orientation" of
+           Hori -> strutY (opts ^. field @"gap")
+           Vert -> strutX (opts ^. field @"gap"))
     pl =
-      let gs = (opts ^. #mark . #size)
-      in case opts ^. #place of
+      let gs = (opts ^. field @"mark" . field @"size")
+      in case opts ^. field @"place" of
            PlaceBottom ->
              \x ->
-               p2 (x, (-0.5 * gs) + opts ^. #rectHeight + opts ^. #markStart)
+               p2 (x, (-0.5 * gs) + opts ^. field @"rectHeight" + opts ^. field @"markStart")
            PlaceLeft ->
              \y ->
-               p2 ((-0.5 * gs) + opts ^. #rectHeight + opts ^. #markStart, y)
-           PlaceTop -> \x -> p2 (x, (0.5 * gs) + opts ^. #markStart)
-           PlaceRight -> \y -> p2 ((0.5 * gs) + opts ^. #markStart, y)
+               p2 ((-0.5 * gs) + opts ^. field @"rectHeight" + opts ^. field @"markStart", y)
+           PlaceTop -> \x -> p2 (x, (0.5 * gs) + opts ^. field @"markStart")
+           PlaceRight -> \y -> p2 ((0.5 * gs) + opts ^. field @"markStart", y)
     (tickLocations, tickLabels) = computeTicks opts r asp
 
 -- | options for prettifying axis decorations
@@ -295,14 +298,14 @@ instance Default AutoOptions where
 -- | adjust an axis for sane font sizes etc
 adjustAxis :: AutoOptions -> Range Double -> Range Double ->
   AxisOptions -> AxisOptions
-adjustAxis (AutoOptions mrx ma mry ad) asp r opts = case opts ^. #orientation of
+adjustAxis (AutoOptions mrx ma mry ad) asp r opts = case opts ^. field @"orientation" of
   Hori -> case ad of
-    False -> (#label . #text . #size %~ (/adjustSizeX)) opts
+    False -> (field @"label" . field @"text" . field @"size" %~ (/adjustSizeX)) opts
     True ->
         case adjustSizeX > one of
-          True -> (#label . #text . #rotation .~ (-45)) . (#label . #text . #alignH .~ AlignLeft) $ (#label . #text . #size %~ (/adjustSizeA)) opts
-          False -> (#label . #text . #size %~ (/adjustSizeA)) opts
-  Vert -> (#label . #text . #size %~ (/adjustSizeY)) opts
+          True -> (field @"label" . field @"text" . field @"rotation" .~ (-45)) . (field @"label" . field @"text" . field @"alignH" .~ AlignLeft) $ (field @"label" . field @"text" . field @"size" %~ (/adjustSizeA)) opts
+          False -> (field @"label" . field @"text" . field @"size" %~ (/adjustSizeA)) opts
+  Vert -> (field @"label" . field @"text" . field @"size" %~ (/adjustSizeY)) opts
 
   where
         tickl = snd (computeTicks opts r asp)
@@ -310,13 +313,13 @@ adjustAxis (AutoOptions mrx ma mry ad) asp r opts = case opts ^. #orientation of
           maximum $
           (\x ->
               D.width
-              (text_ (opts ^. #label . #text) x :: QDiagram SVG V2 Double Any))
+              (text_ (opts ^. field @"label" . field @"text") x :: QDiagram SVG V2 Double Any))
               <$> tickl
         maxHeight =
           maximum $
           (\x ->
               D.height
-              (text_ (opts ^. #label . #text) x :: QDiagram SVG V2 Double Any))
+              (text_ (opts ^. field @"label" . field @"text") x :: QDiagram SVG V2 Double Any))
               <$> tickl
         adjustSizeX = maximum [(maxWidth / (upper asp - lower asp)) / mrx, one]
         adjustSizeY = maximum [(maxHeight / (upper asp - lower asp)) / mry, one]
@@ -330,7 +333,7 @@ axisSane ao opts asp r =
 -- | compute tick values and labels given options and ranges
 computeTicks :: AxisOptions -> Range Double -> Range Double -> ([Double], [Text])
 computeTicks opts r asp =
-    case opts ^. #tickStyle of
+    case opts ^. field @"tickStyle" of
       TickNone -> ([], [])
       TickRound n -> (project r asp <$> ticks0, precision 0 ticks0)
         where ticks0 = gridSensible OuterPos r n
@@ -354,12 +357,13 @@ data TickStyle
 -- | Provide formatted text for a list of numbers so that they are just distinguished.  'precision 2 ticks' means give the tick labels as much precision as is needed for them to be distinguished, but with at least 2 significant figues.
 precision :: Int -> [Double] -> [Text]
 precision n0 xs
-  | foldr max 0 xs < 0.01 = precLoop Formatting.expt n0 xs
-  | foldr max 0 xs > 100000 = precLoop Formatting.expt n0 xs
+  | foldr max 0 xs < 0.01 = precLoop expt n0 (fromFloatDigits <$> xs)
+  | foldr max 0 xs > 100000 = precLoop expt n0 (fromFloatDigits <$> xs)
   | foldr max 0 xs > 1000 =
     precLoopInt (const Formatting.commas) n0 (floor <$> xs)
   | otherwise = precLoop fixed n0 xs
   where
+    expt x = scifmt Exponent (Just x)
     precLoop f n xs' =
       let s = sformat (f n) <$> xs'
       in if s == nub s
@@ -390,7 +394,7 @@ instance Default TitleOptions where
 -- | Create a title for a chart. The logic used to work out placement is flawed due to being able to freely specify text rotation.  It works for specific rotations (Top, Bottom at 0, Left at 90, Right @ 270)
 title :: Rect Double -> TitleOptions -> Text -> Chart b
 title (Ranges aspx aspy) (TitleOptions textopts a p s) t =
-  placeGap p s (positioned (pos a p) (text_ ( #alignH .~ a $ textopts) t))
+  placeGap p s (positioned (pos a p) (text_ ( field @"alignH" .~ a $ textopts) t))
   where
     pos AlignCenter _ = Pair 0 0
     pos AlignLeft PlaceTop = Pair (lower aspx) 0
@@ -413,7 +417,7 @@ data LegendType
                 Double
   | LegendRect RectOptions
                Double
-  | LegendArrow (ArrowOptions Double)
+  | LegendArrow ArrowOptions
                 Double
   | LegendPixel RectOptions
                 Double
@@ -469,49 +473,49 @@ instance Default LegendOptions where
 --
 legend :: LegendOptions -> Chart b
 legend opts =
-  placeGap (opts ^. #place) (opts ^. #gap) $
-  bound (opts ^. #canvasRect) 1 $
-  pad (opts ^. #innerPad) $
+  placeGap (opts ^. field @"place") (opts ^. field @"gap") $
+  bound (opts ^. field @"canvasRect") 1 $
+  pad (opts ^. field @"innerPad") $
   centerXY $
   vert
-    (pad (opts ^. #rowPad))
-    (intersperse (strutY (opts ^. #innerSep)) $
-     legend__ <$> opts ^. #chartType)
+    (pad (opts ^. field @"rowPad"))
+    (intersperse (strutY (opts ^. field @"innerSep")) $
+     legend__ <$> opts ^. field @"chartType")
   where
     legend__ (LegendText c, t) = text_ c t
     legend__ (LegendGlyph c, t) =
       hori
         identity
-        [glyph_ c, strutX (opts ^. #sep), text_ (opts ^. #text) t]
+        [glyph_ c, strutX (opts ^. field @"sep"), text_ (opts ^. field @"text") t]
     legend__ (LegendLine c l, t) =
       hori
         identity
         [ oneline c (Pair (Pair 0 0) (Pair l 0))
-        , strutX (opts ^. #sep)
-        , text_ (opts ^. #text) t
+        , strutX (opts ^. field @"sep")
+        , text_ (opts ^. field @"text") t
         ]
     legend__ (LegendGLine gc lopts l, t) =
       hori
         identity
         [ glyph_ gc `atop` oneline lopts (Pair (Pair (-l) 0) (Pair l 0))
-        , strutX (opts ^. #sep)
-        , text_ (opts ^. #text) t
+        , strutX (opts ^. field @"sep")
+        , text_ (opts ^. field @"text") t
         ]
     legend__ (LegendRect c s, t) =
       hori
         identity
-        [rect_ c (s *. one), strutX (opts ^. #sep), text_ (opts ^. #text) t]
+        [rect_ c (s *. one), strutX (opts ^. field @"sep"), text_ (opts ^. field @"text") t]
     legend__ (LegendArrow c s, t) =
       hori
         identity
         [ arrows c [Arrow zero (s *. one), Arrow (s *. one) zero]
-        , strutX (opts ^. #sep)
-        , text_ (opts ^. #text) t
+        , strutX (opts ^. field @"sep")
+        , text_ (opts ^. field @"text") t
         ]
     legend__ (LegendPixel c s, t) =
       hori
         identity
-        [rect_ c (s *. one), strutX (opts ^. #sep), text_ (opts ^. #text) t]
+        [rect_ c (s *. one), strutX (opts ^. field @"sep"), text_ (opts ^. field @"text") t]
 
 data GridPos = GridOuterPos | GridInnerPos | GridLowerPos | GridUpperPos | GridMidPos deriving (Show, Generic, Eq)
 

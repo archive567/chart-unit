@@ -17,7 +17,6 @@ module Chart.Data.Time
   , placedTimeLabelDiscontinuous
   ) where
 
-import Data.Generics.Labels()
 import Data.Time
 import GHC.Base (String)
 import NumHask.Prelude

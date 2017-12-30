@@ -14,8 +14,8 @@
 -- > import Chart
 --
 module Chart
-    -- * chart-unit
-  ( module Chart.Core
+  ( -- * chart-unit
+    module Chart.Core
   , module Chart.Data
   , module Chart.Data.Time
   , module Chart.Arrow

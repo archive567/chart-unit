@@ -1,4 +1,6 @@
 {-# LANGUAGE OverloadedLabels #-}
+{-# LANGUAGE TypeApplications #-}
+{-# LANGUAGE DataKinds #-}
 {-# OPTIONS_GHC -Wall #-}
 {-# LANGUAGE CPP #-}
 #if ( __GLASGOW_HASKELL__ < 820 )
@@ -21,6 +23,7 @@ import Chart.Hud
 import Chart.Rect
 import qualified Control.Foldl as L
 import Data.Colour.Palette.ColorSet
+import Data.Generics.Product
 import Diagrams.Prelude hiding (Additive, Color, D, zero, (<>))
 import NumHask.Prelude
 import NumHask.Range
@@ -137,5 +140,5 @@ barRange ys = Rect zero (fromIntegral $ maximum (length <$> ys)) (min zero l) u
 --
 barChart :: BarOptions -> BarData -> Chart b
 barChart bo bd =
-    rectChart (bo ^. #rectOptions) sixbyfour
-    (barRange (bd ^. #barData)) (barRects bo (bd ^. #barData))
+    rectChart (bo ^. field @"rectOptions") sixbyfour
+    (barRange (bd ^. field @"barData")) (barRects bo (bd ^. field @"barData"))

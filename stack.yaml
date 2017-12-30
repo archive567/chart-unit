@@ -1,8 +1,8 @@
-resolver: nightly-2017-11-22
+resolver: nightly-2017-12-29
 
 packages:
   - .
 
 extra-deps:
-- git: https://github.com/kcsongor/generic-lens.git
-  commit: 876ad15282e2ea5e5d77e3eae4c4a2bba77bd81a
+  - git: https://github.com/tonyday567/generic-lens.git
+    commit: b2ca4e529a64e1c72632b5a4b472d9130d471233

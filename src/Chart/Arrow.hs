@@ -12,7 +12,6 @@ module Chart.Arrow (
   ) where
 
 import Chart.Core
-import Data.Generics.Labels()
 import Data.Ord (max)
 import Diagrams.Prelude hiding (width, D, Color, project)
 import GHC.Generics
@@ -77,18 +76,18 @@ arrowHTStyle (Quill2 a) = arrowtailQuill (a @@ deg)
 arrowHTStyle (Block2 a) = arrowtailBlock (a @@ deg)
 
 -- | todo: quite a clunky specification of what an arrow is (or could be)
-data ArrowOptions a = ArrowOptions
-    { minLength :: a
-    , maxLength :: a
-    , minHeadLength :: a
-    , maxHeadLength :: a
-    , minStaffWidth :: a
-    , maxStaffWidth :: a
+data ArrowOptions = ArrowOptions
+    { minLength :: Double
+    , maxLength :: Double
+    , minHeadLength :: Double
+    , maxHeadLength :: Double
+    , minStaffWidth :: Double
+    , maxStaffWidth :: Double
     , color :: AlphaColour Double
-    , hStyle :: ArrowHTStyle a
+    , hStyle :: ArrowHTStyle Double
     } deriving (Show, Generic)
 
-instance Default (ArrowOptions Double) where
+instance Default ArrowOptions where
     def = ArrowOptions 0.02 0.2 0.01 0.1 0.002 0.005 ublue Dart
 
 -- | Equalize the arrow space width with the data space one.
@@ -128,7 +127,7 @@ data Arrow = Arrow
 --
 -- ![arrows example](other/arrowsExample.svg)
 --
-arrows :: (Traversable f) => ArrowOptions Double -> f Arrow -> Chart b
+arrows :: (Traversable f) => ArrowOptions -> f Arrow -> Chart b
 arrows opts xs = c
   where
     c = fcA (color opts) $ position $  getZipList $
@@ -170,7 +169,7 @@ arrows opts xs = c
 -- | A chart of arrows
 arrowChart ::
     (Traversable f) =>
-    [ArrowOptions Double] ->
+    [ArrowOptions] ->
     Rect Double ->
     Rect Double ->
     [f Arrow] ->
@@ -196,7 +195,7 @@ arrowChart optss asp r xss =
 --
 arrowChart_ ::
     (Traversable f) =>
-    [ArrowOptions Double] ->
+    [ArrowOptions] ->
     Rect Double ->
     [f Arrow] ->
     Chart b

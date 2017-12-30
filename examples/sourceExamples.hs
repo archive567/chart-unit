@@ -348,7 +348,7 @@ withHudExample = withHud hopts (lineChart lopts) ls
 axisExample :: Chart b
 axisExample = axis aopts one (Range 0 100000)
   where
-    aopts :: AxisOptions b
+    aopts :: AxisOptions
     aopts =
         #label . #text %~
         ((#rotation .~ -45) .
