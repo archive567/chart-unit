@@ -1,3 +1,9 @@
+{-# LANGUAGE NoImplicitPrelude #-}
+{-# LANGUAGE RankNTypes #-}
+{-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE GADTs #-}
+{-# LANGUAGE NegativeLiterals #-}
+
 {-# OPTIONS_GHC -Wall #-}
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 {-# LANGUAGE CPP #-}
@@ -15,22 +21,25 @@
 --
 -- Jumping ahead a bit, the code snippet below draws vertical lines using a data range of "Rect 0 12 0 0.2" (slightly different to the actual data range), using a widescreen (3:1) aspect, and renders the chart as a 300 by 120 pixel svg:
 --
--- > fileSvg "other/scaleExample.svg" (300,120) $
--- >   withHud (hudAspect_ .~ widescreen $ hudRange_ .~ Just (Rect 0 12 0 0.2) $ def)
--- >   (lineChart (repeat def)) ((\x -> [Pair x 0, Pair x (x/100)]) <$> [0..10])
+-- > let scaleExample = fileSvg "other/scaleExample.svg" (300,120) $
+-- >   withHud
+-- >   ( #aspect .~ widescreen $
+-- >     #range .~ Just (Rect 0 12 0 0.2) $
+-- >     def)
+-- >   (lineChart (repeat def))
+-- >   (vlineOneD ((0.01*) <$> [0..10]))
 --
 -- ![scale example](other/scaleExample.svg)
 --
+
 module Chart.Core
   ( -- * Chart types
     Chart
   , UChart(..)
   , combine
-
     -- * Scaling
   , range
   , projectss
-  , Aspect(..)
   , aspect
   , asquare
   , sixbyfour
@@ -43,11 +52,9 @@ module Chart.Core
   , alignHTU
   , alignVU
   , alignVTU
-
     -- * Types
   , Orientation(..)
   , Place(..)
-
     -- * Combinators
     --
     -- | The concept of a point on a chart is the polymorphic 'R2' from the 'linear' library.  Diagrams most often uses 'Point', which is a wrapped 'V2'.  The 'Pair' type from 'numhask-range' is often used as a point reference.
@@ -59,17 +66,14 @@ module Chart.Core
   , hori
   , sepVert
   , sepHori
-
     -- * IO
   , fileSvg
-
     -- * Color
     --
     -- | chart-unit exposes the 'colour' and 'palette' libraries for color combinators
   , ucolor
   , ublue
   , ugrey
-
     -- * Compatability
   , scaleX
   , scaleY
@@ -95,13 +99,13 @@ type Chart b
 -- | a UChart provides a late binding of a chart Aspect so multiple charts can be rendered using the same range.
 data UChart a b = UChart
   { uchartRenderer :: () =>
-                        Aspect -> Rect Double -> a -> Chart b
+                        Rect Double -> Rect Double -> a -> Chart b
   , uchartRenderRange :: Rect Double
   , uchartData :: a
   }
 
 -- | render a list of charts, taking into account each of their ranges
-combine :: Aspect -> [UChart a b] -> Chart b
+combine :: Rect Double -> [UChart a b] -> Chart b
 combine asp qcs = mconcat $ (\(UChart c _ x) -> c asp rall x) <$> qcs
   where
     rall = fold $ (\(UChart _ r1 _) -> r1) <$> qcs
@@ -119,36 +123,28 @@ projectss r0 r1 xyss = map (project r0 r1) <$> xyss
 range :: (Foldable f, Foldable g) => g (f (Pair Double)) -> Rect Double
 range xyss = foldMap space xyss
 
--- | a wrapped Rect specifying the shape od the chart canvas.
---
--- The Aspect tends to be:
---
--- - independent of the data range
--- - expressed in terms around a width magnitude of one.  chart default options are callibrated to this convention.
-newtype Aspect = Aspect (Rect Double) deriving (Show)
-
--- | the rendering aspect of a chart expressed as a ratio of x-plane : y-plane.
-aspect :: Double -> Aspect
-aspect a = Aspect $ Ranges ((a *) <$> one) one
+-- | the aspect of a chart expressed as a ratio of x-plane : y-plane.
+aspect :: (BoundedField a, Ord a, Multiplicative a, FromInteger a) => a -> Rect a
+aspect a = Ranges ((a *) <$> one) one
 
 -- | a 1:1 aspect
-asquare :: Aspect
+asquare :: Rect Double
 asquare = aspect 1
 
 -- | a 1.5:1 aspect
-sixbyfour :: Aspect
+sixbyfour :: Rect Double
 sixbyfour = aspect 1.5
 
 -- | golden ratio
-golden :: Aspect
+golden :: Rect Double
 golden = aspect 1.61803398875
 
 -- | a 3:1 aspect
-widescreen :: Aspect
+widescreen :: Rect Double
 widescreen = aspect 3
 
 -- | a skinny 5:1 aspect
-skinny :: Aspect
+skinny :: Rect Double
 skinny = aspect 5
 
 -- | horizontal alignment
@@ -225,7 +221,14 @@ r_ r = V2 (r ^. _x) (r ^. _y)
 
 -- | foldMap for beside; stacking chart elements in a direction, with a premap
 stack ::
-     (R2 r, V a ~ V2, Foldable t, Juxtaposable a, Semigroup a, N a ~ Double, Monoid a)
+     ( R2 r
+     , V a ~ V2
+     , Foldable t
+     , Juxtaposable a
+     , Semigroup a
+     , N a ~ Double
+     , Monoid a
+     )
   => r Double
   -> (b -> a)
   -> t b

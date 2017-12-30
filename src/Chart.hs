@@ -17,6 +17,7 @@ module Chart
   ( -- * chart-unit
     module Chart.Core
   , module Chart.Data
+  , module Chart.Data.Time
   , module Chart.Arrow
   , module Chart.Glyph
   , module Chart.Hud
@@ -24,27 +25,21 @@ module Chart
   , module Chart.Rect
   , module Chart.Text
   , module Chart.Bar
-
     -- * numhask-range
   , module NumHask.Pair
   , module NumHask.Space
   , module NumHask.Range
   , module NumHask.Rect
-
     -- * color
   , module Data.Colour
   , module Data.Colour.Palette.Harmony
   , module Data.Colour.Palette.ColorSet
-
     -- * fonts
   , module Graphics.SVGFonts
-
     -- * Default
   , Default(..)
-
     -- * Text
   , Text
-
     -- * scratch pad
   , scratch
   ) where
@@ -53,12 +48,12 @@ import Chart.Arrow
 import Chart.Bar
 import Chart.Core
 import Chart.Data
+import Chart.Data.Time
 import Chart.Glyph
 import Chart.Hud
 import Chart.Line
 import Chart.Rect
 import Chart.Text
-import Graphics.SVGFonts hiding (textFont)
 import Data.Colour
 import Data.Colour.Palette.ColorSet
 import Data.Colour.Palette.Harmony
@@ -66,11 +61,12 @@ import Data.Default (Default(..))
 import Data.Text
 import Diagrams.Backend.SVG (SVG)
 import Diagrams.Prelude
+import Graphics.SVGFonts hiding (textFont)
 import NumHask.Pair
+import NumHask.Prelude (IO)
 import NumHask.Range
 import NumHask.Rect
 import NumHask.Space hiding (width)
-import NumHask.Prelude (IO)
 
 -- | a scratch pad
 scratch :: Diagram SVG -> IO ()

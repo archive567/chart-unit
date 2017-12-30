@@ -63,11 +63,11 @@ oneline (LineOptions s c) (Pair x0 x1) =
 lineChart ::
      (Traversable f)
   => [LineOptions]
-  -> Aspect
+  -> Rect Double
   -> Rect Double
   -> [f (Pair Double)]
   -> Chart b
-lineChart optss (Aspect asp) r xyss =
+lineChart optss asp r xyss =
   mconcat $ zipWith lines optss (projectss r asp xyss)
 
 -- | A chart of lines scaled to its own range
@@ -82,14 +82,14 @@ lineChart optss (Aspect asp) r xyss =
 -- ![lineChart_ example](other/lineChart_Example.svg)
 --
 lineChart_ ::
-     (Traversable f) => [LineOptions] -> Aspect -> [f (Pair Double)] -> Chart b
+     (Traversable f) => [LineOptions] -> Rect Double -> [f (Pair Double)] -> Chart b
 lineChart_ optss asp xyss = lineChart optss asp (range xyss) xyss
 
 -- | Lines with glyphs atop eack point
 glines ::
      (Traversable f, R2 r)
   => LineOptions
-  -> GlyphOptions b
+  -> GlyphOptions
   -> f (r Double)
   -> Chart b
 glines opts gopts xs = glyphs gopts xs <> lines opts xs
@@ -98,31 +98,41 @@ glines opts gopts xs = glyphs gopts xs <> lines opts xs
 glineChart ::
      (Traversable f)
   => [LineOptions]
-  -> [GlyphOptions b]
-  -> Aspect
+  -> [GlyphOptions]
+  -> Rect Double
   -> Rect Double
   -> [f (Pair Double)]
   -> Chart b
-glineChart ls gs (Aspect asp) r xyss =
+glineChart ls gs asp r xyss =
   mconcat $
   getZipList $
   glines <$> ZipList ls <*> ZipList gs <*> ZipList (projectss r asp xyss)
 
 -- | A chart of glyphs_lines scaled to its own range
 --
--- > let gopts = zipWith (\x y -> def {color=transparent,
--- >         borderColor=withOpacity x 0.6, shape=y}) (tetrad green)
--- >         [triangle, square, circle]
--- >
--- > glineChart_ lopts gopts sixbyfour ls
+-- > gopts3 :: (Renderable (Path V2 Double) b) => [GlyphOptions b]
+-- > gopts3 =
+-- >       zipWith
+-- >         (\x y ->
+-- >            #color .~ withOpacity (d3Colors1 x) 0.2 $
+-- >            #borderColor .~ withOpacity (d3Colors1 x) 1 $
+-- >            #borderSize .~ 0.005 $
+-- >            #shape .~ y $
+-- >            #size .~ 0.08 $
+-- >            def)
+-- >         [6,8,2]
+-- >         [Triangle, Square, Circle]
+-- > 
+-- > glineChart_Example :: Chart b
+-- > glineChart_Example = glineChart_ lopts gopts3 sixbyfour ls
 --
--- ![lineChart_ example](other/glineChart_Example.svg)
+-- ![glineChart_ example](other/glineChart_Example.svg)
 --
 glineChart_ ::
      (Traversable f)
   => [LineOptions]
-  -> [GlyphOptions b]
-  -> Aspect
+  -> [GlyphOptions]
+  -> Rect Double
   -> [f (Pair Double)]
   -> Chart b
 glineChart_ ls gs asp xyss = glineChart ls gs asp (range xyss) xyss

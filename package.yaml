@@ -51,10 +51,9 @@ default-extensions:
 - UnicodeSyntax
 dependencies:
 - base >=4.7 && <5
-- generic-lens
+- generic-lens >= 0.5.2.0
 - lens
-- numhask >=0.0.5 && <1
-- protolude
+- numhask
 - text
 library:
   source-dirs: src
@@ -67,12 +66,12 @@ library:
   - Chart.Bar
   - Chart.Core
   - Chart.Data
+  - Chart.Data.Time
   - Chart.Glyph
   - Chart.Hud
   - Chart.Line
   - Chart.Rect
   - Chart.Text
-  - Data.Generics.Labels
   dependencies:
   - SVGFonts
   - colour
@@ -82,8 +81,11 @@ library:
   - foldl
   - formatting
   - linear
-  - numhask-range >=0.0.3 && <1
+  - numhask-range
   - palette
+  - protolude
+  - scientific
+  - time
 executables:
   chart-source-examples:
     main: sourceExamples.hs
@@ -104,12 +106,15 @@ executables:
     - mwc-probability
     - mwc-random
     - primitive
+    - protolude
     - tdigest
+    - time
 tests:
   test:
     main: test.hs
     source-dirs: test
     dependencies:
     - chart-unit
+    - doctest
     - tasty
     - tasty-hspec

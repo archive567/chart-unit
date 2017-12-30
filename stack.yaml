@@ -1,12 +1,8 @@
-resolver: nightly-2017-11-22
+resolver: nightly-2017-12-29
 
 packages:
   - .
-#  - location:
-#      git: https://github.com/duog/generic-lens-labels
-#      commit: 5271b935af0825d45f5f071a2407e2fba6555d88
-#    extra-dep: true
 
-extra-deps: []
-  # - generic-lens-labels-0.1.0.0
-  # - generic-lens-0.3.0.1
+extra-deps:
+  - git: https://github.com/tonyday567/generic-lens.git
+    commit: b2ca4e529a64e1c72632b5a4b472d9130d471233

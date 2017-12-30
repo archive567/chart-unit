@@ -12,17 +12,16 @@ module Chart.Arrow (
   ) where
 
 import Chart.Core
-
-import GHC.Generics
-import NumHask.Prelude hiding (max, (&))
-import NumHask.Space
-import NumHask.Range
-import NumHask.Rect
-import NumHask.Pair
-
 import Data.Ord (max)
 import Diagrams.Prelude hiding (width, D, Color, project)
+import GHC.Generics
+import NumHask.Pair
+import NumHask.Prelude hiding (max, (&))
+import NumHask.Range
+import NumHask.Rect
+import NumHask.Space
 
+-- | ArrowStyles based on diagrams
 data ArrowHTStyle a =
     Tri |
     Dart |
@@ -49,6 +48,8 @@ data ArrowHTStyle a =
     Block2 a
     deriving Show
 
+-- | conversion between unit and diagrams
+-- ToDo: abstract ArrowHT usage
 arrowHTStyle :: (RealFloat a) => ArrowHTStyle a -> ArrowHT a
 arrowHTStyle Tri = tri
 arrowHTStyle Dart = dart
@@ -75,18 +76,18 @@ arrowHTStyle (Quill2 a) = arrowtailQuill (a @@ deg)
 arrowHTStyle (Block2 a) = arrowtailBlock (a @@ deg)
 
 -- | todo: quite a clunky specification of what an arrow is (or could be)
-data ArrowOptions a = ArrowOptions
-    { minLength :: a
-    , maxLength :: a
-    , minHeadLength :: a
-    , maxHeadLength :: a
-    , minStaffWidth :: a
-    , maxStaffWidth :: a
+data ArrowOptions = ArrowOptions
+    { minLength :: Double
+    , maxLength :: Double
+    , minHeadLength :: Double
+    , maxHeadLength :: Double
+    , minStaffWidth :: Double
+    , maxStaffWidth :: Double
     , color :: AlphaColour Double
-    , hStyle :: ArrowHTStyle a
+    , hStyle :: ArrowHTStyle Double
     } deriving (Show, Generic)
 
-instance Default (ArrowOptions Double) where
+instance Default ArrowOptions where
     def = ArrowOptions 0.02 0.2 0.01 0.1 0.002 0.005 ublue Dart
 
 -- | Equalize the arrow space width with the data space one.
@@ -114,14 +115,19 @@ data Arrow = Arrow
 -- | Rescale data across position, and between position and arrow direction.
 --
 -- note that, due to this auto-scaling, there is no such thing as a single arrow_ chart
---
--- > arrows (def {maxLength=0.5,maxHeadLength=0.2,maxStaffWidth=0.01})
--- >     [Arrow (Pair x (sin (5*x))) (Pair x (cos x)) |
--- >      x<-grid MidPos (one::Range Double) 100]
+-- > arrowsExample :: Chart b
+-- > arrowsExample =
+-- >   arrows
+-- >     ( #maxLength .~ 0.5 $
+-- >       #maxHeadLength .~ 0.2 $
+-- >       #maxStaffWidth .~ 0.01 $ def)
+-- >     [ Arrow (Pair x (sin (5 * x))) (Pair x (cos x))
+-- >     | x <- grid MidPos (one :: Range Double) 100
+-- >     ]
 --
 -- ![arrows example](other/arrowsExample.svg)
 --
-arrows :: (Traversable f) => ArrowOptions Double -> f Arrow -> Chart b
+arrows :: (Traversable f) => ArrowOptions -> f Arrow -> Chart b
 arrows opts xs = c
   where
     c = fcA (color opts) $ position $  getZipList $
@@ -163,29 +169,34 @@ arrows opts xs = c
 -- | A chart of arrows
 arrowChart ::
     (Traversable f) =>
-    [ArrowOptions Double] ->
-    Aspect ->
+    [ArrowOptions] ->
+    Rect Double ->
     Rect Double ->
     [f Arrow] ->
     Chart b
-arrowChart optss (Aspect asp) r xss =
+arrowChart optss asp r xss =
     mconcat $ zipWith (\opts xs -> arrows opts $
     (\(Arrow d arr) ->
         Arrow (project r asp d) (project r asp arr)) <$> xs) optss xss
 
 -- | An arrow chart scaled to its own range
 --
--- > let as = normArrows [Arrow (Pair x y) (Pair (sin 1/x+0.0001) (cos 1/y+0.0001)) |
--- >                      x<-grid MidPos (one::Range Double) 20,
--- >                      y<-grid MidPos (one::Range Double) 20]
--- > arrowChart_ [def] asquare [as]
+-- > arrowChart_Example :: Chart b
+-- > arrowChart_Example = arrowChart_ [def] asquare [as]
+-- >   where
+-- >     as =
+-- >       normArrows
+-- >         [ Arrow (Pair x y) (Pair (sin 1 / x + 0.0001) (cos 1 / y + 0.0001))
+-- >         | x <- grid MidPos (one :: Range Double) 20
+-- >         , y <- grid MidPos (one :: Range Double) 20
+-- >         ]
 --
 -- ![arrowChart_ example](other/arrowChart_Example.svg)
 --
 arrowChart_ ::
     (Traversable f) =>
-    [ArrowOptions Double] ->
-    Aspect ->
+    [ArrowOptions] ->
+    Rect Double ->
     [f Arrow] ->
     Chart b
 arrowChart_ optss asp xss =

@@ -53,6 +53,8 @@
 - ignore: {name: Eta reduce}
 - ignore: {name: Use camelCase}
 - ignore: {name: Use if}
+- ignore: {name: Use first}
+- ignore: {name: Unnecessary hiding}
 # Define some custom infix operators
 # - fixity: infixr 3 ~^#^~
 
