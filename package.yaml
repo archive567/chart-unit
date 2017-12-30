@@ -1,5 +1,5 @@
 name: chart-unit
-version: '0.5.4'
+version: '0.5.5.0'
 synopsis: Native haskell charts.
 description: ! '
 
@@ -81,6 +81,7 @@ library:
   - numhask >=0.0.5 && <1
   - numhask-range >=0.0.3 && <1
   - palette
+  - scientific
 executables:
   chart-source-examples:
     main: sourceExamples.hs

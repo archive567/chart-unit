@@ -42,6 +42,7 @@ import Chart.Text
 import qualified Control.Foldl as L
 import Data.List (nub)
 import Data.Ord (max)
+import Data.Scientific
 import Diagrams.Prelude
        hiding (Color, D, (*.), (<>), project, width, zero, (<>))
 import qualified Diagrams.TwoD.Size as D
@@ -308,12 +309,13 @@ data TickStyle
 -- | Provide formatted text for a list of numbers so that they are just distinguished.  'precision 2 ticks' means give the tick labels as much precision as is needed for them to be distinguished, but with at least 2 significant figues.
 precision :: Int -> [Double] -> [Text]
 precision n0 xs
-  | foldr max 0 xs < 0.01 = precLoop Formatting.expt n0 xs
-  | foldr max 0 xs > 100000 = precLoop Formatting.expt n0 xs
+  | foldr max 0 xs < 0.01 = precLoop expt n0 (fromFloatDigits <$> xs)
+  | foldr max 0 xs > 100000 = precLoop expt n0 (fromFloatDigits <$> xs)
   | foldr max 0 xs > 1000 =
     precLoopInt (const Formatting.commas) n0 (floor <$> xs)
   | otherwise = precLoop fixed n0 xs
   where
+    expt x = scifmt Exponent (Just x)
     precLoop f n xs' =
       let s = sformat (f n) <$> xs'
       in if s == nub s
