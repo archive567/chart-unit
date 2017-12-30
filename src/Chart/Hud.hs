@@ -64,18 +64,18 @@ import Diagrams.Backend.SVG (SVG)
 -- | Various options for a hud.
 --
 -- Defaults to the classical x- and y-axis, a sixbyfour aspect, no titles and no legends
-data HudOptions b = HudOptions
+data HudOptions = HudOptions
   { outerPad :: Double
-  , axes :: [AxisOptions b]
+  , axes :: [AxisOptions]
   , grids :: [GridOptions]
   , titles :: [(TitleOptions, Text)]
-  , legends :: [LegendOptions b]
+  , legends :: [LegendOptions]
   , range :: Maybe (Rect Double)
   , aspect :: Rect Double
   , canvas :: RectOptions
   } deriving (Show, Generic)
 
-instance Default (HudOptions b) where
+instance Default HudOptions where
   def = HudOptions 1.1 [defXAxis, defYAxis] [] [] []
       Nothing sixbyfour clear
 
@@ -85,7 +85,7 @@ instance Default (HudOptions b) where
 --
 -- ![hud example](other/hudExample.svg)
 --
-hud :: () => HudOptions b -> Chart b
+hud :: () => HudOptions -> Chart b
 hud (HudOptions p as gs ts ls mr ar@(Ranges ax ay) can) =
   mconcat ((\x -> gridl x ar r) <$> gs) <>
   L.fold (L.Fold addTitle uptoLegend (pad p)) ts
@@ -133,7 +133,7 @@ hud (HudOptions p as gs ts ls mr ar@(Ranges ax ay) can) =
 --
 withHud ::
      (Foldable f)
-  => HudOptions b
+  => HudOptions
   -> (Rect Double -> Rect Double -> [f (Pair Double)] -> Chart b)
   -> [f (Pair Double)]
   -> Chart b
@@ -176,13 +176,13 @@ placeGap pl s x = beside (placeOutside pl) (strut' pl s) x
     strut' PlaceRight = strutX
 
 -- | Axes are somewhat complicated.  For instance, they contain a range within which tick marks need to be supplied or computed.
-data AxisOptions b = AxisOptions
+data AxisOptions = AxisOptions
   { outerPad :: Double
   , orientation :: Orientation
   , place :: Place
   , rect :: RectOptions
   , rectHeight :: Double
-  , mark :: GlyphOptions b
+  , mark :: GlyphOptions
   , markStart :: Double
   , gap :: Double -- distance of axis from plane
   , label :: LabelOptions
@@ -190,7 +190,7 @@ data AxisOptions b = AxisOptions
   } deriving (Show, Generic)
 
 -- | default X axis
-defXAxis :: AxisOptions b
+defXAxis :: AxisOptions
 defXAxis =
   AxisOptions
     1
@@ -208,7 +208,7 @@ defXAxis =
     (TickRound 8)
 
 -- | default Y axis
-defYAxis :: AxisOptions b
+defYAxis :: AxisOptions
 defYAxis =
   AxisOptions
     1
@@ -225,7 +225,7 @@ defYAxis =
        0.015)
     (TickRound 8)
 
-instance Default (AxisOptions b) where
+instance Default AxisOptions where
   def = defXAxis
 
 -- | create an axis, based on AxisOptions, a physical aspect, and a range
@@ -246,7 +246,7 @@ instance Default (AxisOptions b) where
 --
 -- ![axis example](other/axisExample.svg)
 --
-axis :: () => AxisOptions b -> Range Double -> Range Double -> Chart b
+axis :: () => AxisOptions -> Range Double -> Range Double -> Chart b
 axis opts asp r =
   mo $
   pad (opts ^. #outerPad) $
@@ -294,7 +294,7 @@ instance Default AutoOptions where
 
 -- | adjust an axis for sane font sizes etc
 adjustAxis :: AutoOptions -> Range Double -> Range Double ->
-  AxisOptions b -> AxisOptions b
+  AxisOptions -> AxisOptions
 adjustAxis (AutoOptions mrx ma mry ad) asp r opts = case opts ^. #orientation of
   Hori -> case ad of
     False -> (#label . #text . #size %~ (/adjustSizeX)) opts
@@ -323,12 +323,12 @@ adjustAxis (AutoOptions mrx ma mry ad) asp r opts = case opts ^. #orientation of
         adjustSizeA = maximum [(maxHeight / (upper asp - lower asp)) / ma, one]
 
 -- | create an axis, with adjustment to axis options if needed
-axisSane :: () => AutoOptions -> AxisOptions b -> Range Double -> Range Double -> Chart b
+axisSane :: () => AutoOptions -> AxisOptions -> Range Double -> Range Double -> Chart b
 axisSane ao opts asp r =
     axis (adjustAxis ao asp r opts) asp r
 
 -- | compute tick values and labels given options and ranges
-computeTicks :: AxisOptions a -> Range Double -> Range Double -> ([Double], [Text])
+computeTicks :: AxisOptions -> Range Double -> Range Double -> ([Double], [Text])
 computeTicks opts r asp =
     case opts ^. #tickStyle of
       TickNone -> ([], [])
@@ -403,12 +403,12 @@ title (Ranges aspx aspy) (TitleOptions textopts a p s) t =
     pos AlignRight PlaceRight = Pair 0 (lower aspy)
 
 -- | LegendType reuses all the various chart option types to help formulate a legend
-data LegendType b
+data LegendType
   = LegendText TextOptions
-  | LegendGlyph (GlyphOptions b)
+  | LegendGlyph GlyphOptions
   | LegendLine LineOptions
                Double
-  | LegendGLine (GlyphOptions b)
+  | LegendGLine GlyphOptions
                 LineOptions
                 Double
   | LegendRect RectOptions
@@ -420,8 +420,8 @@ data LegendType b
     deriving (Show, Generic)
 
 -- | Legend options. todo: allow for horizontal concatenation.
-data LegendOptions b = LegendOptions
-  { chartType :: [(LegendType b, Text)]
+data LegendOptions = LegendOptions
+  { chartType :: [(LegendType, Text)]
   , innerPad :: Double
   , innerSep :: Double
   , gap :: Double
@@ -433,7 +433,7 @@ data LegendOptions b = LegendOptions
   , text :: TextOptions
   } deriving (Show, Generic)
 
-instance Default (LegendOptions b) where
+instance Default LegendOptions where
   def =
     LegendOptions
       []
@@ -467,7 +467,7 @@ instance Default (LegendOptions b) where
 --
 -- ![legend example](other/legendExample.svg)
 --
-legend :: LegendOptions b -> Chart b
+legend :: LegendOptions -> Chart b
 legend opts =
   placeGap (opts ^. #place) (opts ^. #gap) $
   bound (opts ^. #canvasRect) 1 $

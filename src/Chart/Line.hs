@@ -89,7 +89,7 @@ lineChart_ optss asp xyss = lineChart optss asp (range xyss) xyss
 glines ::
      (Traversable f, R2 r)
   => LineOptions
-  -> GlyphOptions b
+  -> GlyphOptions
   -> f (r Double)
   -> Chart b
 glines opts gopts xs = glyphs gopts xs <> lines opts xs
@@ -98,7 +98,7 @@ glines opts gopts xs = glyphs gopts xs <> lines opts xs
 glineChart ::
      (Traversable f)
   => [LineOptions]
-  -> [GlyphOptions b]
+  -> [GlyphOptions]
   -> Rect Double
   -> Rect Double
   -> [f (Pair Double)]
@@ -131,7 +131,7 @@ glineChart ls gs asp r xyss =
 glineChart_ ::
      (Traversable f)
   => [LineOptions]
-  -> [GlyphOptions b]
+  -> [GlyphOptions]
   -> Rect Double
   -> [f (Pair Double)]
   -> Chart b

@@ -2,6 +2,7 @@
 {-# LANGUAGE NoImplicitPrelude #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE OverloadedLabels #-}
+{-# LANGUAGE IncoherentInstances #-}
 {-# OPTIONS_GHC -Wall #-}
 {-# OPTIONS_GHC -Wno-type-defaults #-}
 {-# OPTIONS_GHC -fno-warn-name-shadowing #-}
@@ -21,7 +22,7 @@ import Data.Generics.Labels()
 import Data.Time
 import Data.Time.Calendar.WeekDate
 
-hudbits :: Text -> Maybe Text -> [Text] -> [LegendType b] -> HudOptions b -> HudOptions b
+hudbits :: Text -> Maybe Text -> [Text] -> [LegendType] -> HudOptions -> HudOptions
 hudbits t subt ts ls x =
     #titles .~
     [ (#place .~ PlaceLeft $
@@ -88,7 +89,7 @@ glyph_Example = glyph_ def
 glyphsExample :: Chart b
 glyphsExample = glyphs def (dataXY sin (Range 0 (2*pi)) 30)
 
-gopts :: [GlyphOptions b]
+gopts :: [GlyphOptions]
 gopts = [ #borderSize .~ 0.001 $ def
         , #borderSize .~ 0.001 $
           #size .~ 0.1 $
@@ -187,7 +188,7 @@ lineHudExample =
           #range .~ Just (range ls) $
           def)
 
-gopts3 :: (Renderable (Path V2 Double) b) => [GlyphOptions b]
+gopts3 :: [GlyphOptions]
 gopts3 =
       zipWith
         (\x y ->
@@ -356,7 +357,7 @@ axisExample = axis aopts one (Range 0 100000)
         #gap .~ 0.0001 $
         def
 
-legends :: [(LegendType b, Text)]
+legends :: [(LegendType, Text)]
 legends =
   [(LegendText def, "legend")] <> [(LegendPixel (blob ublue) 0.05, "pixel")] <>
     -- [ (LegendArrow (def & #minStaffWidth .~ 0.01 & #minHeadLength .~ 0.03) 0.05, "arrow")] <>

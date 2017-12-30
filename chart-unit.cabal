@@ -99,18 +99,14 @@ library
     Chart.Line
     Chart.Rect
     Chart.Text
-    Data.Generics.Labels
   other-modules:
     Paths_chart_unit
   ghc-options: -funbox-strict-fields -fforce-recomp
   build-depends:
     base >=4.7 && <5,
-    generic-lens,
     lens,
     numhask,
-    protolude,
     text,
-    time,
     SVGFonts,
     colour,
     data-default,
@@ -120,7 +116,9 @@ library
     formatting,
     linear,
     numhask-range,
-    palette
+    palette,
+    protolude,
+    time
   default-language: Haskell2010
   default-extensions: DeriveGeneric DeriveTraversable FlexibleContexts FlexibleInstances InstanceSigs MultiParamTypeClasses NegativeLiterals NoImplicitPrelude OverloadedStrings PatternSynonyms RankNTypes TypeFamilies UnicodeSyntax
 
@@ -134,22 +132,22 @@ executable chart-source-examples
     FakeData
   build-depends:
     base >=4.7 && <5,
-    generic-lens,
     lens,
     numhask,
-    protolude,
     text,
-    time,
     chart-unit,
     containers,
     diagrams-lib,
     diagrams-svg,
     foldl,
     formatting,
+    generic-lens >= 0.5.1.0,
     mwc-probability,
     mwc-random,
     primitive,
-    tdigest
+    protolude,
+    tdigest,
+    time
   default-extensions: DeriveGeneric DeriveTraversable FlexibleContexts FlexibleInstances InstanceSigs MultiParamTypeClasses NegativeLiterals NoImplicitPrelude OverloadedStrings PatternSynonyms RankNTypes TypeFamilies UnicodeSyntax
 
 test-suite test
@@ -160,12 +158,9 @@ test-suite test
   main-is: test.hs
   build-depends:
     base >=4.7 && <5,
-    generic-lens,
     lens,
     numhask,
-    protolude,
     text,
-    time,
     chart-unit,
     doctest,
     tasty,

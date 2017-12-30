@@ -34,17 +34,17 @@ data BarValueAcc
   deriving (Show, Generic)
 
 -- | the usual bar chart eye-candy
-data BarOptions a = BarOptions
+data BarOptions = BarOptions
   { rectOptions :: [RectOptions]
-  , outerGap :: a
-  , innerGap :: a
+  , outerGap :: Double
+  , innerGap :: Double
   , displayValues :: Bool
   , accumulateValues :: BarValueAcc
   , orientation :: Orientation
-  , hudOptions :: HudOptions a
+  , hudOptions :: HudOptions
   } deriving (Show, Generic)
 
-instance (AdditiveUnital a, Fractional a) => Default (BarOptions a) where
+instance Default BarOptions where
   def =
     BarOptions
       ((\x -> RectOptions 0.002 ugrey (d3Colors1 x `withOpacity` 0.5)) <$>
@@ -57,18 +57,17 @@ instance (AdditiveUnital a, Fractional a) => Default (BarOptions a) where
       def
 
 -- | imagine a data frame ...
-data BarData a = BarData
-  { barData :: [[a]]
+data BarData = BarData
+  { barData :: [[Double]]
   , barRowLabels :: Maybe [Text]
   , barColumnLabels :: Maybe [Text]
   } deriving (Show, Generic)
 
 -- | Convert BarData to rectangles
 barRects ::
-     (Enum a, FromInteger a, Ord a, BoundedField a)
-  => BarOptions a
-  -> [[a]]
-  -> [[Rect a]]
+    BarOptions
+  -> [[Double]]
+  -> [[Rect Double]]
 barRects (BarOptions _ ogap igap _ add orient _) bs = rects'' orient
   where
     rects'' Hori = rects'
@@ -91,7 +90,7 @@ barRects (BarOptions _ ogap igap _ add orient _) bs = rects'' orient
 
 -- | convert data to a range assuming a zero bound
 -- a very common but implicit assumption in a lot of bar charts
-barDataLowerUpper :: Additive a => BarValueAcc -> [[a]] -> [[(a, a)]]
+barDataLowerUpper :: BarValueAcc -> [[Double]] -> [[(Double, Double)]]
 barDataLowerUpper add bs =
   case add of
     BarValueSeparate -> fmap (\x -> (zero, x)) <$> bs
@@ -109,7 +108,7 @@ barDataLowerUpper add bs =
 
 -- | calculate the Rect range of a bar data set (imagine a data frame ...)
 barRange ::
-     (BoundedField a, AdditiveUnital a, Ord a, FromInteger a) => [[a]] -> Rect a
+     [[Double]] -> Rect Double
 barRange ys = Rect zero (fromIntegral $ maximum (length <$> ys)) (min zero l) u
   where
     (Range l u) = foldMap space ys
@@ -136,7 +135,7 @@ barRange ys = Rect zero (fromIntegral $ maximum (length <$> ys)) (min zero l) u
 --
 -- ![barChart example](other/barExample.svg)
 --
-barChart :: BarOptions Double -> BarData Double -> Chart b
+barChart :: BarOptions -> BarData -> Chart b
 barChart bo bd =
     rectChart (bo ^. #rectOptions) sixbyfour
     (barRange (bd ^. #barData)) (barRects bo (bd ^. #barData))

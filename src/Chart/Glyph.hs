@@ -27,7 +27,7 @@ import NumHask.Prelude
 import NumHask.Rect
 
 -- | The actual shape of a glyph can be any Chart element
-data GlyphOptions b = GlyphOptions
+data GlyphOptions = GlyphOptions
   { size :: Double -- ^ glyph radius
   , color :: AlphaColour Double
   , borderColor :: AlphaColour Double
@@ -35,7 +35,7 @@ data GlyphOptions b = GlyphOptions
   , shape :: GlyphShape
   } deriving (Show, Generic)
 
-instance Default (GlyphOptions b) where
+instance Default GlyphOptions where
   def = GlyphOptions 0.03 ublue ugrey 0.015 Circle
 
 -- | shape of the glyph expressed in diagrams terms
@@ -83,7 +83,7 @@ hline_ fatness x = hrule x # scaleY (1.6 / 0.5 * fatness)
 --
 -- ![glyph_ example](other/glyph_Example.svg)
 --
-glyph_ :: GlyphOptions b -> Chart b
+glyph_ :: GlyphOptions -> Chart b
 glyph_ (GlyphOptions s c bc bs sh) = glyphShape sh s # fcA c # lcA bc # lwN bs
 
 -- | Create positioned glyphs.
@@ -93,13 +93,13 @@ glyph_ (GlyphOptions s c bc bs sh) = glyphShape sh s # fcA c # lcA bc # lwN bs
 --
 -- ![glyphs example](other/glyphsExample.svg)
 --
-glyphs :: (R2 r, Traversable f) => GlyphOptions b -> f (r Double) -> Chart b
+glyphs :: (R2 r, Traversable f) => GlyphOptions -> f (r Double) -> Chart b
 glyphs opts xs = mconcat $ toList $ (\x -> positioned x (glyph_ opts)) <$> xs
 
 -- | A chart of glyphs
 glyphChart ::
      (Traversable f)
-  => [GlyphOptions b]
+  => [GlyphOptions]
   -> Rect Double
   -> Rect Double
   -> [f (Pair Double)]
@@ -130,7 +130,7 @@ glyphChart optss asp r xyss =
 --
 glyphChart_ ::
      (Traversable f)
-  => [GlyphOptions b]
+  => [GlyphOptions]
   -> Rect Double
   -> [f (Pair Double)]
   -> Chart b
@@ -145,7 +145,7 @@ glyphChart_ optss asp xyss = glyphChart optss asp (range xyss) xyss
 lglyphs ::
      (R2 r, Traversable f)
   => LabelOptions
-  -> GlyphOptions b
+  -> GlyphOptions
   -> f (Text, r Double)
   -> Chart b
 lglyphs lopts gopts xs =
@@ -156,7 +156,7 @@ lglyphs lopts gopts xs =
 lglyphChart ::
      (Traversable f)
   => [LabelOptions]
-  -> [GlyphOptions b]
+  -> [GlyphOptions]
   -> Rect Double
   -> Rect Double
   -> [f (Text, Pair Double)]
@@ -195,7 +195,7 @@ lglyphChart ls gs asp r xyss =
 lglyphChart_ ::
      (Traversable f)
   => [LabelOptions]
-  -> [GlyphOptions b]
+  -> [GlyphOptions]
   -> Rect Double
   -> [f (Text, Pair Double)]
   -> Chart b

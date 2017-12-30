@@ -51,12 +51,9 @@ default-extensions:
 - UnicodeSyntax
 dependencies:
 - base >=4.7 && <5
-- generic-lens
 - lens
 - numhask
-- protolude
 - text
-- time
 library:
   source-dirs: src
   ghc-options:
@@ -74,7 +71,6 @@ library:
   - Chart.Line
   - Chart.Rect
   - Chart.Text
-  - Data.Generics.Labels
   dependencies:
   - SVGFonts
   - colour
@@ -86,6 +82,8 @@ library:
   - linear
   - numhask-range
   - palette
+  - protolude
+  - time
 executables:
   chart-source-examples:
     main: sourceExamples.hs
@@ -103,10 +101,13 @@ executables:
     - diagrams-svg
     - foldl
     - formatting
+    - generic-lens >= 0.5.1.0
     - mwc-probability
     - mwc-random
     - primitive
+    - protolude
     - tdigest
+    - time
 tests:
   test:
     main: test.hs
