@@ -42,7 +42,11 @@ instance Default LineOptions where
 
 -- | A line connecting a series of points
 --
--- > lines def (dataXY cos (Range 0 (4*pi)) n)
+-- > linesExample :: Int -> Chart b
+-- > linesExample n =
+-- >   lines
+-- >   (#color .~ red `withOpacity` 0.5 $ def)
+-- >   (dataXY cos (Range 0 (4*pi)) n)
 --
 -- ![lines example](other/linesExample.svg)
 --
@@ -72,17 +76,32 @@ lineChart optss asp r xyss =
 
 -- | A chart of lines scaled to its own range
 --
--- > import Data.Colour.Palette.Harmony (tetrad)
--- > ls = map (uncurry Pair) <$> [[(0.0,1.0),(1.0,1.0),(2.0,5.0)],
--- >                              [(0.0,0.0),(3.0,3.0)], [(0.5,4.0),(0.5,0)]]
--- > lopts = zipWith (\x y -> LineOptions x (withOpacity y 0.6)) [0.01,0.02,0.005]
--- >         (tetrad blue)
--- > lineChart_ lopts sixbyfour ls
+-- > ls :: [[Pair Double]]
+-- > ls =
+-- >   map (uncurry Pair) <$>
+-- >   [ [(0.0, 1.0), (1.0, 1.0), (2.0, 5.0)]
+-- >   , [(0.0, 0.0), (3.0, 3.0)]
+-- >   , [(0.5, 4.0), (0.5, 0)]
+-- >   ]
+-- >
+-- > lopts :: [LineOptions]
+-- > lopts =
+-- >   zipWith
+-- >   (\x y -> LineOptions x (withOpacity (d3Colors1 y) 0.6))
+-- >   [0.01, 0.02, 0.005]
+-- >   [0,1,2]
+-- >
+-- > lineChart_Example :: Chart b
+-- > lineChart_Example = lineChart_ lopts sixbyfour ls
 --
 -- ![lineChart_ example](other/lineChart_Example.svg)
 --
 lineChart_ ::
-     (Traversable f) => [LineOptions] -> Rect Double -> [f (Pair Double)] -> Chart b
+     (Traversable f)
+  => [LineOptions]
+  -> Rect Double
+  -> [f (Pair Double)]
+  -> Chart b
 lineChart_ optss asp xyss = lineChart optss asp (range xyss) xyss
 
 -- | Lines with glyphs atop eack point
@@ -110,19 +129,19 @@ glineChart ls gs asp r xyss =
 
 -- | A chart of glyphs_lines scaled to its own range
 --
--- > gopts3 :: (Renderable (Path V2 Double) b) => [GlyphOptions b]
+-- > gopts3 :: [GlyphOptions]
 -- > gopts3 =
--- >       zipWith
--- >         (\x y ->
--- >            #color .~ withOpacity (d3Colors1 x) 0.2 $
--- >            #borderColor .~ withOpacity (d3Colors1 x) 1 $
--- >            #borderSize .~ 0.005 $
--- >            #shape .~ y $
--- >            #size .~ 0.08 $
--- >            def)
--- >         [6,8,2]
--- >         [Triangle, Square, Circle]
--- > 
+-- >   zipWith
+-- >   (\x y ->
+-- >      #color .~ withOpacity (d3Colors1 x) 0.2 $
+-- >      #borderColor .~ withOpacity (d3Colors1 x) 1 $
+-- >      #borderSize .~ 0.005 $
+-- >      #shape .~ y $
+-- >      #size .~ 0.08 $
+-- >      def)
+-- >   [6,8,2]
+-- >   [Triangle, Square, Circle]
+-- >
 -- > glineChart_Example :: Chart b
 -- > glineChart_Example = glineChart_ lopts gopts3 sixbyfour ls
 --

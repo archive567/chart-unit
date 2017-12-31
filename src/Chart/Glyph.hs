@@ -1,4 +1,3 @@
-{-# LANGUAGE OverloadedLabels #-}
 {-# OPTIONS_GHC -Wall #-}
 {-# OPTIONS_GHC -Wno-unused-top-binds #-}
 
@@ -14,9 +13,6 @@ module Chart.Glyph
   , glyphChart_
   , lglyphChart
   , lglyphChart_
-  , circle
-  , square
-  , triangle
   ) where
 
 import Chart.Core
@@ -39,24 +35,25 @@ instance Default GlyphOptions where
   def = GlyphOptions 0.03 ublue ugrey 0.015 Circle
 
 -- | shape of the glyph expressed in diagrams terms
-data GlyphShape =
-    Circle |
-    Square |
-    Ellipse Double |
-    Triangle |
-    Pentagon |
-    Hexagon |
-    Septagon |
-    Octagaon |
-    RectSharp Double |
-    RectRounded Double Double |
-    VLine Double |
-    HLine Double
-    deriving Show
+data GlyphShape
+  = Circle
+  | Square
+  | Ellipse Double
+  | Triangle
+  | Pentagon
+  | Hexagon
+  | Septagon
+  | Octagaon
+  | RectSharp Double
+  | RectRounded Double
+                Double
+  | VLine Double
+  | HLine Double
+  deriving (Show)
 
 -- | convert from chart-unit to diagrams shapes
 glyphShape :: GlyphShape -> (Double -> Chart b)
-glyphShape Circle = \x -> circle (x/2)
+glyphShape Circle = \x -> circle (x / 2)
 glyphShape Square = square
 glyphShape (Ellipse a) = ellipseXY a
 glyphShape Triangle = triangle
@@ -64,22 +61,14 @@ glyphShape Pentagon = pentagon
 glyphShape Hexagon = hexagon
 glyphShape Septagon = septagon
 glyphShape Octagaon = octagon
-glyphShape (RectSharp a) = \x -> rect (a*x) x
-glyphShape (RectRounded a r) = \x -> roundedRect (a*x) x r
-glyphShape (VLine a) = vline_ a
-glyphShape (HLine a) = hline_ a
-
--- | Vertical line glyph shape with a reasonable thickness at "vline_ 1"
-vline_ :: Double -> Double -> Chart b
-vline_ fatness x = vrule x # scaleX (1.6 / 0.5 * fatness)
-
--- | Horizontal line glyph shape with a reasonable thickness as "hline_ 1"
-hline_ :: Double -> Double -> Chart b
-hline_ fatness x = hrule x # scaleY (1.6 / 0.5 * fatness)
+glyphShape (RectSharp a) = \x -> rect (a * x) x
+glyphShape (RectRounded a r) = \x -> roundedRect (a * x) x r
+glyphShape (VLine a) = \x -> vrule x # scaleX (1.6 / 0.5 * a)
+glyphShape (HLine a) = \x -> hrule x # scaleY (1.6 / 0.5 * a)
 
 -- | Create a glyph.
 --
--- > let glyph_Example = glyph_ def
+-- > glyph_ def
 --
 -- ![glyph_ example](other/glyph_Example.svg)
 --
@@ -88,8 +77,7 @@ glyph_ (GlyphOptions s c bc bs sh) = glyphShape sh s # fcA c # lcA bc # lwN bs
 
 -- | Create positioned glyphs.
 --
--- > glyphsExample :: Chart b
--- > glyphsExample = glyphs def (dataXY sin (Range 0 (2*pi)) 30)
+-- > glyphs def (dataXY sin (Range 0 (2*pi)) 30)
 --
 -- ![glyphs example](other/glyphsExample.svg)
 --
@@ -104,27 +92,28 @@ glyphChart ::
   -> Rect Double
   -> [f (Pair Double)]
   -> Chart b
-glyphChart optss asp r xyss = 
+glyphChart optss asp r xyss =
   mconcat $ zipWith glyphs optss (projectss r asp xyss)
 
 -- | A chart of glyphs scaled to its own range
 --
+-- > gopts :: [GlyphOptions]
+-- > gopts =
+-- >   [ #borderSize .~ 0.001 $ def
+-- >   , #borderSize .~ 0.001 $
+-- >     #size .~ 0.1 $
+-- >     #color .~ rybColor 7 `withOpacity` 0.4 $
+-- >     #shape .~ Triangle $ def
+-- >   ]
+-- > 
+-- > gdata :: [[Pair Double]]
+-- > gdata =
+-- >   [ dataXY sin (Range 0 (2*pi)) 30
+-- >   , dataXY cos (Range 0 (2*pi)) 30
+-- >   ]
+-- > 
 -- > glyphChart_Example :: Chart b
 -- > glyphChart_Example = glyphChart_ gopts widescreen gdata
--- >   where
--- >     gopts :: [GlyphOptions b]
--- >     gopts = [ #borderSize .~ 0.001 $ def
--- >             , #borderSize .~ 0.001 $
--- >               #size .~ 0.1 $
--- >               #color .~ rybColor 7 `withOpacity` 0.4 $
--- >               #shape .~ Triangle $ def
--- >             ]
--- >
--- >     gdata :: [[Pair Double]]
--- >     gdata = [ dataXY sin (Range 0 (2*pi)) 30
--- >             , dataXY cos (Range 0 (2*pi)) 30
--- >             ]
--- >
 --
 -- ![glyphChart_ example](other/glyphChart_Example.svg)
 --
@@ -138,7 +127,10 @@ glyphChart_ optss asp xyss = glyphChart optss asp (range xyss) xyss
 
 -- | Create labelled, positioned glyphs.
 --
--- > lglyphs def def $ zip (show <$> [0..]) ps
+-- > lglyphsExample :: Chart b
+-- > lglyphsExample =
+-- >   lglyphs def def $
+-- >   zip (show <$> [0 ..]) [Pair (x / 10) (sin x / 10) | x <- [0 .. 10]]
 --
 -- ![lglyphs example](other/lglyphsExample.svg)
 --
@@ -175,20 +167,20 @@ lglyphChart ls gs asp r xyss =
 --
 -- > lgdata :: [[(Text, Pair Double)]]
 -- > lgdata =
--- >     [(\(p@(Pair x y)) -> (show x <> "," <> show y, fromIntegral <$> p)) <$> g]
--- >   where
--- >     g = Pair <$> [0 .. 5] <*> [0 .. 5] :: [Pair Int]
--- >
+-- >   [(\(p@(Pair x y)) -> (show x <> "," <> show y, fromIntegral <$> p)) <$>
+-- >     (Pair <$> [0 .. 5] <*> [0 .. 5] :: [Pair Int])
+-- >   ]
+-- > 
 -- > lglyphChart_Example :: Rect Double -> Chart b
 -- > lglyphChart_Example a =
 -- >   lglyphChart_
--- >     [#gap .~ 0.015 $ #text . #size .~ 0.12 $ def]
--- >     [#color .~ black `withOpacity` 1 $
--- >      #borderSize .~ 0 $
--- >      #size .~ 0.01 $
--- >      def]
--- >     a
--- >     lgdata
+-- >   [#gap .~ 0.015 $ #text . #size .~ 0.12 $ def]
+-- >   [#color .~ black `withOpacity` 1 $
+-- >    #borderSize .~ 0 $
+-- >    #size .~ 0.01 $
+-- >    def]
+-- >   a
+-- >   lgdata
 --
 -- ![lglyphChart_ example](other/lglyphChart_Example.svg)
 --

@@ -21,13 +21,14 @@
 --
 -- Jumping ahead a bit, the code snippet below draws vertical lines using a data range of "Rect 0 12 0 0.2" (slightly different to the actual data range), using a widescreen (3:1) aspect, and renders the chart as a 300 by 120 pixel svg:
 --
--- > let scaleExample = fileSvg "other/scaleExample.svg" (300,120) $
--- >   withHud
--- >   ( #aspect .~ widescreen $
--- >     #range .~ Just (Rect 0 12 0 0.2) $
--- >     def)
--- >   (lineChart (repeat def))
--- >   (vlineOneD ((0.01*) <$> [0..10]))
+-- > scaleExample :: IO ()
+-- > scaleExample =
+-- >     fileSvg "other/scaleExample.svg" (300,120) $ withHud
+-- >       ( #aspect .~ widescreen $
+-- >         #range .~ Just (Rect 0 12 0 0.2) $
+-- >         def)
+-- >       (lineChart (repeat def))
+-- >       (vlineOneD ((0.01*) <$> [0..10]))
 --
 -- ![scale example](other/scaleExample.svg)
 --
@@ -221,14 +222,14 @@ r_ r = V2 (r ^. _x) (r ^. _y)
 
 -- | foldMap for beside; stacking chart elements in a direction, with a premap
 stack ::
-     ( R2 r
-     , V a ~ V2
-     , Foldable t
-     , Juxtaposable a
-     , Semigroup a
-     , N a ~ Double
-     , Monoid a
-     )
+  ( R2 r
+  , V a ~ V2
+  , Foldable t
+  , Juxtaposable a
+  , Semigroup a
+  , N a ~ Double
+  , Monoid a
+  )
   => r Double
   -> (b -> a)
   -> t b

@@ -2,3 +2,4 @@
 /test/*.svg
 /*/.DS_Store
 /*/*/.DS_Store
+chart-unit.cabal

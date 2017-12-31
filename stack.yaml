@@ -2,7 +2,7 @@ resolver: nightly-2017-12-29
 
 packages:
   - .
-
+  - ../numhask-histogram
 extra-deps:
   - git: https://github.com/tonyday567/generic-lens.git
     commit: b2ca4e529a64e1c72632b5a4b472d9130d471233

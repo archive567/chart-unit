@@ -35,26 +35,12 @@ github: tonyday567/chart-unit
 extra-source-files:
 - stack.yaml
 - other/*.svg
-default-extensions:
-- DeriveGeneric
-- DeriveTraversable
-- FlexibleContexts
-- FlexibleInstances
-- InstanceSigs
-- MultiParamTypeClasses
-- NegativeLiterals
-- NoImplicitPrelude
-- OverloadedStrings
-- PatternSynonyms
-- RankNTypes
-- TypeFamilies
-- UnicodeSyntax
 dependencies:
 - base >=4.7 && <5
 - generic-lens >= 0.5.2.0
 - lens
 - numhask
-- text
+- numhask-range
 library:
   source-dirs: src
   ghc-options:
@@ -81,14 +67,53 @@ library:
   - foldl
   - formatting
   - linear
-  - numhask-range
   - palette
   - protolude
   - scientific
+  - text
   - time
+  default-extensions:
+    - DeriveGeneric
+    - DeriveTraversable
+    - FlexibleContexts
+    - FlexibleInstances
+    - InstanceSigs
+    - MultiParamTypeClasses
+    - NegativeLiterals
+    - NoImplicitPrelude
+    - OverloadedStrings
+    - PatternSynonyms
+    - RankNTypes
+    - TypeFamilies
+    - UnicodeSyntax
 executables:
-  chart-source-examples:
+  chart-unit-main-example:
+    main: mainExample.hs
+    source-dirs: examples
+    ghc-options:
+    - -funbox-strict-fields
+    - -fforce-recomp
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - chart-unit
+  chart-unit-source-examples:
     main: sourceExamples.hs
+    source-dirs: examples
+    ghc-options:
+    - -funbox-strict-fields
+    - -fforce-recomp
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - chart-unit
+    - diagrams-lib
+    - protolude
+    - text
+  chart-unit-gallery:
+    main: gallery.hs
     source-dirs: examples
     ghc-options:
     - -funbox-strict-fields
@@ -105,9 +130,11 @@ executables:
     - formatting
     - mwc-probability
     - mwc-random
+    - numhask-histogram
     - primitive
     - protolude
     - tdigest
+    - text
     - time
 tests:
   test:
