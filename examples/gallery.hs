@@ -9,25 +9,22 @@
 {-# OPTIONS_GHC -Wall #-}
 {-# OPTIONS_GHC -Wno-type-defaults #-}
 {-# OPTIONS_GHC -fno-warn-name-shadowing #-}
-
+{-# OPTIONS_GHC -Wno-unused-top-binds #-}
+ 
 import Chart
 import Control.Lens hiding (beside)
 import Control.Monad.Primitive (PrimState)
 import Data.Generics.Labels ()
-import Data.List ((!!), head, last, zipWith3, zipWith4)
-import Data.TDigest
+import Data.List ((!!), head, zipWith3)
 import Data.Time
 import Data.Time.Calendar.WeekDate
-import Diagrams.Backend.SVG (B, SVG)
-import Diagrams.Prelude hiding ((*.), (<>), scaleX, scaleY)
-import Formatting
+import qualified Diagrams.Prelude as D
+import Formatting 
 import NumHask.Histogram
 import NumHask.Prelude as P
 import System.Random.MWC
 import System.Random.MWC.Probability
 
-import qualified Control.Foldl as L
-import qualified Data.Map as Map
 import qualified Data.Text as Text
 
 -- * example data generation
@@ -80,17 +77,17 @@ timeData n = do
   pure $ filter (not . isWeekend) $ take n $ (`addDays` today) <$> [0 ..]
 
 -- * dealing with time
-timeExample :: [Day] -> QDiagram SVG V2 Double Any
+timeExample :: [Day] -> Chart b
 timeExample dates =
   hud (#axes .~ [adef, defYAxis] $ #range .~ Just r $ def) <>
   glyphChart
-    [#color .~ red `withOpacity` 1 $ #borderSize .~ 0 $ #size .~ 0.01 $ def]
+    [#color .~ D.red `withOpacity` 1 $ #borderSize .~ 0 $ #size .~ 0.01 $ def]
     sixbyfour
     r
     [xs'] <>
   lglyphChart
     [def]
-    [ #shape .~ Square $ #color .~ blue `withOpacity` 1 $ #borderSize .~ 0 $
+    [ #shape .~ Square $ #color .~ D.blue `withOpacity` 1 $ #borderSize .~ 0 $
       #size .~ 0.04 $ def
     ]
     sixbyfour
@@ -132,10 +129,10 @@ mkScatterData = do
 
 scatterHistExample :: [[Pair Double]] -> Chart b
 scatterHistExample xys =
-  beside
-    (r2 (1, 0))
-    (beside (r2 (0, -1)) (sc1 <> hud1) (reflectY histx))
-    (reflectY $ rotateBy (3 / 4) histy)
+  D.beside
+    (D.r2 (1, 0))
+    (D.beside (D.r2 (0, -1)) (sc1 <> hud1) (D.reflectY histx))
+    (D.reflectY $ D.rotateBy (3 / 4) histy)
   where
     sopts =
       zipWith3
@@ -158,8 +155,8 @@ scatterHistExample xys =
       (\x -> #borderSize .~ 0 $ #color .~ d3Colors1 x `withOpacity` 0.5 $ def) <$>
       [6, 8]
     makeHist n = makeRects IgnoreOvers . regular n
-    hx = makeHist 50 . fmap (view _x) <$> xys
-    hy = makeHist 50 . fmap (view _y) <$> xys
+    hx = makeHist 50 . fmap (view D._x) <$> xys
+    hy = makeHist 50 . fmap (view D._y) <$> xys
 
 -- * haskell survey example
 data SurveyQ = SurveyQ
@@ -187,7 +184,7 @@ q7 =
     (ucolor 0.341 0.224 0.388 1)
     (ucolor 1 1 0.33 1)
     (#allowDiagonal .~ False $ #maxXRatio .~ 0.16 $ def)
-
+ 
 q24 :: SurveyQ
 q24 =
   SurveyQ
@@ -264,34 +261,32 @@ makeQuantiles n = do
   xs <- rvs g 100000
   pure (regularQuantiles n xs)
 
-skinnyExample :: IO (Diagram B)
-skinnyExample = do
-  qs <- makeQuantiles 20
-  qs' <- makeQuantiles 4
-  let r = Ranges (space qs) (Range 0 0.2)
-  let hud' =
-        hud
-          (HudOptions
-             1.1
-             [#label . #text . #size .~ 0.25 $ def]
-             []
-             []
-             []
-             (Just r)
-             skinny
-             clear)
-  let labels' =
-        textChart
-          [#alignH .~ AlignLeft $ #rotation .~ 45 $ #size .~ 0.2 $ def]
-          skinny
-          r
-          [ zipWith
-              (\x y -> (x, Pair y 0.05))
-              ["min", "3rd Q", "median", "1st Q", "max"]
-              qs'
-          ]
-  let ticks' = glyphChart [def] skinny r [(`Pair` 0.02) <$> qs]
-  pure $ hud' <> ticks' <> labels'
+skinnyExample :: [Double] -> [Double] -> Chart b
+skinnyExample qs qs' = hud' <> ticks' <> labels'
+  where
+    r = Ranges (space qs) (Range 0 0.2)
+    hud' =
+      hud
+      (HudOptions
+        1.1
+        [#label . #text . #size .~ 0.25 $ def]
+        []
+        []
+        []
+        (Just r)
+        skinny
+        clear)
+    labels' =
+      textChart
+      [#alignH .~ AlignLeft $ #rotation .~ 45 $ #size .~ 0.2 $ def]
+      skinny
+      r
+      [ zipWith
+        (\x y -> (x, Pair y 0.05))
+        ["min", "3rd Q", "median", "1st Q", "max"]
+        qs'
+      ]
+    ticks' = glyphChart [def] skinny r [(`Pair` 0.02) <$> qs]
 
 -- * comparing histograms
 makeHistDiffExample :: IO ([Rect Double], [Rect Double])
@@ -312,9 +307,9 @@ histDiffExample (h1, h2) =
       botAspect = Rect -0.75 0.75 -0.2 0.2
       (Ranges rx ry) = fold $ fold [h1, h2]
       (Ranges _ deltary) = fold (abs <$> deltah)
-  in pad 1.1 $
-     beside
-       (r2 (0, -1))
+  in D.pad 1.1 $
+     D.beside
+       (D.r2 (0, -1))
        (rectChart
           [ #borderColor .~ ucolor 0 0 0 0 $
             #color .~ ucolor 0.365 0.647 0.855 0.2 $
@@ -340,30 +335,12 @@ histDiffExample (h1, h2) =
          def))
 
 -- * clipping
-ls :: [[Pair Double]]
-ls =
-  map (uncurry Pair) <$>
-  [ [(0.0, 1.0), (1.0, 1.0), (2.0, 5.0)]
-  , [(0.0, 0.0), (3.0, 3.0)]
-  , [(0.5, 4.0), (0.5, 0)]
-  ]
-
-lopts :: [LineOptions]
-lopts =
-  zipWith
-    (\x y -> LineOptions x (withOpacity (d3Colors1 y) 0.6))
-    [0.01, 0.02, 0.005]
-    [0, 1, 2]
-
-lineChart_Example :: Chart b
-lineChart_Example = lineChart_ lopts sixbyfour ls
-
 clip :: Rect Double -> Chart b -> Chart b
 clip (Rect xl xu yl yu) c =
-  clipped
-    (pathFromLocTrail $ moveTo (p2 (xl, yl)) $ scaleY (yu - yl) $
-     scaleX (xu - xl) $
-     moveOriginTo (p2 (-0.5, -0.5)) unitSquare)
+  D.clipped
+    (D.pathFromLocTrail $ D.moveTo (D.p2 (xl, yl)) $ D.scaleY (yu - yl) $
+     D.scaleX (xu - xl) $
+     D.moveOriginTo (D.p2 (-0.5, -0.5)) D.unitSquare)
     c
 
 grp :: Int -> [a] -> [[a]]
@@ -376,21 +353,21 @@ grp n =
             else Just y)
 
 -- | chop a chart extent into a double list of Rects
-chop :: Pair Int -> QDiagram b V2 Double Any -> [[Rect Double]]
+chop :: (D.Renderable (D.Path D.V2 Double) b) => Pair Int -> Chart b -> [[Rect Double]]
 chop p@(Pair _ n) ch = grp n $ gridSpace (Rect xl xu yl yu) p
   where
-    (xl, xu) = fromMaybe (-0.5, 0.5) (extentX ch)
-    (yl, yu) = fromMaybe (-0.5, 0.5) (extentY ch)
+    (xl, xu) = fromMaybe (-0.5, 0.5) (D.extentX ch)
+    (yl, yu) = fromMaybe (-0.5, 0.5) (D.extentY ch)
 
 clippingExample ::
      RectOptions
   -> Double
   -> Int
-  -> QDiagram B V2 Double Any
-  -> QDiagram B V2 Double Any
+  -> Chart b
+  -> Chart b
 clippingExample rcfg p n ch =
-  stack (Pair 0 1) (pad p . centerXY) $
-  hori (\a -> pad p $ bound rcfg 1 $ centerXY $ clip a ch) <$>
+  stack (Pair 0 1) (D.pad p . D.centerXY) $
+  hori (\a -> D.pad p $ bound rcfg 1 $ D.centerXY $ clip a ch) <$>
   chop (Pair n n) ch
 
 -- * schoolbook
@@ -431,24 +408,22 @@ parabola r f grain xscope =
     [dataXY f xscope grain]
 
 ceptLines ::
-     Renderable (Path V2 Double) b
-  => Rect Double
+    Rect Double
   -> Rect Double
   -> (Double -> Double)
   -> Double
-  -> QDiagram b V2 Double Any
+  -> Chart b
 ceptLines asp r@(Ranges rx ry) f x =
   mconcat $ lines (#color .~ ucolor 0.2 0.2 0.2 1 $ #size .~ 0.005 $ def) .
   fmap (Chart.project r asp) <$>
   [[Pair (lower rx) (f x), Pair x (f x)], [Pair x (lower ry), Pair x (f x)]]
 
 cepts ::
-     Renderable (Path V2 Double) b
-  => Rect Double
+    Rect Double
   -> Rect Double
   -> (Double -> Double)
   -> Double
-  -> QDiagram b V2 Double Any
+  -> Chart b
 cepts a r@(Ranges rx ry) f x =
   textChart
     [def, #alignH .~ AlignCenter $ #rotation .~ 0 $ def]
@@ -463,7 +438,7 @@ schoolbookExample x =
   bound (#color .~ ucolor 1 1 1 0.1 $ def) 1.05 $ schoolbookHud <>
   parabola r f grain xscope <>
   ceptLines asquare r f x <>
-  glyphChart [#color .~ red `withOpacity` 0.5 $ def] asquare r [[Pair x (f x)]] <>
+  glyphChart [#color .~ D.red `withOpacity` 0.5 $ def] asquare r [[Pair x (f x)]] <>
   cepts asquare r f x
   where
     f x = x * x - 3
@@ -482,8 +457,9 @@ main = do
   putStrLn ("scatterHistExample" :: Text)
   fileSvg "other/scatterHistExample.svg" (600, 400) (scatterHistExample xys)
   putStrLn ("skinnyExample" :: Text)
-  skinnyExample' <- skinnyExample
-  fileSvg "other/skinnyExample.svg" (600, 150) skinnyExample'
+  qs <- makeQuantiles 20
+  qs' <- makeQuantiles 4
+  fileSvg "other/skinnyExample.svg" (600, 150) $ skinnyExample qs qs'
   putStrLn ("histDiffExample" :: Text)
   hs <- makeHistDiffExample
   fileSvg "other/histDiffExample.svg" (600, 600) $ histDiffExample hs

@@ -129,5 +129,5 @@ workflow
 ===
 
 ~~~
-stack build --test --exec "$(stack path --local-install-root)/bin/chart-source-examples" --exec "$(stack path --local-bin)/pandoc -f markdown -i other/header.md readme.md other/footer.md -t html -o index.html --filter pandoc-include --mathjax" --file-watch
+stack build --test --exec "$(stack path --local-install-root)/bin/chart-unit-source-examples" --exec "$(stack path --local-install-root)/bin/chart-unit-main-example" --exec "$(stack path --local-install-root)/bin/chart-unit-gallery" --exec "$(stack path --local-bin)/pandoc -f markdown -i other/header.md readme.md other/footer.md -t html -o index.html --filter pandoc-include --mathjax" --file-watch
 ~~~

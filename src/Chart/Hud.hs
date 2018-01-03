@@ -522,8 +522,16 @@ legend opts =
         identity
         [rect_ c (s *. one), strutX (opts ^. field @"sep"), text_ (opts ^. field @"text") t]
 
-data GridPos = GridOuterPos | GridInnerPos | GridLowerPos | GridUpperPos | GridMidPos deriving (Show, Generic, Eq)
+-- | The positioning of boundaries for a grid over a space
+data GridPos
+  = GridOuterPos
+  | GridInnerPos
+  | GridLowerPos
+  | GridUpperPos
+  | GridMidPos
+  deriving (Show, Generic, Eq)
 
+-- | conversion from a chart-unit GridPos to a numhask-range Pos
 gridPos :: GridPos -> Pos
 gridPos GridOuterPos = OuterPos
 gridPos GridInnerPos = InnerPos
@@ -546,6 +554,7 @@ data GridOptions = GridOptions
   , gridLine :: LineOptions
   } deriving (Show, Generic)
 
+-- | default horizontal grid
 defXGrid :: GridOptions
 defXGrid =
   GridOptions
@@ -553,6 +562,7 @@ defXGrid =
   (GridRound GridOuterPos 10)
   (LineOptions 0.002 ublue)
 
+-- | default vertical grid
 defYGrid :: GridOptions
 defYGrid =
   GridOptions

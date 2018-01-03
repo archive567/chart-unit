@@ -5,7 +5,7 @@
 
 -- | The Chart module exports all of the chart-unit functionality, and most of what you need from outside libraries.
 --
--- Chart is designed to be used in conjunction with both the numhask and diagrams preludes. Diagrams.Prelude conatins much of the lens library and many re-exports that clash with NumHask, so best to import qualified.
+-- `Chart` is designed to be used in conjunction with both the numhask and diagrams preludes. Diagrams.Prelude conatins much of the lens library and many re-exports that clash with NumHask, so best to import qualified.
 --
 -- > {-# LANGUAGE FlexibleContexts #-}
 -- > {-# LANGUAGE NoImplicitPrelude #-}
@@ -19,15 +19,20 @@
 -- > import qualified Diagrams.Prelude as D
 -- > import NumHask.Prelude
 --
--- chart-unit charts are built from a few elements
+-- Each chart type is built up from a few different elements:
+--
 -- - data
+--
 -- - a type of chart
--- - representations options for the data
+--
+-- - representations options specific to the chart type
+--
 -- - axes
+--
 -- - chart decoration, such as titles and legends
 --
---
 -- Chart data is most often one or more traversable series.  Also most often, the data is 2-dimensional, represnting where on the chart to place the representation.  `(Traversable f) => [f Pair]` is a very common in the library api.
+--
 -- > ls :: [[Pair Double]]
 -- > ls =
 -- >   map (uncurry Pair) <$>
@@ -37,6 +42,7 @@
 -- >   ]
 --
 -- Each data series has representation options dependent on the chart type
+--
 -- > lopts :: [LineOptions]
 -- > lopts =
 -- >   zipWith
@@ -60,14 +66,17 @@
 -- >   ] 
 --
 -- For examples (but not the core library code), Data.Generic.Labels is used which has its detractions in the form of orphan instance fuss and bother. Using core generic-lens:
+--
 -- > #label . #orientation .~ Pair 0 1
 --
 -- translates to:
+--
 -- > field @"label" . field @"orientation" .~ Pair 0 1
 --
 -- which is also a pretty fine api.
 --
 -- Using data-default, lens and OverloadedLabels tends to encourage a vertical style, which may annoy line counters, but I find clarity high and editing easy.  Dollar signs and other grammatical elements belong at the end of the line rather than the beginning (just like english!). The exceptions are lists, tuples and records, where placing commas and pipes at the start in line with brackets is ubiquitous.
+--
 -- > titles :: [(TitleOptions, Text)]
 -- > titles =
 -- >   [ (def, "Example Chart")
@@ -99,6 +108,7 @@
 -- >
 --
 -- All of which makes chart-unit highly customisable ...
+--
 -- > mainExample :: Chart b
 -- > mainExample = withHud opts (lineChart lopts) ls
 -- >   where

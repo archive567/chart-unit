@@ -123,17 +123,13 @@ executables:
     - -with-rtsopts=-N
     dependencies:
     - chart-unit
-    - containers
     - diagrams-lib
-    - diagrams-svg
-    - foldl
     - formatting
     - mwc-probability
     - mwc-random
     - numhask-histogram
     - primitive
     - protolude
-    - tdigest
     - text
     - time
 tests:
