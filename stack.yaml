@@ -1,4 +1,4 @@
-resolver: nightly-2017-12-29
+resolver: lts-10.2
 
 packages:
   - .
@@ -6,3 +6,5 @@ packages:
 extra-deps:
   - git: https://github.com/tonyday567/generic-lens.git
     commit: b2ca4e529a64e1c72632b5a4b472d9130d471233
+  - git: https://github.com/tonyday567/numhask-histogram.git
+    commit: 31041224eef1a56d132dbeae6c65c477881b82f9

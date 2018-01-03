@@ -1,7 +1,6 @@
 {-# LANGUAGE DataKinds #-}
-{-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE DuplicateRecordFields #-}
-{-# LANGUAGE OverloadedLabels #-}
+{-# LANGUAGE TypeApplications #-}
 {-# OPTIONS_GHC -Wall #-}
 {-# LANGUAGE CPP #-}
 #if ( __GLASGOW_HASKELL__ < 820 )
@@ -11,7 +10,6 @@
 
 -- | Hud (Heads up display) is a collective noun for axes, titles & legends
 --
--- todo: refactor me please. A hud for a chart uses 'beside' to combine elements, and this restricts the hud to the outside of the chart canvas.  This tends to make hud elements (such as gridlines) harder to implement than they should be.
 module Chart.Hud
   ( HudOptions(HudOptions)
   , hud
@@ -79,8 +77,7 @@ data HudOptions = HudOptions
   } deriving (Show, Generic)
 
 instance Default HudOptions where
-  def = HudOptions 1.1 [defXAxis, defYAxis] [] [] []
-      Nothing sixbyfour clear
+  def = HudOptions 1.1 [defXAxis, defYAxis] [] [] [] Nothing sixbyfour clear
 
 -- | Create a hud.
 --
@@ -98,11 +95,13 @@ hud (HudOptions p as gs ts ls mr ar@(Ranges ax ay) can) =
       beside (placeOutside (topts ^. field @"place")) x (title ar topts t)
     addLegend x lopts =
       beside (placeOutside (lopts ^. field @"place")) x $
-      if 0 == length (lopts ^. field @"chartType")
-        then mempty
-        else (\x' ->
-                moveTo (p_ $ pos' (lopts ^. field @"align") (lopts ^. field @"place") x') x') $
-             legend lopts
+      case length (lopts ^. field @"chartType") of
+        0 -> mempty
+        _ -> (\x' ->
+               moveTo
+               (p_ $ pos' (lopts ^. field @"align")
+                (lopts ^. field @"place") x') x') $
+            legend lopts
     pos' AlignCenter _ _ = Pair 0 0
     pos' AlignLeft PlaceTop x = Pair (lower ax - 0.5 * D.width x) 0
     pos' AlignLeft PlaceBottom x = Pair (lower ax - 0.5 * D.width x) 0
@@ -126,11 +125,16 @@ hud (HudOptions p as gs ts ls mr ar@(Ranges ax ay) can) =
 --
 -- > withHudExample :: Chart b
 -- > withHudExample = withHud hopts (lineChart lopts) ls
--- >     where
--- >       hopts = def &
--- >         field @"titles" .~ [(def,"withHud Example")] &
--- >         field @"legends" .~ [def & field @"chartType" .~ zipWith (\x y ->
--- >                     (LegendLine x 0.05, y)) lopts ["line1", "line2", "line3"]]
+-- >   where
+-- >     hopts =
+-- >       #titles .~ [(def, "withHud Example")] $
+-- >       #legends .~
+-- >       [ #chartType .~ zipWith
+-- >         (\x y -> (LegendLine x 0.05, y))
+-- >         lopts
+-- >         ["line1", "line2", "line3"]
+-- >         $ def
+-- >       ] $ def
 --
 -- ![withHud example](other/withHudExample.svg)
 --
@@ -238,14 +242,13 @@ instance Default AxisOptions where
 -- > axisExample :: Chart b
 -- > axisExample = axis aopts one (Range 0 100000)
 -- >   where
--- >     aopts :: AxisOptions b
+-- >     aopts :: AxisOptions
 -- >     aopts =
--- >         field @"label" . field @"text" %~
--- >         ((field @"rotation" .~ -45) .
--- >          (field @"size" .~ 0.06) .
--- >          (field @"align"H .~ AlignLeft)) $
--- >         field @"gap" .~ 0.0001 $
--- >         def
+-- >       #label . #text %~
+-- >       ((#rotation .~ -45) .
+-- >        (#size .~ 0.06) .
+-- >        (#alignH .~ AlignLeft)) $
+-- >       #gap .~ 0.0001 $ def
 --
 -- ![axis example](other/axisExample.svg)
 --
@@ -303,7 +306,9 @@ adjustAxis (AutoOptions mrx ma mry ad) asp r opts = case opts ^. field @"orienta
     False -> (field @"label" . field @"text" . field @"size" %~ (/adjustSizeX)) opts
     True ->
         case adjustSizeX > one of
-          True -> (field @"label" . field @"text" . field @"rotation" .~ (-45)) . (field @"label" . field @"text" . field @"alignH" .~ AlignLeft) $ (field @"label" . field @"text" . field @"size" %~ (/adjustSizeA)) opts
+          True -> (field @"label" . field @"text" . field @"rotation" .~ (-45)) .
+            (field @"label" . field @"text" . field @"alignH" .~ AlignLeft) $
+            (field @"label" . field @"text" . field @"size" %~ (/adjustSizeA)) opts
           False -> (field @"label" . field @"text" . field @"size" %~ (/adjustSizeA)) opts
   Vert -> (field @"label" . field @"text" . field @"size" %~ (/adjustSizeY)) opts
 
@@ -454,20 +459,20 @@ instance Default LegendOptions where
 
 -- | Create a legend based on a LegendOptions
 --
+-- > legends :: [(LegendType, Text)]
+-- > legends =
+-- >   [(LegendText def, "legend")] <> [(LegendPixel (blob ublue) 0.05, "pixel")] <>
+-- >     -- [ (LegendArrow (def & #minStaffWidth .~ 0.01 & #minHeadLength .~ 0.03) 0.05, "arrow")] <>
+-- >   [(LegendRect def 0.05, "rect")] <>
+-- >   [(LegendGLine def def 0.10, "glyph+line")] <>
+-- >   [(LegendGlyph def, "just a glyph")] <>
+-- >   zipWith
+-- >     (\x y -> (LegendLine x 0.05, y))
+-- >     lopts
+-- >     ["short", "much longer name", "line 3"]
+-- > 
 -- > legendExample :: Chart b
--- > legendExample = legend $ def {legendChartType=legends}
--- >     where
--- >       legends =
--- >           [ (LegendText def, "legend")] <>
--- >           [ (LegendPixel (blob (withOpacity blue 0.4)) 0.05, "pixel")] <>
--- >           -- [ (LegendArrow (def {arrowMinStaffWidth=0.01,
--- >           --                     arrowMinHeadLength=0.03}) 0.05, "arrow")] <>
--- >           [ (LegendRect def 0.05, "rect")] <>
--- >           [ (LegendGLine def def 0.10, "glyph+line")] <>
--- >           [ (LegendGlyph def, "just a glyph")] <>
--- >           (zipWith (\x y -> (LegendLine x 0.05, y))
--- >            lopts ["short", "much longer name", "line 3"])
---
+-- > legendExample = legend $ #chartType .~ legends $ def
 --
 -- ![legend example](other/legendExample.svg)
 --
@@ -517,8 +522,16 @@ legend opts =
         identity
         [rect_ c (s *. one), strutX (opts ^. field @"sep"), text_ (opts ^. field @"text") t]
 
-data GridPos = GridOuterPos | GridInnerPos | GridLowerPos | GridUpperPos | GridMidPos deriving (Show, Generic, Eq)
+-- | The positioning of boundaries for a grid over a space
+data GridPos
+  = GridOuterPos
+  | GridInnerPos
+  | GridLowerPos
+  | GridUpperPos
+  | GridMidPos
+  deriving (Show, Generic, Eq)
 
+-- | conversion from a chart-unit GridPos to a numhask-range Pos
 gridPos :: GridPos -> Pos
 gridPos GridOuterPos = OuterPos
 gridPos GridInnerPos = InnerPos
@@ -541,19 +554,21 @@ data GridOptions = GridOptions
   , gridLine :: LineOptions
   } deriving (Show, Generic)
 
+-- | default horizontal grid
 defXGrid :: GridOptions
 defXGrid =
-    GridOptions
-    Hori 
-    (GridRound GridOuterPos 10)
-    (LineOptions 0.002 ublue)
+  GridOptions
+  Hori 
+  (GridRound GridOuterPos 10)
+  (LineOptions 0.002 ublue)
 
+-- | default vertical grid
 defYGrid :: GridOptions
 defYGrid =
-    GridOptions
-    Vert
-    (GridRound GridOuterPos 10)
-    (LineOptions 0.002 ublue)
+  GridOptions
+  Vert
+  (GridRound GridOuterPos 10)
+  (LineOptions 0.002 ublue)
 
 instance Default GridOptions where
   def = defXGrid
@@ -564,16 +579,16 @@ gridl gopt (Ranges aspx aspy) (Ranges rx ry) = ls
   where
     ls = mconcat $ lines (gridLine gopt) <$> (l1d <$> lineLocations)
     lineLocations =
-        case gridStyle gopt of
-          GridNone -> []
-          GridRound p n -> project r0 asp0 <$> gridSensible (gridPos p) r0 n
-          GridExact p n -> project r0 asp0 <$> grid (gridPos p) r0 n
-          GridPlaced xs -> project r0 asp0 <$> xs
+      case gridStyle gopt of
+        GridNone -> []
+        GridRound p n -> project r0 asp0 <$> gridSensible (gridPos p) r0 n
+        GridExact p n -> project r0 asp0 <$> grid (gridPos p) r0 n
+        GridPlaced xs -> project r0 asp0 <$> xs
     (asp0, r0) =
-        case gridOrientation gopt of
-          Vert -> (aspx, rx)
-          Hori -> (aspy, ry)
+      case gridOrientation gopt of
+        Vert -> (aspx, rx)
+        Hori -> (aspy, ry)
     l1d =
-        case gridOrientation gopt of
-          Hori -> \y -> [Pair (lower aspx) y, Pair (upper aspx) y]
-          Vert -> \x -> [Pair x (lower aspy), Pair x (upper aspy)]
+      case gridOrientation gopt of
+        Hori -> \y -> [Pair (lower aspx) y, Pair (upper aspx) y]
+        Vert -> \x -> [Pair x (lower aspy), Pair x (upper aspy)]

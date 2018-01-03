@@ -14,6 +14,7 @@ module Chart.Bar
   , BarValueAcc(..)
   , BarData(..)
   , barDataLowerUpper
+  , barRange
   , barChart
   ) where
 
@@ -120,17 +121,16 @@ barRange ys = Rect zero (fromIntegral $ maximum (length <$> ys)) (min zero l) u
 --
 -- > barExample :: Chart b
 -- > barExample  =
--- >     barChart def (BarData [ys] Nothing Nothing) <>
--- >     hud
--- >     ( #titles .~ [(def,"Bar Chart")] $
--- >       #axes .~
--- >       [ #tickStyle .~
--- >         TickLabels labels' $
--- >         def
--- >       ]
--- >       $ #range .~ Just (fold (abs <$> rs))
--- >       $ def
--- >     )
+-- >   barChart def (BarData [ys] Nothing Nothing) <>
+-- >   hud
+-- >   ( #titles .~ [(def,"Bar Chart")] $
+-- >     #axes .~
+-- >     [ #tickStyle .~
+-- >       TickLabels labels' $
+-- >       def
+-- >     ] $
+-- >     #range .~ Just (fold (abs <$> rs)) $
+-- >     def)
 -- >   where
 -- >     labels' = fmap Text.pack <$> take 10 $ (:[]) <$> ['a'..]
 -- >     rs = rectBars 0.1 ys
@@ -140,5 +140,5 @@ barRange ys = Rect zero (fromIntegral $ maximum (length <$> ys)) (min zero l) u
 --
 barChart :: BarOptions -> BarData -> Chart b
 barChart bo bd =
-    rectChart (bo ^. field @"rectOptions") sixbyfour
-    (barRange (bd ^. field @"barData")) (barRects bo (bd ^. field @"barData"))
+  rectChart (bo ^. field @"rectOptions") sixbyfour
+  (barRange (bd ^. field @"barData")) (barRects bo (bd ^. field @"barData"))

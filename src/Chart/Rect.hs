@@ -1,7 +1,3 @@
-{-# LANGUAGE NoImplicitPrelude #-}
-{-# LANGUAGE GADTs #-}
-{-# LANGUAGE FlexibleContexts #-}
-{-# LANGUAGE DataKinds #-}
 {-# OPTIONS_GHC -Wall #-}
 {-# LANGUAGE CPP #-}
 #if ( __GLASGOW_HASKELL__ < 820 )
@@ -31,7 +27,7 @@ module Chart.Rect
   ) where
 
 import Chart.Core
-import Diagrams.Prelude hiding (Color, D, scaleX, scaleY, (<>))
+import Diagrams.Prelude hiding (Color, D, (<>), scaleX, scaleY)
 import NumHask.Pair
 import NumHask.Prelude
 import NumHask.Range
@@ -144,22 +140,27 @@ rectChart optss asp r rs =
 --
 -- > ropts :: [RectOptions]
 -- > ropts =
--- >       [ #borderSize .~ 0 $ def
--- >       , #borderSize .~ 0 $ #color .~ ucolor 0.3 0.3 0.3 0.2 $ def
--- >       ]
--- >  
+-- >   [ #borderSize .~ 0 $ def
+-- >   , #borderSize .~ 0 $ #color .~ ucolor 0.3 0.3 0.3 0.2 $ def
+-- >   ]
+-- >
 -- > rss :: [[Rect Double]]
--- > rss = [ rectXY (\x -> exp (-(x ** 2) / 2)) (Range -5 5) 50
--- >       , rectXY (\x -> 0.5 * exp (-(x ** 2) / 8)) (Range -5 5) 50
--- >       ]
--- > 
+-- > rss =
+-- >   [ rectXY (\x -> exp (-(x ** 2) / 2)) (Range -5 5) 50
+-- >   , rectXY (\x -> 0.5 * exp (-(x ** 2) / 8)) (Range -5 5) 50
+-- >   ]
+-- >
 -- > rectChart_Example :: Chart b
 -- > rectChart_Example = rectChart_ ropts widescreen rss
 --
 -- ![rectChart_ example](other/rectChart_Example.svg)
 --
 rectChart_ ::
-     (Traversable f) => [RectOptions] -> Rect Double -> [f (Rect Double)] -> Chart b
+     (Traversable f)
+  => [RectOptions]
+  -> Rect Double
+  -> [f (Rect Double)]
+  -> Chart b
 rectChart_ optss asp rs = rectChart optss asp (fold $ fold <$> rs) rs
 
 -- | At some point, a color of a rect becomes more about data than stylistic option, hence the pixel.  Echewing rect border leaves a Pixel with no stylistic options to choose.
@@ -170,8 +171,13 @@ data Pixel = Pixel
 
 -- | A pixel is a rectangle with a color.
 --
--- > let opt = #color .~ withOpacity black 0.8 $ #size .~ 0.2 $ def
--- > text_ opt "I'm a pixel!" <> pixel_ (Pixel one ublue)
+-- > pixel_Example :: Chart b
+-- > pixel_Example = text_ opt "I'm a pixel!" <> pixel_ (Pixel one ublue)
+-- >   where
+-- >     opt =
+-- >       #color .~ withOpacity black 0.8 $
+-- >       #size .~ 0.2 $
+-- >       def
 --
 -- ![pixel_ example](other/pixel_Example.svg)
 --
@@ -185,7 +191,14 @@ pixel_ (Pixel (Rect x z y w) c) =
 
 -- | Render multiple pixels
 --
--- > pixels $ [Pixel (Rect (5*x) (5*x+0.1) (sin (10*x)) (sin (10*x) + 0.1)) (dissolve (2*x) ublue) | x <- grid OuterPos (Range 0 1) 100]
+-- > pixelsExample :: Chart b
+-- > pixelsExample =
+-- >   pixels
+-- >     [ Pixel
+-- >       (Rect (5 * x) (5 * x + 0.1) (sin (10 * x)) (sin (10 * x) + 0.1))
+-- >       (dissolve (2 * x) ublue)
+-- >     | x <- grid OuterPos (Range 0 1) 100
+-- >     ]
 --
 -- ![pixels example](other/pixelsExample.svg)
 --
@@ -193,9 +206,9 @@ pixels :: (Traversable f) => f Pixel -> Chart b
 pixels ps = mconcat $ toList $ pixel_ <$> ps
 
 -- | A chart of pixels
-pixelChart :: (Traversable f) => Rect Double -> Rect Double -> [f Pixel] -> Chart b
-pixelChart asp r pss =
-  mconcat $ pixels . projectPixels r asp . toList <$> pss
+pixelChart ::
+     (Traversable f) => Rect Double -> Rect Double -> [f Pixel] -> Chart b
+pixelChart asp r pss = mconcat $ pixels . projectPixels r asp . toList <$> pss
   where
     projectPixels r0 r1 ps =
       zipWith Pixel (projectRect r0 r1 . pixelRect <$> ps) (pixelColor <$> ps)
@@ -204,14 +217,15 @@ pixelChart asp r pss =
 --
 -- > pixelChart_Example :: Chart b
 -- > pixelChart_Example =
--- >     pixelChart_ asquare
--- >     [ (\(r,c) -> Pixel r
--- >                 (blend c
--- >                  (rybColor 14 `withOpacity` 1)
--- >                  (ucolor 0.8 0.8 0.8 0.3))) <$>
--- >       rectF (\(Pair x y) -> 4*(x*x+y*y))
--- >       one (Pair 40 40)
--- >     ]
+-- >   pixelChart_ asquare
+-- >   [(\(r,c) ->
+-- >       Pixel r
+-- >       (blend c
+-- >        (ucolor 0.47 0.73 0.86 1)
+-- >        (ucolor 0.01 0.06 0.22 1)
+-- >       )) <$>
+-- >    rectF (\(Pair x y) -> (x+y)*(x+y))
+-- >    one (Pair 40 40)]
 --
 -- ![pixelChart_ example](other/pixelChart_Example.svg)
 --
@@ -225,7 +239,8 @@ data PixelationOptions = PixelationOptions
   }
 
 instance Default PixelationOptions where
-  def = PixelationOptions
+  def =
+    PixelationOptions
       (Range (ucolor 0.47 0.73 0.86 1) (ucolor 0.01 0.06 0.22 1))
       (Pair 40 40)
 
