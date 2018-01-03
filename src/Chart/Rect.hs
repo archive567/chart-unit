@@ -167,7 +167,7 @@ rectChart_ optss asp rs = rectChart optss asp (fold $ fold <$> rs) rs
 data Pixel = Pixel
   { pixelRect :: Rect Double
   , pixelColor :: AlphaColour Double
-  }
+  } deriving Show
 
 -- | A pixel is a rectangle with a color.
 --

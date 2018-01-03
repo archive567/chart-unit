@@ -67,7 +67,8 @@ legends =
     ["short", "much longer name", "line 3"]
 
 mainExample :: Chart b
-mainExample = withHud opts (lineChart lopts) ls
+mainExample =
+  renderChart (ChartOptions Nothing sixbyfour [LineChart (zip lopts ls)] (Just opts))
   where
     opts =
       #titles .~ titles $
