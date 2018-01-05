@@ -143,6 +143,7 @@ module Chart
   , module NumHask.Rect
     -- * color
   , module Data.Colour
+  , module Data.Colour.Names
   , module Data.Colour.Palette.Harmony
   , module Data.Colour.Palette.ColorSet
     -- * fonts
@@ -167,6 +168,7 @@ import Chart.Line
 import Chart.Rect
 import Chart.Text
 import Data.Colour
+import Data.Colour.Names
 import Data.Colour.Palette.ColorSet
 import Data.Colour.Palette.Harmony
 import Data.Default (Default(..))

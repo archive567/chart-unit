@@ -82,13 +82,13 @@ timeExample :: [Day] -> Chart b
 timeExample dates =
   hud (#axes .~ [adef, defYAxis] $ #range .~ Just r $ def) <>
   glyphChart
-    [#color .~ D.red `withOpacity` 1 $ #borderSize .~ 0 $ #size .~ 0.01 $ def]
+    [#color .~ red `withOpacity` 1 $ #borderSize .~ 0 $ #size .~ 0.01 $ def]
     sixbyfour
     r
     [xs'] <>
   lglyphChart
     [def]
-    [ #shape .~ Square $ #color .~ D.blue `withOpacity` 1 $ #borderSize .~ 0 $
+    [ #shape .~ Square $ #color .~ blue `withOpacity` 1 $ #borderSize .~ 0 $
       #size .~ 0.04 $ def
     ]
     sixbyfour
@@ -442,7 +442,7 @@ schoolbookExample x =
   bound (#color .~ ucolor 1 1 1 0.1 $ def) 1.05 $ schoolbookHud <>
   parabola r f grain xscope <>
   ceptLines asquare r f x <>
-  glyphChart [#color .~ D.red `withOpacity` 0.5 $ def] asquare r [[Pair x (f x)]] <>
+  glyphChart [#color .~ red `withOpacity` 0.5 $ def] asquare r [[Pair x (f x)]] <>
   cepts asquare r f x
   where
     f x = x * x - 3

@@ -144,7 +144,7 @@ glyphHudExample =
    #axes .~
     [ #label . #text . #size .~ 0.2 $
       #tickStyle .~ TickPlaced pis $
-      #label . #text . #textType .~ TextPath Lin $
+      #label . #text . #textType .~ TextPath (TextPathOptions Lin) $
       defXAxis
     , defYAxis] $ def)
   where
@@ -169,7 +169,7 @@ lglyphHudExample = hud
 linesExample :: Int -> Chart b
 linesExample n =
   lines
-  (#color .~ D.red `withOpacity` 0.5 $ def)
+  (#color .~ red `withOpacity` 0.5 $ def)
   (dataXY cos (Range 0 (4*pi)) n)
 
 ls :: [[Pair Double]]
@@ -413,14 +413,14 @@ testTextDiffs :: Double -> Double -> Text -> (Double, Double, Double) -> Chart b
 testTextDiffs s ns txt (nb, nm, nt) =
   D.pad 1.1 $ vert identity $ D.centerXY .
   (\(ah,av,txt) ->
-     D.showOrigin' (D.OriginOpts D.red 0.001 0.001)
+     D.showOrigin' (D.OriginOpts red 0.001 0.001)
       (text_
       (#alignH .~ ah $
        #alignV .~ av $
        #size .~ s $
-       #color .~ D.red `withOpacity` 1 $
+       #color .~ red `withOpacity` 1 $
        def) txt) <>
-     D.showOrigin' (D.OriginOpts D.blue 0.003 0.003)
+     D.showOrigin' (D.OriginOpts blue 0.003 0.003)
       (text_
       (#alignV .~ av $
        #alignH .~ ah $
