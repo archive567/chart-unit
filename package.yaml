@@ -37,7 +37,8 @@ extra-source-files:
 - other/*.svg
 dependencies:
 - base >=4.7 && <5
-- generic-lens >= 0.5.2.0
+- generic-lens >= 0.5.1.0
+- generic-lens-labels
 - lens
 - numhask
 - numhask-range

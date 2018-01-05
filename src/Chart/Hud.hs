@@ -209,7 +209,7 @@ defXAxis =
     0
     0.04
     (LabelOptions
-       (TextOptions 0.08 AlignCenter AlignMid (withOpacity black 0.6) EvenOdd 0 Lin2)
+       (field @"color" .~ withOpacity black 0.6 $ def)
        (Pair 0 -1)
        0.015)
     (TickRound 8)
@@ -227,7 +227,7 @@ defYAxis =
     0
     0.04
     (LabelOptions
-       (TextOptions 0.08 AlignCenter AlignMid (withOpacity black 0.6) EvenOdd 0 Lin2)
+       (field @"color" .~ withOpacity black 0.6 $ def)
        (Pair -1 0)
        0.015)
     (TickRound 8)
@@ -362,13 +362,13 @@ data TickStyle
 -- | Provide formatted text for a list of numbers so that they are just distinguished.  'precision 2 ticks' means give the tick labels as much precision as is needed for them to be distinguished, but with at least 2 significant figues.
 precision :: Int -> [Double] -> [Text]
 precision n0 xs
-  | foldr max 0 xs < 0.01 = precLoop expt n0 (fromFloatDigits <$> xs)
-  | foldr max 0 xs > 100000 = precLoop expt n0 (fromFloatDigits <$> xs)
+  | foldr max 0 xs < 0.01 = precLoop expt' n0 (fromFloatDigits <$> xs)
+  | foldr max 0 xs > 100000 = precLoop expt' n0 (fromFloatDigits <$> xs)
   | foldr max 0 xs > 1000 =
     precLoopInt (const Formatting.commas) n0 (floor <$> xs)
   | otherwise = precLoop fixed n0 xs
   where
-    expt x = scifmt Exponent (Just x)
+    expt' x = scifmt Exponent (Just x)
     precLoop f n xs' =
       let s = sformat (f n) <$> xs'
       in if s == nub s
@@ -391,7 +391,9 @@ data TitleOptions = TitleOptions
 instance Default TitleOptions where
   def =
     TitleOptions
-      (TextOptions 0.12 AlignCenter AlignMid (withOpacity black 0.6) EvenOdd 0 Lin2)
+       (field @"size" .~ 0.12 $
+        field @"color" .~ withOpacity black 0.6 $
+        def)
       AlignCenter
       PlaceTop
       0.04
@@ -454,8 +456,9 @@ instance Default LegendOptions where
       AlignRight
       0.02
       (RectOptions 0.002 (withOpacity black 0.2) transparent)
-      (TextOptions 0.07 AlignCenter AlignMid
-       (withOpacity black 0.63) EvenOdd 0 Lin2)
+      (field @"size" .~ 0.07 $
+       field @"color" .~ withOpacity black 0.63 $
+       def)
 
 -- | Create a legend based on a LegendOptions
 --

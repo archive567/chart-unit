@@ -19,7 +19,8 @@ import Data.List ((!!), head, zipWith3)
 import Data.Time
 import Data.Time.Calendar.WeekDate
 import qualified Diagrams.Prelude as D
-import Formatting 
+import qualified Diagrams.TwoD.Text
+import Formatting
 import NumHask.Histogram
 import NumHask.Prelude as P
 import System.Random.MWC
@@ -353,7 +354,10 @@ grp n =
             else Just y)
 
 -- | chop a chart extent into a double list of Rects
-chop :: (D.Renderable (D.Path D.V2 Double) b) => Pair Int -> Chart b -> [[Rect Double]]
+chop ::
+  ( D.Renderable (D.Path D.V2 Double) b
+  , D.Renderable (Diagrams.TwoD.Text.Text Double) b) =>
+  Pair Int -> Chart b -> [[Rect Double]]
 chop p@(Pair _ n) ch = grp n $ gridSpace (Rect xl xu yl yu) p
   where
     (xl, xu) = fromMaybe (-0.5, 0.5) (D.extentX ch)

@@ -408,6 +408,32 @@ barExample  =
     rs = rectBars 0.1 ys
     ys = [1,2,3,5,8,0,-2,11,2,1]
 
+-- * difference between svg text and path text
+testTextDiffs :: Double -> Double -> Text -> (Double, Double, Double) -> Chart b
+testTextDiffs s ns txt (nb, nm, nt) =
+  D.pad 1.1 $ vert identity $ D.centerXY .
+  (\(ah,av,txt) ->
+     D.showOrigin' (D.OriginOpts D.red 0.001 0.001)
+      (text_
+      (#alignH .~ ah $
+       #alignV .~ av $
+       #size .~ s $
+       #color .~ D.red `withOpacity` 1 $
+       def) txt) <>
+     D.showOrigin' (D.OriginOpts D.blue 0.003 0.003)
+      (text_
+      (#nudgeSize .~ ns $
+       #alignV .~ av $
+       #alignH .~ ah $
+       #size .~ s $
+       #nudgeBottom .~ nb $
+       #nudgeMid .~ nm $
+       #nudgeTop .~ nt $
+       #usePath .~ False $ def) txt)) <$>
+  ((\x y -> (x,y,txt)) <$>
+   [AlignLeft, AlignCenter, AlignRight] <*>
+   [AlignBottom, AlignMid, AlignTop])
+
 main :: IO ()
 main = do
   scaleExample
@@ -457,3 +483,8 @@ main = do
   fileSvg "other/hud.svg" (100, 100) (D.showOrigin $ hud def)
   putStrLn ("barExample" :: Text)
   fileSvg "other/barExample.svg" (600, 400) barExample
+
+  -- tests
+  putStrLn ("testing text differences" :: Text)
+  fileSvg "other/testTextDiffs.svg" (400, 600) $
+    testTextDiffs 1 0.77 "abcdefghij012345" (0.25,-0.1,0.25)

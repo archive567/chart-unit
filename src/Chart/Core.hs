@@ -84,6 +84,7 @@ import Diagrams.Backend.SVG (SVG, renderSVG)
 import Diagrams.Prelude
        hiding (Color, D, aspect, project, scale, scaleX, scaleY, zero)
 import qualified Diagrams.Prelude as Diagrams
+import qualified Diagrams.TwoD.Text
 import NumHask.Pair
 import NumHask.Prelude
 import NumHask.Rect
@@ -92,9 +93,11 @@ import NumHask.Space
 -- | A Chart is simply a type synonym for a typical Diagrams object.  A close relation to this type is 'Diagram' 'B', but this usage tends to force a single backend (B comes from the backend libraries), so making Chart b's maintains backend polymorphism.
 --
 -- Just about everything - text, circles, lines, triangles, charts, axes, titles, legends etc - are 'Chart's, which means that most things are amenable to full use of the combinatorially-inclined diagrams-lib.
-type Chart b
-   = (Renderable (Path V2 Double) b) =>
+type Chart b =
+  ( Renderable (Path V2 Double) b
+  , Renderable (Diagrams.TwoD.Text.Text Double) b) =>
        QDiagram b V2 Double Any
+
 
 -- | a UChart provides a late binding of a chart Aspect so multiple charts can be rendered using the same range.
 data UChart a b = UChart
