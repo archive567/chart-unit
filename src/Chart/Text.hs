@@ -1,16 +1,16 @@
 {-# LANGUAGE DataKinds #-}
-{-# LANGUAGE TypeApplications #-}
 {-# OPTIONS_GHC -Wall #-}
 {-# OPTIONS_GHC -Wno-unused-top-binds #-}
 
 -- | textual chart elements
 module Chart.Text
   ( TextOptions(TextOptions)
+  , TextPathOptions(TextPathOptions)
+  , TextSvgOptions(TextSvgOptions)
+  , TextType(..)
   , TextFont(..)
   , textFont
   , text_
-  , textPath
-  , textSvg
   , texts
   , textChart
   , textChart_
@@ -23,12 +23,37 @@ import qualified Data.Text as Text
 import Diagrams.Prelude hiding (Color, D, scale, (<>))
 import qualified Diagrams.TwoD.Size as D
 import qualified Diagrams.TwoD.Text as D
-import Data.Generics.Product
 import Graphics.SVGFonts hiding (textFont)
 import Graphics.SVGFonts.ReadFont
 import NumHask.Pair
 import NumHask.Prelude hiding (rotate)
 import NumHask.Rect
+
+
+-- | options specific to text as an SVG path
+newtype TextPathOptions = TextPathOptions
+  { font :: TextFont
+  } deriving (Show, Generic)
+
+instance Default TextPathOptions where
+  def = TextPathOptions Lin2
+
+-- | options specific to text as SVG text
+data TextSvgOptions = TextSvgOptions
+  { nudgeSize :: Double
+  , nudgeBottom :: Double
+  , nudgeMid :: Double
+  , nudgeTop :: Double
+  } deriving (Show, Generic)
+
+instance Default TextSvgOptions where
+  def = TextSvgOptions 0.78 0.25 -0.10 0.25
+
+-- | text as a path or as svg text
+data TextType
+  = TextPath TextPathOptions
+  | TextSvg TextSvgOptions
+  deriving (Show, Generic)
 
 -- | text options
 data TextOptions = TextOptions
@@ -38,12 +63,7 @@ data TextOptions = TextOptions
   , color :: AlphaColour Double
   , textFillRule :: FillRule
   , rotation :: Double
-  , font :: TextFont
-  , usePath :: Bool
-  , nudgeSize :: Double
-  , nudgeBottom :: Double
-  , nudgeMid :: Double
-  , nudgeTop :: Double
+  , textType :: TextType
   } deriving (Show, Generic)
 
 instance Default TextOptions where
@@ -55,23 +75,20 @@ instance Default TextOptions where
       (withOpacity black 0.33)
       EvenOdd
       0
-      Lin2
-      True
-      0.78
-      0.25
-      -0.10
-      0.25
+      (TextPath def)
 
 -- | ADT of fonts
 data TextFont
   = Lin2
   | Lin
+  | Bit
   deriving (Show)
 
 -- | transform from chart-unit to SVGFonts rep of font
 textFont :: TextFont -> PreparedFont Double
 textFont Lin = lin
 textFont Lin2 = lin2
+textFont Bit = Graphics.SVGFonts.bit
 
 -- | Create a textual chart element
 --
@@ -80,10 +97,7 @@ textFont Lin2 = lin2
 -- ![text_ example](other/text_Example.svg)
 --
 text_ :: TextOptions -> Text -> Chart b
-text_ opts t = bool textSvg textPath (opts ^. field @"usePath") opts t
-
-textPath :: TextOptions -> Text -> Chart b
-textPath (TextOptions s ah av c fr rot f _ _ _ _ _) t =
+text_ (TextOptions s ah av c fr rot (TextPath (TextPathOptions f))) t =
   moveTo (p_ (Pair (alignHTU ah * D.width path) (av' * D.height path))) $
   path # fcA c # lw 0 # fillRule fr # rotate (rot @@ deg)
   where
@@ -93,13 +107,11 @@ textPath (TextOptions s ah av c fr rot f _ _ _ _ _) t =
       AlignBottom -> 0
       AlignMid -> -0.25
       AlignTop -> -0.5
-
-textSvg :: TextOptions -> Text -> Chart b
-textSvg (TextOptions s ah av c fr rot _ _ nudge nb nm nt) t =
+text_ (TextOptions s ah av c fr rot (TextSvg (TextSvgOptions ns nb nm nt))) t =
   txt #
   moveTo (p_ (Pair 0 mv)) #
-  Chart.Core.scaleX (s * nudge) #
-  Chart.Core.scaleY (s * nudge) #
+  Chart.Core.scaleX (s * ns) #
+  Chart.Core.scaleY (s * ns) #
   fcA c # lw 0 # fillRule fr # rotate (rot @@ deg)
   where
     txt = D.alignedText ah'' av'' (Text.unpack t)

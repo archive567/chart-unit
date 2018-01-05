@@ -144,7 +144,7 @@ glyphHudExample =
    #axes .~
     [ #label . #text . #size .~ 0.2 $
       #tickStyle .~ TickPlaced pis $
-      #label . #text . #font .~ Lin $
+      #label . #text . #textType .~ TextPath Lin $
       defXAxis
     , defYAxis] $ def)
   where
@@ -422,14 +422,11 @@ testTextDiffs s ns txt (nb, nm, nt) =
        def) txt) <>
      D.showOrigin' (D.OriginOpts D.blue 0.003 0.003)
       (text_
-      (#nudgeSize .~ ns $
-       #alignV .~ av $
+      (#alignV .~ av $
        #alignH .~ ah $
        #size .~ s $
-       #nudgeBottom .~ nb $
-       #nudgeMid .~ nm $
-       #nudgeTop .~ nt $
-       #usePath .~ False $ def) txt)) <$>
+       #textType .~ TextSvg (TextSvgOptions ns nb nm nt) $
+       def) txt)) <$>
   ((\x y -> (x,y,txt)) <$>
    [AlignLeft, AlignCenter, AlignRight] <*>
    [AlignBottom, AlignMid, AlignTop])
