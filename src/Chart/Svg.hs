@@ -2,8 +2,8 @@
 {-# LANGUAGE DuplicateRecordFields #-}
 {-# LANGUAGE DataKinds #-}
 {-# OPTIONS_GHC -Wall #-}
- 
--- | Experimental Chart ADT
+
+-- | Svg rendering
 --
 module Chart.Svg
   ( SvgOptions(..)
@@ -23,33 +23,30 @@ import NumHask.Prelude
 import qualified Data.Text.Lazy.IO as Text
 import qualified Diagrams.Prelude as D
 
+{- | Mathjax capability would be awesome but the html that mathjax generates is not valid svg unless it is wrapped in <foreignObject> instead of <text>.  <foreignObject> also cant be a sub-element of a text element.  This means extensive digging into Diagrams innards etc
+
+https://stackoverflow.com/questions/15962325/mathjax-inside-svg
+
+-}
+
 -- | Svg options
 data SvgOptions = SvgOptions
   { size :: Pair Double
-  , includeMathjax :: Bool
   , svgId :: Text
   , attributes :: [Attribute]
   , includeDocType :: Bool
   } deriving (Show, Generic)
 
 instance Default SvgOptions where
-  def = SvgOptions (Pair 600 400) False "" [] True
+  def = SvgOptions (Pair 600 400) "" [] True
 
 renderSvg :: SvgOptions -> Chart SVG -> Element
-renderSvg (SvgOptions (Pair x y) math svgid atts dt) ch =
+renderSvg (SvgOptions (Pair x y) svgid atts dt) ch =
   D.renderDia
   SVG
   (SVGOptions
-   (D.mkSizeSpec (D.V2 (Just x) (Just y))) defs svgid atts dt)
+   (D.mkSizeSpec (D.V2 (Just x) (Just y))) Nothing svgid atts dt)
   ch
-  where
-    defs = case math of
-      False -> Nothing
-      True -> Just (script_ [Type_ <<- "text/x-mathjax-config", makeAttribute "src" "https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=default", makeAttribute "async" "absurd"] "\n    MathJax.Hub.Config({\n        extensions: [\"tex2jax.js\", \"TeX/AMSmath.js\"],\n        jax: [\"input/TeX\", \"output/SVG\"],\n    })")
-
-      -- script type="text/javascript" async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-MML-AM_CHTML"
-
--- https://stackoverflow.com/questions/15962325/mathjax-inside-svg
 
 -- | write an svg to file
 toFile :: FilePath -> Element -> IO ()
