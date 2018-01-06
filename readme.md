@@ -125,6 +125,15 @@ skinny
 
 ![](other/skinnyExample.svg)
 
+
+tests
+===
+
+Differences between text methods, across alignments
+
+![](other/testTextDiffs.svg)
+
+
 workflow
 ===
 

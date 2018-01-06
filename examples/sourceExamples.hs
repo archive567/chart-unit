@@ -20,7 +20,8 @@ import qualified Data.Text as Text
 -- * Chart.Core examples 
 scaleExample :: IO ()
 scaleExample =
-    fileSvg "other/scaleExample.svg" (300,120) $ withHud
+    fileSvg "other/scaleExample.svg" (#size .~ Pair 300 120 $ def) $
+    withHud
       ( #aspect .~ widescreen $
         #range .~ Just (Rect 0 12 0 0.2) $
         def)
@@ -144,7 +145,7 @@ glyphHudExample =
    #axes .~
     [ #label . #text . #size .~ 0.2 $
       #tickStyle .~ TickPlaced pis $
-      #label . #text . #font .~ Lin $
+      #label . #text . #textType .~ TextPath (TextPathOptions Lin) $
       defXAxis
     , defYAxis] $ def)
   where
@@ -169,7 +170,7 @@ lglyphHudExample = hud
 linesExample :: Int -> Chart b
 linesExample n =
   lines
-  (#color .~ D.red `withOpacity` 0.5 $ def)
+  (#color .~ red `withOpacity` 0.5 $ def)
   (dataXY cos (Range 0 (4*pi)) n)
 
 ls :: [[Pair Double]]
@@ -408,52 +409,87 @@ barExample  =
     rs = rectBars 0.1 ys
     ys = [1,2,3,5,8,0,-2,11,2,1]
 
+-- * difference between svg text and path text
+testTextDiffs :: Double -> Double -> Text -> (Double, Double, Double) -> Chart b
+testTextDiffs s ns txt (nb, nm, nt) =
+  D.pad 1.1 $ vert identity $ D.centerXY .
+  (\(ah,av,txt) ->
+     D.showOrigin' (D.OriginOpts red 0.001 0.001)
+      (text_
+      (#alignH .~ ah $
+       #alignV .~ av $
+       #size .~ s $
+       #color .~ red `withOpacity` 1 $
+       def) txt) <>
+     D.showOrigin' (D.OriginOpts blue 0.003 0.003)
+      (text_
+      (#alignV .~ av $
+       #alignH .~ ah $
+       #size .~ s $
+       #textType .~ TextSvg (TextSvgOptions ns nb nm nt) $
+       def) txt)) <$>
+  ((\x y -> (x,y,txt)) <$>
+   [AlignLeft, AlignCenter, AlignRight] <*>
+   [AlignBottom, AlignMid, AlignTop])
+
 main :: IO ()
 main = do
   scaleExample
-  fileSvg "other/text_Example.svg" (400, 100) text_Example
-  fileSvg "other/textsExample.svg" (400, 100) textsExample
-  fileSvg "other/textChart_Example.svg" (300, 100) textChart_Example
-  fileSvg "other/labelledExample.svg" (300, 100) labelledExample
-  fileSvg "other/textHudExample.svg" (600, 400) $
+  fileSvg "other/text_Example.svg" (#size .~ Pair 400 100 $ def) text_Example
+  fileSvg "other/textsExample.svg" (#size .~ Pair 400 100 $ def) textsExample
+  fileSvg "other/textChart_Example.svg" (#size .~ Pair 400 100 $ def)
+    textChart_Example
+  fileSvg "other/labelledExample.svg" (#size .~ Pair 300 100 $ def) labelledExample
+  fileSvg "other/textHudExample.svg" def $
     textHudExample <> textChart_Example
-  fileSvg "other/glyph_Example.svg" (400, 100) glyph_Example
-  fileSvg "other/glyphsExample.svg" (400, 100) glyphsExample
-  fileSvg "other/glyphChart_Example.svg" (450, 150) glyphChart_Example
-  fileSvg "other/lglyphsExample.svg" (400, 100) lglyphsExample
+  fileSvg "other/glyph_Example.svg" (#size .~ Pair 400 100 $ def) glyph_Example
+  fileSvg "other/glyphsExample.svg" (#size .~ Pair 400 100 $ def) glyphsExample
+  fileSvg "other/glyphChart_Example.svg" (#size .~ Pair 450 150 $ def)
+    glyphChart_Example
+  fileSvg "other/lglyphsExample.svg" (#size .~ Pair 400 100 $ def) lglyphsExample
   fileSvg
     "other/lglyphChart_Example.svg"
-    (600, 200)
+    (#size .~ Pair 600 200 $ def)
     (lglyphChart_Example widescreen)
-  fileSvg "other/glyphHudExample.svg" (600, 400) $
+  fileSvg "other/glyphHudExample.svg" def $
     glyphHudExample <> glyphChart_Example
-  fileSvg "other/lglyphHudExample.svg" (600, 400) $
+  fileSvg "other/lglyphHudExample.svg" def $
     lglyphHudExample <> lglyphChart_Example widescreen
-  fileSvg "other/linesExample.svg" (400, 100) (linesExample 100)
-  fileSvg "other/lineChart_Example.svg" (300, 200) lineChart_Example
-  fileSvg "other/glineChart_Example.svg" (300, 200) glineChart_Example
-  fileSvg "other/lineHudExample.svg" (600, 400) $
+  fileSvg "other/linesExample.svg" (#size .~ Pair 400 100 $ def) (linesExample 100)
+  fileSvg "other/lineChart_Example.svg" (#size .~ Pair 300 200 $ def)
+    lineChart_Example
+  fileSvg "other/glineChart_Example.svg" (#size .~ Pair 300 200 $ def)
+    glineChart_Example
+  fileSvg "other/lineHudExample.svg" def $
     lineHudExample <> lineChart_Example
-  fileSvg "other/glineHudExample.svg" (600, 400) glineHudExample
-  fileSvg "other/rect_Example.svg" (300, 200) $ rect_Example 2
-  fileSvg "other/rectsExample.svg" (300, 200) rectsExample
-  fileSvg "other/rectChart_Example.svg" (300, 100) rectChart_Example
-  fileSvg "other/pixel_Example.svg" (100, 100) pixel_Example
-  fileSvg "other/pixelsExample.svg" (300, 100) pixelsExample
-  fileSvg "other/pixelChart_Example.svg" (300, 300) pixelChart_Example
-  fileSvg "other/rectHudExample.svg" (600, 400) $
+  fileSvg "other/glineHudExample.svg" def glineHudExample
+  fileSvg "other/rect_Example.svg" (#size .~ Pair 300 200 $ def) $ rect_Example 2
+  fileSvg "other/rectsExample.svg" (#size .~ Pair 300 200 $ def) rectsExample
+  fileSvg "other/rectChart_Example.svg" (#size .~ Pair 300 100 $ def)
+    rectChart_Example
+  fileSvg "other/pixel_Example.svg" (#size .~ Pair 100 100 $ def) pixel_Example
+  fileSvg "other/pixelsExample.svg" (#size .~ Pair 300 100 $ def) pixelsExample
+  fileSvg "other/pixelChart_Example.svg" (#size .~ Pair 300 300 $ def)
+    pixelChart_Example
+  fileSvg "other/rectHudExample.svg" def $
     rectHudExample <> rectChart_Example
-  fileSvg "other/pixelHudExample.svg" (600, 400) $
+  fileSvg "other/pixelHudExample.svg" def $
     pixelHudExample <> pixelateChartExample
-  fileSvg "other/arrowsExample.svg" (100, 300) arrowsExample
-  fileSvg "other/arrowChart_Example.svg" (300, 300) arrowChart_Example
-  fileSvg "other/arrowHudExample.svg" (600, 400) $
+  fileSvg "other/arrowsExample.svg" (#size .~ Pair 100 300 $ def) arrowsExample
+  fileSvg "other/arrowChart_Example.svg" (#size .~ Pair 300 300 $ def)
+    arrowChart_Example
+  fileSvg "other/arrowHudExample.svg" def $
     arrowHudExample <> arrowChart_Example
-  fileSvg "other/hudExample.svg" (300, 300) hudExample
-  fileSvg "other/withHudExample.svg" (300, 200) withHudExample
-  fileSvg "other/axisExample.svg" (400, 100) axisExample
-  fileSvg "other/legendExample.svg" (300, 300) legendExample
+  fileSvg "other/hudExample.svg" (#size .~ Pair 300 300 $ def) hudExample
+  fileSvg "other/withHudExample.svg" (#size .~ Pair 300 200 $ def) withHudExample
+  fileSvg "other/axisExample.svg" (#size .~ Pair 400 100 $ def) axisExample
+  fileSvg "other/legendExample.svg" (#size .~ Pair 300 300 $ def) legendExample
   -- small hud examples
-  fileSvg "other/hud.svg" (100, 100) (D.showOrigin $ hud def)
+  fileSvg "other/hud.svg" (#size .~ Pair 100 100 $ def) (D.showOrigin $ hud def)
   putStrLn ("barExample" :: Text)
-  fileSvg "other/barExample.svg" (600, 400) barExample
+  fileSvg "other/barExample.svg" def barExample
+
+  -- tests
+  putStrLn ("testing text differences" :: Text)
+  fileSvg "other/testTextDiffs.svg" (#size .~ Pair 400 600 $ def) $
+    testTextDiffs 1 0.77 "abcdefghij012345" (0.25,-0.1,0.25)

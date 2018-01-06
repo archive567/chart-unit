@@ -1,5 +1,7 @@
 {-# LANGUAGE OverloadedLabels #-}
 {-# LANGUAGE DuplicateRecordFields #-}
+{-# LANGUAGE TypeApplications #-}
+{-# LANGUAGE DataKinds #-}
 {-# OPTIONS_GHC -Wall #-}
  
 -- | Experimental Chart ADT
@@ -12,18 +14,18 @@ module Chart.ADT
   , rangeSpec
   , rangeChart
   ) where
- 
+
 import Chart.Arrow
 import Chart.Bar
 import Chart.Core
-import Chart.Data
-import Chart.Data.Time
 import Chart.Glyph
 import Chart.Hud
 import Chart.Line
 import Chart.Rect
 import Chart.Text
+import Control.Lens
 import Data.Default
+import Data.Generics.Product (field)
 import NumHask.Pair
 import NumHask.Prelude
 import NumHask.Rect
@@ -39,6 +41,7 @@ data ChartSpec
   | RectChart [(RectOptions, [Rect Double])]
   | PixelChart [[Pixel]]
   | ArrowChart [(ArrowOptions, [Arrow])]
+  | BarChart BarOptions BarData
   deriving (Show, Generic)
 
 -- | Chart options
@@ -53,7 +56,7 @@ instance Default ChartOptions where
   def = ChartOptions Nothing sixbyfour [] Nothing
 
 renderChart :: ChartOptions -> Chart b
-renderChart ch@(ChartOptions mr a cs mh) =
+renderChart ch@(ChartOptions _ a cs mh) =
   mconcat (renderSpec a (rangeChart ch) <$> cs) <>
   maybe mempty hud mh
 
@@ -78,6 +81,7 @@ renderSpec a r (TextChart xs) = textChart (fst <$> xs) a r (snd <$> xs)
 renderSpec a r (RectChart xs) = rectChart (fst <$> xs) a r (snd <$> xs)
 renderSpec a r (PixelChart xs) = pixelChart a r xs
 renderSpec a r (ArrowChart xs) = arrowChart (fst <$> xs) a r (snd <$> xs)
+renderSpec _ _ (BarChart o d) = barChart o d
 
 rangeSpec :: ChartSpec -> Rect Double
 rangeSpec (GlyphChart xs) = range (snd <$> xs)
@@ -89,6 +93,7 @@ rangeSpec (TextChart xs) = range $ (\x -> fmap snd . toList <$> x) (snd <$> xs)
 rangeSpec (RectChart xs) = (\rs -> fold $ fold <$> rs) (snd <$> xs)
 rangeSpec (PixelChart xs) = fold $ fold . map pixelRect <$> xs
 rangeSpec (ArrowChart xs) = (\xss -> fold (space . map arrowPos <$> xss)) (snd <$> xs)
+rangeSpec (BarChart _ d) = barRange (d ^. field @"barData")
 
 rangeChart :: ChartOptions -> Rect Double
 rangeChart (ChartOptions mr _ cs _) = fromMaybe (mconcat (rangeSpec <$> cs)) mr

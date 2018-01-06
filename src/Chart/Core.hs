@@ -22,7 +22,8 @@
 --
 -- > scaleExample :: IO ()
 -- > scaleExample =
--- >     fileSvg "other/scaleExample.svg" (300,120) $ withHud
+-- >     fileSvg "other/scaleExample.svg" (#size .~ Pair 300 120 $ def) $
+-- >     withHud
 -- >       ( #aspect .~ widescreen $
 -- >         #range .~ Just (Rect 0 12 0 0.2) $
 -- >         def)
@@ -66,8 +67,7 @@ module Chart.Core
   , hori
   , sepVert
   , sepHori
-    -- * IO
-  , fileSvg
+
     -- * Color
     --
     -- | chart-unit exposes the 'colour' and 'palette' libraries for color combinators
@@ -80,10 +80,10 @@ module Chart.Core
   , scale
   ) where
 
-import Diagrams.Backend.SVG (SVG, renderSVG)
 import Diagrams.Prelude
        hiding (Color, D, aspect, project, scale, scaleX, scaleY, zero)
 import qualified Diagrams.Prelude as Diagrams
+import qualified Diagrams.TwoD.Text
 import NumHask.Pair
 import NumHask.Prelude
 import NumHask.Rect
@@ -92,9 +92,11 @@ import NumHask.Space
 -- | A Chart is simply a type synonym for a typical Diagrams object.  A close relation to this type is 'Diagram' 'B', but this usage tends to force a single backend (B comes from the backend libraries), so making Chart b's maintains backend polymorphism.
 --
 -- Just about everything - text, circles, lines, triangles, charts, axes, titles, legends etc - are 'Chart's, which means that most things are amenable to full use of the combinatorially-inclined diagrams-lib.
-type Chart b
-   = (Renderable (Path V2 Double) b) =>
+type Chart b =
+  ( Renderable (Path V2 Double) b
+  , Renderable (Diagrams.TwoD.Text.Text Double) b) =>
        QDiagram b V2 Double Any
+
 
 -- | a UChart provides a late binding of a chart Aspect so multiple charts can be rendered using the same range.
 data UChart a b = UChart
@@ -258,10 +260,6 @@ sepHori s x = beside (r2 (0, -1)) x (strutX s)
 -- | vertical separator
 sepVert :: Double -> Chart b -> Chart b
 sepVert s x = beside (r2 (1, 0)) x (strutY s)
-
--- | write an svg to file
-fileSvg :: FilePath -> (Double, Double) -> Diagram SVG -> IO ()
-fileSvg f s = renderSVG f (mkSizeSpec (Just <$> r2 s))
 
 -- | convert an rgba spec to an AlphaColour
 ucolor :: (Floating a, Ord a) => a -> a -> a -> a -> AlphaColour a

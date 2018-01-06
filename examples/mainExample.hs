@@ -78,4 +78,4 @@ mainExample =
       def
 
 main :: IO ()
-main = fileSvg "other/mainExample.svg" (600, 400) mainExample
+main = fileSvg "other/mainExample.svg" def mainExample

@@ -120,7 +120,7 @@
 -- >       def
 -- > 
 -- > main :: IO ()
--- > main = fileSvg "other/mainExample.svg" (600, 400) mainExample
+-- > main = fileSvg "other/mainExample.svg" def mainExample
 -- > 
 --
 module Chart
@@ -134,6 +134,7 @@ module Chart
   , module Chart.Hud
   , module Chart.Line
   , module Chart.Rect
+  , module Chart.Svg
   , module Chart.Text
   , module Chart.Bar
     -- * numhask-range
@@ -143,6 +144,7 @@ module Chart
   , module NumHask.Rect
     -- * color
   , module Data.Colour
+  , module Data.Colour.Names
   , module Data.Colour.Palette.Harmony
   , module Data.Colour.Palette.ColorSet
     -- * fonts
@@ -151,8 +153,6 @@ module Chart
   , Default(..)
     -- * Text
   , Text
-    -- * scratch pad
-  , scratch
   ) where
 
 import Chart.ADT
@@ -165,21 +165,17 @@ import Chart.Glyph
 import Chart.Hud
 import Chart.Line
 import Chart.Rect
+import Chart.Svg
 import Chart.Text
 import Data.Colour
+import Data.Colour.Names
 import Data.Colour.Palette.ColorSet
 import Data.Colour.Palette.Harmony
 import Data.Default (Default(..))
 import Data.Text
-import Diagrams.Backend.SVG (SVG)
-import Diagrams.Prelude
 import Graphics.SVGFonts hiding (textFont)
 import NumHask.Pair
-import NumHask.Prelude (IO)
 import NumHask.Range
 import NumHask.Rect
 import NumHask.Space hiding (width)
 
--- | a scratch pad
-scratch :: Diagram SVG -> IO ()
-scratch = fileSvg "other/scratchpad.svg" (600, 400)

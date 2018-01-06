@@ -16,14 +16,14 @@ testWithChart :: SpecWith ()
 testWithChart =
   describe "withChart" $ do
     it "axes and chartWith should render the same" $ do
-      fileSvg "test/empty.svg" (400, 400) emptyChart
-      fileSvg "test/justAxes.svg" (400, 400) justAxesChart
+      fileSvg "test/empty.svg" (#size .~ Pair 400 400 $ def) emptyChart
+      fileSvg "test/justAxes.svg" (#size .~ Pair 400 400 $ def) justAxesChart
       t1 <- readFile "test/empty.svg"
       t2 <- readFile "test/justAxes.svg"
       t1 `shouldBe` t2
     it "chartWith lines and lines <> axes" $ do
-      fileSvg "test/line.svg" (400, 400) line1Chart
-      fileSvg "test/line2.svg" (400, 400) line2Chart
+      fileSvg "test/line.svg" (#size .~ Pair 400 400 $ def) line1Chart
+      fileSvg "test/line2.svg" (#size .~ Pair 400 400 $ def) line2Chart
       t1 <- readFile "test/line.svg"
       t2 <- readFile "test/line2.svg"
       t1 `shouldBe` t2
