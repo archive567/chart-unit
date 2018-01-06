@@ -125,7 +125,8 @@
 --
 module Chart
   ( -- * chart-unit
-    module Chart.Core
+    module Chart.ADT
+  , module Chart.Core
   , module Chart.Data
   , module Chart.Data.Time
   , module Chart.Arrow
@@ -154,6 +155,7 @@ module Chart
   , scratch
   ) where
 
+import Chart.ADT
 import Chart.Arrow
 import Chart.Bar
 import Chart.Core

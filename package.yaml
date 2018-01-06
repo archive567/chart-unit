@@ -48,6 +48,7 @@ library:
   - -fforce-recomp
   exposed-modules:
   - Chart
+  - Chart.ADT
   - Chart.Arrow
   - Chart.Bar
   - Chart.Core
