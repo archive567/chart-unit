@@ -453,29 +453,32 @@ schoolbookExample x =
 main :: IO ()
 main = do
   putStrLn ("gridExample" :: Text)
-  fileSvg "other/gridExample.svg" (600, 400) gridExample
+  fileSvg "other/gridExample.svg" def gridExample
   ts <- timeData 200
   putStrLn ("timeExample" :: Text)
-  fileSvg "other/timeExample.svg" (600, 400) $ timeExample ts
+  fileSvg "other/timeExample.svg" def $ timeExample ts
   xys <- mkScatterData
   putStrLn ("scatterHistExample" :: Text)
-  fileSvg "other/scatterHistExample.svg" (600, 400) (scatterHistExample xys)
+  fileSvg "other/scatterHistExample.svg" def (scatterHistExample xys)
   putStrLn ("skinnyExample" :: Text)
   qs <- makeQuantiles 20
   qs' <- makeQuantiles 4
-  fileSvg "other/skinnyExample.svg" (600, 150) $ skinnyExample qs qs'
+  fileSvg "other/skinnyExample.svg" (#size .~ Pair 600 150 $ def) $
+    skinnyExample qs qs'
   putStrLn ("histDiffExample" :: Text)
   hs <- makeHistDiffExample
-  fileSvg "other/histDiffExample.svg" (600, 600) $ histDiffExample hs
+  fileSvg "other/histDiffExample.svg" (#size .~ Pair 600 600 $ def) $
+    histDiffExample hs
   putStrLn ("clippingExample" :: Text)
-  fileSvg "other/clippingExample.svg" (600, 600) $
+  fileSvg "other/clippingExample.svg" (#size .~ Pair 600 600 $ def) $
     clippingExample
       (#color .~ ucolor 0.3 0.3 0.3 0.1 $ def)
       1.1
       5
       (schoolbookExample -1)
   putStrLn ("schoolbookExample" :: Text)
-  fileSvg "other/schoolbookExample.svg" (400, 400) (schoolbookExample -1)
+  fileSvg "other/schoolbookExample.svg" (#size .~ Pair 400 400 $ def)
+    (schoolbookExample -1)
   putStrLn ("haskell survey examples" :: Text)
-  fileSvg "other/q7Example.svg" (600, 400) $ surveyChart q7
-  fileSvg "other/q24Example.svg" (600, 400) $ surveyChart q24
+  fileSvg "other/q7Example.svg" def $ surveyChart q7
+  fileSvg "other/q24Example.svg" def $ surveyChart q24

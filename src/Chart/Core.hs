@@ -22,7 +22,8 @@
 --
 -- > scaleExample :: IO ()
 -- > scaleExample =
--- >     fileSvg "other/scaleExample.svg" (300,120) $ withHud
+-- >     fileSvg "other/scaleExample.svg" (#size .~ Pair 300 120 $ def) $
+-- >     withHud
 -- >       ( #aspect .~ widescreen $
 -- >         #range .~ Just (Rect 0 12 0 0.2) $
 -- >         def)
@@ -66,8 +67,7 @@ module Chart.Core
   , hori
   , sepVert
   , sepHori
-    -- * IO
-  , fileSvg
+
     -- * Color
     --
     -- | chart-unit exposes the 'colour' and 'palette' libraries for color combinators
@@ -80,7 +80,6 @@ module Chart.Core
   , scale
   ) where
 
-import Diagrams.Backend.SVG (SVG, renderSVG)
 import Diagrams.Prelude
        hiding (Color, D, aspect, project, scale, scaleX, scaleY, zero)
 import qualified Diagrams.Prelude as Diagrams
@@ -261,10 +260,6 @@ sepHori s x = beside (r2 (0, -1)) x (strutX s)
 -- | vertical separator
 sepVert :: Double -> Chart b -> Chart b
 sepVert s x = beside (r2 (1, 0)) x (strutY s)
-
--- | write an svg to file
-fileSvg :: FilePath -> (Double, Double) -> Diagram SVG -> IO ()
-fileSvg f s = renderSVG f (mkSizeSpec (Just <$> r2 s))
 
 -- | convert an rgba spec to an AlphaColour
 ucolor :: (Floating a, Ord a) => a -> a -> a -> a -> AlphaColour a

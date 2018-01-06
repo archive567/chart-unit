@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+    <body>
+        <script type="text/x-mathjax-config">
+         MathJax.Hub.Config({
+             extensions: ["tex2jax.js", "TeX/AMSmath.js"],
+             jax: ["input/TeX", "output/SVG"],
+             tex2jax: { inlineMath: [['$','$']], displayMath: [['$$','$$']]},
+         })
+        </script>
+
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=default"></script>
+
+        <svg height="200" width="200">
+            <text x="0" y="15">$$svgText = e^{i\pi} +1 = 0$$</text>
+            $$e^{i\pi} +1 = 0$$
+            <foreignObject x="0" y="0" width="0" height="0">
+                <div xmlns="http://www.w3.org/1999/xhtml" style="font-family:Times; font-size:15px">
+                    $$\displaystyle{x+1\over y-1}$$
+                </div>
+            </foreignObject>
+            <foreignObject x="0" y="0" width="0" height="0">
+                <div xmlns="http://www.w3.org/1999/xhtml" style="font-family:Times; font-size:15px">
+                    $inline = \displaystyle{x+1\over y-1}$
+                </div>
+            </foreignObject>
+
+        </svg>
+
+        <script type="math/tex; mode=display">
+         displayScript = \sum_{n=1}^\infty {1\over n^2} = {\pi^2\over 6}
+        </script>
+        <hr>
+        <script type="math/tex">inlineScript = x+\sqrt{1-x^2}</script>
+        <hr>
+        <text>$$text = e^{i\pi} +1 = 0$$</text>
+        <hr>
+        $$bare=e^{i\pi} +1 = 0$$
+        <hr>
+        <div>$$div=e^{i\pi} +1 = 0$$</div>
+        <hr>
+        <text x="0" y="15">inline $text = e^{i\pi} +1 = 0$</text>
+        <hr>
+        inline $bare=e^{i\pi} +1 = 0$
+        <hr>
+        <div>inline $div=e^{i\pi} +1 = 0$</div>
+
+</body>
+</html>
+
+
+

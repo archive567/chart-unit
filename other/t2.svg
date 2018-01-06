@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+<body>
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+        extensions: ["tex2jax.js", "TeX/AMSmath.js"],
+        jax: ["input/TeX", "output/SVG"],
+    })
+</script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=default"></script>
+<div>$$a = b + c$$</div>
+
+<svg height="30" width="200">
+  <text x="0" y="15" fill="red">I love SVG!</text>
+  Sorry, your browser does not support inline SVG.
+</svg>
+ 
+</body>
+</html>
+
+
+
