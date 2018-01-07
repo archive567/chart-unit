@@ -59,6 +59,7 @@ library:
   - Chart.Hud
   - Chart.Line
   - Chart.Rect
+  - Chart.Svg
   - Chart.Text
   dependencies:
   - SVGFonts

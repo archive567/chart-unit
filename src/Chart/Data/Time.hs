@@ -27,6 +27,7 @@ import qualified Data.Text as Text
 import qualified Protolude as P
 
 -- | parse text as per iso8601
+--
 -- >>> :set -XOverloadedStrings
 -- >>> let t0 = parseUTCTime ("2017-12-05" :: Text)
 -- >>> t0
@@ -76,6 +77,7 @@ fromDouble' :: Double -> DiffTime
 fromDouble' d = toEnum $ fromEnum $ d * ((10 :: Double) P.^ (12 :: Integer))
 
 -- | add a TimeGrain to a UTCTime
+--
 -- >>> addGrain (Years 1) 5 (UTCTime (fromGregorian 2015 2 28) 0)
 -- 2020-02-29 00:00:00 UTC
 --
@@ -121,6 +123,7 @@ addHalfGrain g@(Minutes _) d = addUTCTime (fromDouble (0.5 * grainSecs g)) d
 addHalfGrain g@(Seconds _) d = addUTCTime (fromDouble (0.5 * grainSecs g)) d
 
 -- | compute the floor UTCTime based on the timegrain
+--
 -- >>> floorGrain (Years 5) (UTCTime (fromGregorian 1999 1 1) 0)
 -- 1995-12-31 00:00:00 UTC
 --
@@ -160,6 +163,7 @@ floorGrain (Seconds secs) u@(UTCTime _ t) = addUTCTime x u
     x = fromDouble $ (secs * fromIntegral (floor (s / secs))) - s
 
 -- | compute the ceiling UTCTime based on the timegrain
+--
 -- >>> ceilingGrain (Years 5) (UTCTime (fromGregorian 1999 1 1) 0)
 -- 2000-12-31 00:00:00 UTC
 --
@@ -204,6 +208,7 @@ data PosDiscontinuous = PosInnerOnly | PosIncludeBoundaries
 
 -- | dates attached to charts are often discontinuous, but we want to smooth that reality over and show a continuous range on the axis
 -- The assumption with getSensibleTimeGrid is that there is a list of discountinuous UTCTimes rather than a continuous range.  Output is a list of index points for the original [UTCTime] and label tuples, and a list of unused list elements.
+--
 -- >>> placedTimeLabelDiscontinuous PosIncludeBoundaries (Just "%d %b") 2 [UTCTime (fromGregorian 2017 12 6) 0, UTCTime (fromGregorian 2017 12 29) 0, UTCTime (fromGregorian 2018 1 31) 0, UTCTime (fromGregorian 2018 3 3) 0]
 -- ([(0,"06 Dec"),(1,"31 Dec"),(2,"28 Feb"),(3,"03 Mar")],[])
 --
@@ -253,6 +258,7 @@ laterTimes (x:xs) = L.fold (L.Fold step (x,[]) (\(x0,x1) -> reverse $ x0:x1)) xs
     step ((n,a), rs) (na, aa) = if na == n then ((na,aa),rs) else ((na,aa),(n,a):rs)
 
 -- | compute a sensible TimeGrain and list of UTCTimes
+--
 -- >>> sensibleTimeGrid InnerPos 2 (UTCTime (fromGregorian 2016 12 31) 0, UTCTime (fromGregorian 2017 12 31) 0)
 -- (Months 6,[2016-12-31 00:00:00 UTC,2017-06-30 00:00:00 UTC,2017-12-31 00:00:00 UTC])
 --

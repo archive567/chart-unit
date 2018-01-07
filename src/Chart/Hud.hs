@@ -14,6 +14,7 @@ module Chart.Hud
   ( HudOptions(HudOptions)
   , hud
   , withHud
+  , withHud_
   , placeOutside
   , placeGap
   , TickStyle(..)
@@ -64,35 +65,32 @@ import Diagrams.Backend.SVG (SVG)
 
 -- | Various options for a hud.
 --
--- Defaults to the classical x- and y-axis, a sixbyfour aspect, no titles and no legends
+-- Defaults to the classical x- and y-axis, no titles and no legends
 data HudOptions = HudOptions
   { outerPad :: Double
   , axes :: [AxisOptions]
   , grids :: [GridOptions]
   , titles :: [(TitleOptions, Text)]
   , legends :: [LegendOptions]
-  , range :: Maybe (Rect Double)
-  , aspect :: Rect Double
   , canvas :: RectOptions
   } deriving (Show, Generic)
 
 instance Default HudOptions where
-  def = HudOptions 1.1 [defXAxis, defYAxis] [] [] [] Nothing sixbyfour clear
+  def = HudOptions 1.1 [defXAxis, defYAxis] [] [] [] clear
 
 -- | Create a hud.
 --
--- > hud def
+-- > hud def sixbyfour one
 --
 -- ![hud example](other/hudExample.svg)
 --
-hud :: () => HudOptions -> Chart b
-hud (HudOptions p as gs ts ls mr ar@(Ranges ax ay) can) =
-  mconcat ((\x -> gridl x ar r) <$> gs) <>
+hud :: () => HudOptions -> Rect Double -> Rect Double -> Chart b
+hud (HudOptions p as gs ts ls can) asp@(Ranges ax ay) r@(Ranges rx ry) =
+  mconcat ((\x -> gridl x asp r) <$> gs) <>
   L.fold (L.Fold addTitle uptoLegend (pad p)) ts
   where
-    r = fromMaybe one mr
     addTitle x (topts, t) =
-      beside (placeOutside (topts ^. field @"place")) x (title ar topts t)
+      beside (placeOutside (topts ^. field @"place")) x (title asp topts t)
     addLegend x lopts =
       beside (placeOutside (lopts ^. field @"place")) x $
       case length (lopts ^. field @"chartType") of
@@ -113,18 +111,29 @@ hud (HudOptions p as gs ts ls mr ar@(Ranges ax ay) can) =
     pos' AlignRight PlaceRight x = Pair 0 (lower ay + 0.5 * D.height x)
     uptoLegend = L.fold (L.Fold addLegend uptoAxes identity) ls
     uptoAxes = L.fold (L.Fold addAxis canvas' identity) as
-    canvas' = rect_ can ar
+    canvas' = rect_ can asp
     addAxis x aopts =
       case aopts ^. field @"orientation" of
         Hori -> beside (placeOutside (aopts ^. field @"place")) x (axis aopts ax rx)
         Vert -> beside (placeOutside (aopts ^. field @"place")) x (axis aopts ay ry)
-      where
-        (Ranges rx ry) = fromMaybe one mr
 
--- | create a chart with a hud from data (using the data range)
+-- | attach a hud to a chart with a specific range
+--
+withHud ::
+    HudOptions
+  -> Rect Double
+  -> Rect Double
+  -> (Rect Double -> Rect Double -> [f (Pair Double)] -> Chart b)
+  -> [f (Pair Double)]
+  -> Chart b
+withHud opts asp r renderer d =
+  hud opts asp r <>
+  renderer asp r d
+
+-- | attach a hud to a chart using the data range
 --
 -- > withHudExample :: Chart b
--- > withHudExample = withHud hopts (lineChart lopts) ls
+-- > withHudExample = withHud_ hopts sixbyfour (lineChart lopts) ls
 -- >   where
 -- >     hopts =
 -- >       #titles .~ [(def, "withHud Example")] $
@@ -138,26 +147,15 @@ hud (HudOptions p as gs ts ls mr ar@(Ranges ax ay) can) =
 --
 -- ![withHud example](other/withHudExample.svg)
 --
-withHud ::
+withHud_ ::
      (Foldable f)
   => HudOptions
+  -> Rect Double
   -> (Rect Double -> Rect Double -> [f (Pair Double)] -> Chart b)
   -> [f (Pair Double)]
   -> Chart b
-withHud opts renderer d =
-  case opts ^. field @"range" of
-    Nothing ->
-      renderer (opts ^. field @"aspect") (foldMap space d) d <>
-      hud (field @"range" .~ Just (foldMap space d) $ opts)
-    Just r ->
-      combine
-        (opts ^. field @"aspect")
-        [ UChart renderer r d
-        , UChart
-            (\asp _ _ -> hud (field @"aspect" .~ asp $ field @"range" .~ Just r $ opts))
-            r
-            []
-        ]
+withHud_ opts asp renderer d =
+  withHud opts asp (foldMap space d) renderer d
 
 -- | Direction to place stuff on the outside of the built-up hud
 placeOutside :: Num n => Place -> V2 n

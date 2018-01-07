@@ -114,6 +114,7 @@ data Arrow = Arrow
 -- | Rescale data across position, and between position and arrow direction.
 --
 -- note that, due to this auto-scaling, there is no such thing as a single arrow_ chart
+--
 -- > arrowsExample :: Chart b
 -- > arrowsExample =
 -- >   arrows

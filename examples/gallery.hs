@@ -66,6 +66,8 @@ gridExample =
      #axes .
      ix 1 %~
      (#label . #text . #alignH .~ AlignLeft))
+    sixbyfour
+    one
 
 timeData :: Int -> IO [Day]
 timeData n = do
@@ -80,7 +82,7 @@ timeData n = do
 -- * dealing with time
 timeExample :: [Day] -> Chart b
 timeExample dates =
-  hud (#axes .~ [adef, defYAxis] $ #range .~ Just r $ def) <>
+  hud (#axes .~ [adef, defYAxis] $ def) sixbyfour r <>
   glyphChart
     [#color .~ red `withOpacity` 1 $ #borderSize .~ 0 $ #size .~ 0.01 $ def]
     sixbyfour
@@ -149,9 +151,9 @@ scatterHistExample xys =
     hud1 =
       hud
         (#axes .~ [#place .~ PlaceTop $ #label . #orientation .~ Pair 0 1 $ def] $
-         #aspect .~ mainAspect $
-         #range .~ Just (range xys) $
          def)
+        mainAspect
+        (range xys)
     defHist =
       (\x -> #borderSize .~ 0 $ #color .~ d3Colors1 x `withOpacity` 0.5 $ def) <$>
       [6, 8]
@@ -226,9 +228,9 @@ surveyHud ao t d =
      , adjustAxis ao aspx rx $ #gap .~ 0 $ #tickStyle .~ TickLabels (fst <$> d) $
        defXAxis
      ] $
-     #range .~ Just r $
-     #aspect .~ sixbyfour $
      def)
+    sixbyfour
+    r
   where
     r = barRange [fromIntegral . snd <$> d]
     (Ranges rx _) = r
@@ -274,9 +276,9 @@ skinnyExample qs qs' = hud' <> ticks' <> labels'
         []
         []
         []
-        (Just r)
-        skinny
         clear)
+      skinny
+      r
     labels' =
       textChart
       [#alignH .~ AlignLeft $ #rotation .~ 45 $ #size .~ 0.2 $ def]
@@ -329,11 +331,8 @@ histDiffExample (h1, h2) =
           ]
           botAspect
           (Ranges rx deltary)
-          [deltah] <>
-        hud
-        (#aspect .~ botAspect $
-         #range .~ Just (Ranges rx deltary) $
-         def))
+          [deltah]) <>
+        hud def botAspect (Ranges rx deltary)
 
 -- * clipping
 clip :: Rect Double -> Chart b -> Chart b
@@ -378,9 +377,8 @@ clippingExample rcfg p n ch =
 schoolbookHud :: Chart b
 schoolbookHud =
   hud
-    (#axes .~ [] $ #aspect .~ asquare $ #titles .~ [(def, "y = x² - 3")] $
-     #range .~
-     Just (Rect -5 5 -5 5) $
+    (#axes .~ [] $
+     #titles .~ [(def, "y = x² - 3")] $
      #grids .~
      [ GridOptions
          Vert
@@ -400,6 +398,8 @@ schoolbookHud =
          (LineOptions 0.002 schoolBlue)
      ] $
      def)
+    asquare
+    (Rect -5 5 -5 5)
   where
     schoolBlue = ucolor 0.19 0.74 0.89 0.7
 
