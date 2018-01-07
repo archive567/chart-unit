@@ -24,9 +24,9 @@
 -- > scaleExample =
 -- >     fileSvg "other/scaleExample.svg" (#size .~ Pair 300 120 $ def) $
 -- >     withHud
--- >       ( #aspect .~ widescreen $
--- >         #range .~ Just (Rect 0 12 0 0.2) $
--- >         def)
+-- >       def
+-- >       widescreen
+-- >       (Rect 0 12 0 0.2)
 -- >       (lineChart (repeat def))
 -- >       (vlineOneD ((0.01*) <$> [0..10]))
 --
@@ -36,8 +36,6 @@
 module Chart.Core
   ( -- * Chart types
     Chart
-  , UChart(..)
-  , combine
     -- * Scaling
   , range
   , projectss
@@ -96,21 +94,6 @@ type Chart b =
   ( Renderable (Path V2 Double) b
   , Renderable (Diagrams.TwoD.Text.Text Double) b) =>
        QDiagram b V2 Double Any
-
-
--- | a UChart provides a late binding of a chart Aspect so multiple charts can be rendered using the same range.
-data UChart a b = UChart
-  { uchartRenderer :: () =>
-                        Rect Double -> Rect Double -> a -> Chart b
-  , uchartRenderRange :: Rect Double
-  , uchartData :: a
-  }
-
--- | render a list of charts, taking into account each of their ranges
-combine :: Rect Double -> [UChart a b] -> Chart b
-combine asp qcs = mconcat $ (\(UChart c _ x) -> c asp rall x) <$> qcs
-  where
-    rall = fold $ (\(UChart _ r1 _) -> r1) <$> qcs
 
 -- | project a double-containered set of data to a new Rect range
 projectss ::

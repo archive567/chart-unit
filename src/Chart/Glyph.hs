@@ -165,7 +165,7 @@ lglyphChart ls gs asp r xyss =
 
 -- | A chart of labelled glyphs scaled to its own range
 --
--- > lgdata :: [[(Text, Pair Double)]]
+-- > lgdata :: [(Text, Pair Double)]
 -- > lgdata =
 -- >   [(\(p@(Pair x y)) -> (show x <> "," <> show y, fromIntegral <$> p)) <$>
 -- >     (Pair <$> [0 .. 5] <*> [0 .. 5] :: [Pair Int])
@@ -180,7 +180,7 @@ lglyphChart ls gs asp r xyss =
 -- >    #size .~ 0.01 $
 -- >    def]
 -- >   a
--- >   lgdata
+-- >   [lgdata]
 --
 -- ![lglyphChart_ example](other/lglyphChart_Example.svg)
 --

@@ -20,13 +20,13 @@ import qualified Data.Text as Text
 -- * Chart.Core examples 
 scaleExample :: IO ()
 scaleExample =
-    fileSvg "other/scaleExample.svg" (#size .~ Pair 300 120 $ def) $
-    withHud
-      ( #aspect .~ widescreen $
-        #range .~ Just (Rect 0 12 0 0.2) $
-        def)
-      (lineChart (repeat def))
-      (vlineOneD ((0.01*) <$> [0..10]))
+  fileSvg "other/scaleExample.svg" (#size .~ Pair 300 120 $ def) $
+  withHud
+  def
+  widescreen
+  (Rect 0 12 0 0.2)
+  (lineChart (repeat def))
+  (vlineOneD ((0.01*) <$> [0..10]))
 
 -- * example charts look n feel
 hudbits :: Text -> Maybe Text -> [Text] -> [LegendType] -> HudOptions -> HudOptions
@@ -80,11 +80,11 @@ labelledExample =
   (glyph_ def)
 
 textHudExample :: Chart b
-textHudExample = hud
-  (hudbits "Text Chart" (Just "text and glyphs have a similar feel") [] [] $
-   #range .~ Just (range ts) $
-   #aspect .~ widescreen $
-   def)
+textHudExample =
+  hud
+  (hudbits "Text Chart" (Just "text and glyphs have a similar feel") [] [] def)
+  widescreen
+  (range ts)
 
 -- * Chart.Glyph examples
 glyph_Example :: Chart b
@@ -116,11 +116,10 @@ lglyphsExample =
   lglyphs def def $
   zip (show <$> [0 ..]) [Pair (x / 10) (sin x / 10) | x <- [0 .. 10]]
 
-lgdata :: [[(Text, Pair Double)]]
+lgdata :: [(Text, Pair Double)]
 lgdata =
-  [(\(p@(Pair x y)) -> (show x <> "," <> show y, fromIntegral <$> p)) <$>
+  (\(p@(Pair x y)) -> (show x <> "," <> show y, fromIntegral <$> p)) <$>
     (Pair <$> [0 .. 5] <*> [0 .. 5] :: [Pair Int])
-  ]
 
 lglyphChart_Example :: Rect Double -> Chart b
 lglyphChart_Example a =
@@ -131,7 +130,7 @@ lglyphChart_Example a =
    #size .~ 0.01 $
    def]
   a
-  lgdata
+  [lgdata]
 
 glyphHudExample :: Chart b
 glyphHudExample = 
@@ -140,14 +139,14 @@ glyphHudExample =
    hudbits "Glyph Chart" (Just "text elements are paths not svg text")
    ["sin", "cos"]
    (LegendGlyph <$> gopts) $
-   #range .~ Just (range gdata) $
-   #aspect .~ widescreen $
    #axes .~
     [ #label . #text . #size .~ 0.2 $
       #tickStyle .~ TickPlaced pis $
       #label . #text . #textType .~ TextPath (TextPathOptions Lin) $
       defXAxis
     , defYAxis] $ def)
+  widescreen
+  (range gdata)
   where
     pis =
       [ (0,"zero")
@@ -162,9 +161,9 @@ lglyphHudExample = hud
   (#titles . each . _1 . #gap .~ 0.2 $
    hudbits "LGlyph Chart" (Just "Glyphs with text labels are very useful") [] [] $
    #axes .~ [] $
-   #range .~ Just (range (fmap snd <$> lgdata)) $
-   #aspect .~ widescreen $
    def)
+  widescreen
+  (range (fmap snd <$> [lgdata]))
 
 -- * Chart.Lines examples
 linesExample :: Int -> Chart b
@@ -211,23 +210,34 @@ lineHudExample :: Chart b
 lineHudExample = 
   hud
   (hudbits "Line Chart" Nothing ["hockey stick", "slope", "vertical"]
-   ((`LegendLine` 0.05) <$> lopts) $
-   #range .~ Just (range ls) $
-   def)
+   ((`LegendLine` 0.05) <$> lopts) def)
+  sixbyfour
+  (range ls)
 
 glineHudExample :: Chart b
-glineHudExample = 
-  hud
-  (#legends . each . #gap .~ 0.2 $
-   #titles . each . _1 . #gap .~ 0.2 $
-   hudbits "Gline Chart" Nothing ["triangle", "square", "circle"]
-   (zipWith (\x y -> LegendGLine x y 0.1) gopts3 lopts) $
-   #axes .~ [] $
-   #range .~ Just (Rect 0 5 0 5) $
-   def) <>
-  glineChart lopts gopts3 sixbyfour (Rect 0 5 0 5) ls <>
-  lglyphChart_Example sixbyfour
-
+glineHudExample = renderChart
+  (ChartOptions (Just (Rect 0 5 0 5)) sixbyfour
+  [ GlineChart
+    (getZipList $
+      (\x y z -> (x,y,z)) <$> ZipList
+      lopts <*> ZipList
+      gopts3 <*> ZipList
+      ls)
+  , HudChart
+    (#legends . each . #gap .~ 0.2 $
+     #titles . each . _1 . #gap .~ 0.2 $
+     hudbits "Gline Chart" Nothing ["triangle", "square", "circle"]
+     (zipWith (\x y -> LegendGLine x y 0.1) gopts3 lopts) $
+     #axes .~ [] $
+     def)
+  , LGlyphChart
+    [ ( #gap .~ 0.015 $ #text . #size .~ 0.12 $ def
+      , #color .~ black `withOpacity` 1 $
+        #borderSize .~ 0 $
+        #size .~ 0.01 $
+        def
+      , lgdata)]
+  ])
 
 -- * Chart.Rect examples
 rect_Example :: Double -> Chart b
@@ -304,19 +314,18 @@ rectHudExample =
    #legends . each . #align .~ AlignCenter $
    hudbits "Rect Chart" Nothing ["blue gaussian", "grey wider distribution"]
    ((`LegendRect` 0.05) <$> ropts) $
-   #range .~ Just (fold $ fold rss) $
-   #aspect .~ widescreen $
    #axes .~ [defXAxis] $
    def)
+  widescreen
+  (fold $ fold rss)
 
 pixelHudExample :: Chart b
 pixelHudExample =
   hud
   (hudbits "Pixel Chart" Nothing ["red", "blue"]
-   ((`LegendPixel` 0.05) <$> ropts) $
-   #range .~ Just one $
-   #aspect .~ asquare $
-   def)
+   ((`LegendPixel` 0.05) <$> ropts) def)
+  asquare
+  one
 
 -- * Chart.Arrow examples
 arrowsExample :: Chart b
@@ -342,18 +351,18 @@ arrowChart_Example = arrowChart_ [def] asquare [as]
 arrowHudExample :: Chart b
 arrowHudExample = 
   hud
-  (hudbits "Arrow Chart" Nothing ["this way up"] [] $
+  (hudbits "Arrow Chart" Nothing ["this way up"] []
 -- ((`LegendArrow` 0.05) <$> [def]) $
-   #range .~ Nothing $
-   #aspect .~ asquare $
    def)
+  asquare
+  one
 
 -- * Chart.Hud examples
 hudExample :: Chart b
-hudExample = hud def
+hudExample = hud def sixbyfour one
 
 withHudExample :: Chart b
-withHudExample = withHud hopts (lineChart lopts) ls
+withHudExample = withHud_ hopts sixbyfour (lineChart lopts) ls
   where
     hopts =
       #titles .~ [(def, "withHud Example")] $
@@ -402,8 +411,9 @@ barExample  =
       TickLabels labels' $
       def
     ] $
-    #range .~ Just (fold (abs <$> rs)) $
     def)
+  sixbyfour
+  (fold (abs <$> rs))
   where
     labels' = fmap Text.pack <$> take 10 $ (:[]) <$> ['a'..]
     rs = rectBars 0.1 ys
@@ -485,7 +495,7 @@ main = do
   fileSvg "other/axisExample.svg" (#size .~ Pair 400 100 $ def) axisExample
   fileSvg "other/legendExample.svg" (#size .~ Pair 300 300 $ def) legendExample
   -- small hud examples
-  fileSvg "other/hud.svg" (#size .~ Pair 100 100 $ def) (D.showOrigin $ hud def)
+  fileSvg "other/hud.svg" (#size .~ Pair 100 100 $ def) (D.showOrigin $ hud def one one)
   putStrLn ("barExample" :: Text)
   fileSvg "other/barExample.svg" def barExample
 

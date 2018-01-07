@@ -25,13 +25,13 @@
 --
 -- - a type of chart
 --
--- - representations options specific to the chart type
+-- - representation options specific to the chart type
 --
 -- - axes
 --
--- - chart decoration, such as titles and legends
+-- - other chart bling, such as titles and legends
 --
--- Chart data is most often one or more traversable series.  Also most often, the data is 2-dimensional, represnting where on the chart to place the representation.  `(Traversable f) => [f Pair]` is a very common in the library api.
+-- Chart data is most often one or more traversable series.  Also most often, the data is 2-dimensional, representing where on the chart to place the representation.  Some sort of `(Traversable f) => [f Pair]` is commonly used in the library api.
 --
 -- > ls :: [[Pair Double]]
 -- > ls =
@@ -51,7 +51,7 @@
 -- >   [0,1,2]
 -- >
 --
--- The lens library is used extensively for configuration, and generic-lens has been adopted to reduce line noise.
+-- The lens library is used extensively for configuration, and generic-lens-labels has been adopted to reduce line noise ...
 --
 -- > as :: [AxisOptions]
 -- > as = 
@@ -65,7 +65,7 @@
 -- >     defYAxis
 -- >   ] 
 --
--- For examples (but not the core library code), Data.Generic.Labels is used which has its detractions in the form of orphan instance fuss and bother. Using core generic-lens:
+-- in the examples (but not in core library code), Data.Generic.Labels is used which has its detractions in the form of orphan instance fuss and bother. For example, using core generic-lens:
 --
 -- > #label . #orientation .~ Pair 0 1
 --
@@ -75,7 +75,7 @@
 --
 -- which is also a pretty fine api.
 --
--- Using data-default, lens and OverloadedLabels tends to encourage a vertical style, which may annoy line counters, but I find clarity high and editing easy.  Dollar signs and other grammatical elements belong at the end of the line rather than the beginning (just like english!). The exceptions are lists, tuples and records, where placing commas and pipes at the start in line with brackets is ubiquitous.
+-- Using data-default, lens and OverloadedLabels tends to encourage a vertical style, which may annoy line counters, but lead to clear code and ease of editing.
 --
 -- > titles :: [(TitleOptions, Text)]
 -- > titles =
@@ -110,7 +110,7 @@
 -- All of which makes chart-unit highly customisable ...
 --
 -- > mainExample :: Chart b
--- > mainExample = withHud opts (lineChart lopts) ls
+-- > mainExample = withHud_ opts sixbyfour (lineChart lopts) ls
 -- >   where
 -- >     opts =
 -- >       #titles .~ titles $
@@ -123,20 +123,37 @@
 -- > main = fileSvg "other/mainExample.svg" def mainExample
 -- > 
 --
+-- There are three different ways of combining charts (and note adding a hud to a chart is a subset of combining charts):
+--
+-- - mappend them
+--
+-- > hud ho asp r <>
+-- > lineChart ld sixbyfour r d
+--
+-- - use `withHud`
+--
+-- > withHud_ ho asp (lineChart ld) d
+--
+-- - use `renderChart`
+--
+-- > renderChart (ChartOptions (Just r) asp [HudChart ho, LineChart (zip ld d)])
+--
+-- And these three methods are morally equivalent.
+--
 module Chart
   ( -- * chart-unit
     module Chart.ADT
+  , module Chart.Arrow
+  , module Chart.Bar
   , module Chart.Core
   , module Chart.Data
   , module Chart.Data.Time
-  , module Chart.Arrow
   , module Chart.Glyph
   , module Chart.Hud
   , module Chart.Line
   , module Chart.Rect
   , module Chart.Svg
   , module Chart.Text
-  , module Chart.Bar
     -- * numhask-range
   , module NumHask.Pair
   , module NumHask.Space
@@ -151,8 +168,6 @@ module Chart
   , module Graphics.SVGFonts
     -- * Default
   , Default(..)
-    -- * Text
-  , Text
   ) where
 
 import Chart.ADT
@@ -172,7 +187,6 @@ import Data.Colour.Names
 import Data.Colour.Palette.ColorSet
 import Data.Colour.Palette.Harmony
 import Data.Default (Default(..))
-import Data.Text
 import Graphics.SVGFonts hiding (textFont)
 import NumHask.Pair
 import NumHask.Range

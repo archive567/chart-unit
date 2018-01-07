@@ -68,14 +68,17 @@ legends =
 
 mainExample :: Chart b
 mainExample =
-  renderChart (ChartOptions Nothing sixbyfour [LineChart (zip lopts ls)] (Just opts))
-  where
-    opts =
-      #titles .~ titles $
-      #axes .~ as $
-      #axes %~ map (#outerPad .~ 1) $
-      #legends .~ [#chartType .~ legends $ def] $
-      def
+  renderChart
+  (ChartOptions
+   Nothing
+   sixbyfour
+   [ LineChart (zip lopts ls)
+   , HudChart $
+     #titles .~ titles $
+     #axes .~ as $
+     #axes %~ map (#outerPad .~ 1) $
+     #legends .~ [#chartType .~ legends $ def] $
+     def])
 
 main :: IO ()
 main = fileSvg "other/mainExample.svg" def mainExample

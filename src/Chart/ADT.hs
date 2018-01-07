@@ -31,7 +31,7 @@ import NumHask.Prelude
 import NumHask.Rect
 import NumHask.Space
 
--- | ADT for charts
+-- | A single Chart specification
 data ChartSpec
   = GlyphChart [(GlyphOptions, [Pair Double])]
   | LGlyphChart [(LabelOptions, GlyphOptions, [(Text, Pair Double)])]
@@ -42,24 +42,25 @@ data ChartSpec
   | PixelChart [[Pixel]]
   | ArrowChart [(ArrowOptions, [Arrow])]
   | BarChart BarOptions BarData
+  | HudChart HudOptions
   deriving (Show, Generic)
 
--- | Chart options
+-- | (compound) Chart options
 data ChartOptions = ChartOptions
   { chartRange :: Maybe (Rect Double)
   , chartAspect :: Rect Double
   , charts :: [ChartSpec]
-  , chartHud :: Maybe HudOptions
   } deriving (Show, Generic)
 
 instance Default ChartOptions where
-  def = ChartOptions Nothing sixbyfour [] Nothing
+  def = ChartOptions Nothing sixbyfour []
 
+-- | render a Chart specified using ChartOptions
 renderChart :: ChartOptions -> Chart b
-renderChart ch@(ChartOptions _ a cs mh) =
-  mconcat (renderSpec a (rangeChart ch) <$> cs) <>
-  maybe mempty hud mh
+renderChart ch@(ChartOptions _ a cs) =
+  mconcat (renderSpec a (rangeChart ch) <$> cs)
 
+-- | render a ChartSpec
 renderSpec :: Rect Double -> Rect Double -> ChartSpec -> Chart b
 renderSpec a r (GlyphChart xs) = glyphChart (fst <$> xs) a r (snd <$> xs)
 renderSpec a r (LGlyphChart xs) =
@@ -82,18 +83,22 @@ renderSpec a r (RectChart xs) = rectChart (fst <$> xs) a r (snd <$> xs)
 renderSpec a r (PixelChart xs) = pixelChart a r xs
 renderSpec a r (ArrowChart xs) = arrowChart (fst <$> xs) a r (snd <$> xs)
 renderSpec _ _ (BarChart o d) = barChart o d
+renderSpec a r (HudChart o) = hud o a r
 
-rangeSpec :: ChartSpec -> Rect Double
-rangeSpec (GlyphChart xs) = range (snd <$> xs)
-rangeSpec (LGlyphChart xs) = range $ (\x -> fmap snd . toList <$> x)
+-- | extract the range of a single specification
+rangeSpec :: ChartSpec -> Maybe (Rect Double)
+rangeSpec (GlyphChart xs) = Just $ range (snd <$> xs)
+rangeSpec (LGlyphChart xs) = Just $ range $ (\x -> fmap snd . toList <$> x)
   ((\(_,_,x) -> x) <$> xs)
-rangeSpec (LineChart xs) = range (snd <$> xs)
-rangeSpec (GlineChart xs) = range ((\(_,_,x) -> x) <$> xs)
-rangeSpec (TextChart xs) = range $ (\x -> fmap snd . toList <$> x) (snd <$> xs)
-rangeSpec (RectChart xs) = (\rs -> fold $ fold <$> rs) (snd <$> xs)
-rangeSpec (PixelChart xs) = fold $ fold . map pixelRect <$> xs
-rangeSpec (ArrowChart xs) = (\xss -> fold (space . map arrowPos <$> xss)) (snd <$> xs)
-rangeSpec (BarChart _ d) = barRange (d ^. field @"barData")
+rangeSpec (LineChart xs) = Just $ range (snd <$> xs)
+rangeSpec (GlineChart xs) = Just $ range ((\(_,_,x) -> x) <$> xs)
+rangeSpec (TextChart xs) = Just $ range $ (\x -> fmap snd . toList <$> x) (snd <$> xs)
+rangeSpec (RectChart xs) = Just $ (\rs -> fold $ fold <$> rs) (snd <$> xs)
+rangeSpec (PixelChart xs) = Just $ fold $ fold . map pixelRect <$> xs
+rangeSpec (ArrowChart xs) = Just $ (\xss -> fold (space . map arrowPos <$> xss)) (snd <$> xs)
+rangeSpec (BarChart _ d) = Just $ barRange (d ^. field @"barData")
+rangeSpec (HudChart _) = Nothing
 
+-- | calculate the range of a ChartOptions
 rangeChart :: ChartOptions -> Rect Double
-rangeChart (ChartOptions mr _ cs _) = fromMaybe (mconcat (rangeSpec <$> cs)) mr
+rangeChart (ChartOptions mr _ cs) = fromMaybe (mconcat $ catMaybes (rangeSpec <$> cs)) mr

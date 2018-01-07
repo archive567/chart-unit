@@ -5,8 +5,6 @@
 module Main where
 
 import Chart
-import Control.Lens
-import Data.Generics.Labels()
 import NumHask.Prelude
 import Test.Tasty (defaultMain, testGroup)
 import Test.Tasty.Hspec
@@ -14,36 +12,39 @@ import Test.DocTest
 
 testWithChart :: SpecWith ()
 testWithChart =
-  describe "withChart" $ do
-    it "axes and chartWith should render the same" $ do
-      fileSvg "test/empty.svg" (#size .~ Pair 400 400 $ def) emptyChart
-      fileSvg "test/justAxes.svg" (#size .~ Pair 400 400 $ def) justAxesChart
-      t1 <- readFile "test/empty.svg"
-      t2 <- readFile "test/justAxes.svg"
-      t1 `shouldBe` t2
-    it "chartWith lines and lines <> axes" $ do
-      fileSvg "test/line.svg" (#size .~ Pair 400 400 $ def) line1Chart
-      fileSvg "test/line2.svg" (#size .~ Pair 400 400 $ def) line2Chart
-      t1 <- readFile "test/line.svg"
-      t2 <- readFile "test/line2.svg"
-      t1 `shouldBe` t2
-  where
-    emptyChart = withHud def (\_ _ -> mempty) [corners one]
-    justAxesChart = hud def
-    line1Chart = withHud def (lineChart (repeat def)) lineData
-    line2Chart =
-      lineChart_ (repeat def) sixbyfour lineData <>
-      hud (#range .~ Just (range lineData) $ def)
-    lineData :: [[Pair Double]]
-    lineData =
-      fmap (uncurry Pair) <$>
-      [ [(0.0, 1.0), (1.0, 1.0), (2.0, 5.0)]
-      , [(0.0, 0.0), (3.0, 3.0)]
-      , [(0.5, 4.0), (0.5, 0)]
-      ]
+  describe "withHud" $ do
+    it "withHud + mempty ~ hud" $
+      toText def (withHud_ def sixbyfour (\_ _ _ -> mempty) [corners one])
+        `shouldBe`
+        toText def (hud def sixbyfour one)
+    it "hudWith + chart ~ chart_ <> hud" $
+      toText def (withHud_ def sixbyfour (lineChart (repeat def)) lineData)
+        `shouldBe`
+        toText def (hud def sixbyfour (range lineData) <>
+                    lineChart_ (repeat def) sixbyfour lineData)
+    it "renderChart [chart, hud] ~ hud <> chart" $
+      toText def (renderChart
+                  (ChartOptions Nothing sixbyfour
+                    [ HudChart def
+                    , LineChart ((\x -> (def,x)) <$> lineData)]))
+        `shouldBe`
+        toText def (hud def sixbyfour (range lineData) <>
+                    lineChart_ (repeat def) sixbyfour lineData)
+
+lineData :: [[Pair Double]]
+lineData =
+  fmap (uncurry Pair) <$>
+  [ [(0.0, 1.0), (1.0, 1.0), (2.0, 5.0)]
+  , [(0.0, 0.0), (3.0, 3.0)]
+  , [(0.5, 4.0), (0.5, 0)]
+  ]
 
 main :: IO ()
 main = do
+  fileSvg "other/test1.svg" def (withHud_ def sixbyfour (lineChart (repeat def)) lineData)
+  fileSvg "other/test2.svg" def
+    (lineChart_ (repeat def) sixbyfour lineData <>
+     hud def sixbyfour (range lineData))
   doctest
       [ "src/Chart/Data/Time.hs"
       -- , "src/Chart/Core.hs"

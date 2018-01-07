@@ -1,3 +1,37 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
-    "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd"><svg xmlns="http://www.w3.org/2000/svg" height="200.0000" stroke-opacity="1" viewBox="0 0 300 200" font-size="1" width="300.0000" xmlns:xlink="http://www.w3.org/1999/xlink" stroke="rgb(0,0,0)" version="1.1"><defs></defs><g stroke-linejoin="miter" stroke-opacity="1.0" fill-opacity="0.5" stroke="rgb(102,102,102)" stroke-width="0.8682431421244593" fill="rgb(93,165,218)" stroke-linecap="butt" stroke-miterlimit="10.0"><path d="M 225.3846,169.2308 l -0.0000,-15.3846 h -12.3077 l -0.0000,15.3846 Z"/></g><g stroke-linejoin="miter" stroke-opacity="1.0" fill-opacity="0.5" stroke="rgb(102,102,102)" stroke-width="0.8682431421244593" fill="rgb(93,165,218)" stroke-linecap="butt" stroke-miterlimit="10.0"><path d="M 210.0000,169.2308 l -0.0000,-30.7692 h -12.3077 l -0.0000,30.7692 Z"/></g><g stroke-linejoin="miter" stroke-opacity="1.0" fill-opacity="0.5" stroke="rgb(102,102,102)" stroke-width="0.8682431421244593" fill="rgb(93,165,218)" stroke-linecap="butt" stroke-miterlimit="10.0"><path d="M 194.6154,169.2308 l -0.0000,-169.2308 h -12.3077 l -0.0000,169.2308 Z"/></g><g stroke-linejoin="miter" stroke-opacity="1.0" fill-opacity="0.5" stroke="rgb(102,102,102)" stroke-width="0.8682431421244593" fill="rgb(93,165,218)" stroke-linecap="butt" stroke-miterlimit="10.0"><path d="M 179.2308,200.0000 l -0.0000,-30.7692 h -12.3077 l -0.0000,30.7692 Z"/></g><g stroke-linejoin="miter" stroke-opacity="1.0" fill-opacity="0.5" stroke="rgb(102,102,102)" stroke-width="0.8682431421244593" fill="rgb(93,165,218)" stroke-linecap="butt" stroke-miterlimit="10.0"><path d="M 163.8462,169.2308 l -0.0000,-0.0000 h -12.3077 l -0.0000,0.0000 Z"/></g><g stroke-linejoin="miter" stroke-opacity="1.0" fill-opacity="0.5" stroke="rgb(102,102,102)" stroke-width="0.8682431421244593" fill="rgb(93,165,218)" stroke-linecap="butt" stroke-miterlimit="10.0"><path d="M 148.4615,169.2308 l -0.0000,-123.0769 h -12.3077 l -0.0000,123.0769 Z"/></g><g stroke-linejoin="miter" stroke-opacity="1.0" fill-opacity="0.5" stroke="rgb(102,102,102)" stroke-width="0.8682431421244593" fill="rgb(93,165,218)" stroke-linecap="butt" stroke-miterlimit="10.0"><path d="M 133.0769,169.2308 l -0.0000,-76.9231 h -12.3077 l -0.0000,76.9231 Z"/></g><g stroke-linejoin="miter" stroke-opacity="1.0" fill-opacity="0.5" stroke="rgb(102,102,102)" stroke-width="0.8682431421244593" fill="rgb(93,165,218)" stroke-linecap="butt" stroke-miterlimit="10.0"><path d="M 117.6923,169.2308 l -0.0000,-46.1538 h -12.3077 l -0.0000,46.1538 Z"/></g><g stroke-linejoin="miter" stroke-opacity="1.0" fill-opacity="0.5" stroke="rgb(102,102,102)" stroke-width="0.8682431421244593" fill="rgb(93,165,218)" stroke-linecap="butt" stroke-miterlimit="10.0"><path d="M 102.3077,169.2308 l -0.0000,-30.7692 h -12.3077 l -0.0000,30.7692 Z"/></g><g stroke-linejoin="miter" stroke-opacity="1.0" fill-opacity="0.5" stroke="rgb(102,102,102)" stroke-width="0.8682431421244593" fill="rgb(93,165,218)" stroke-linecap="butt" stroke-miterlimit="10.0"><path d="M 86.9231,169.2308 l -0.0000,-15.3846 h -12.3077 l -0.0000,15.3846 Z"/></g></svg>
+    "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg xmlns="http://www.w3.org/2000/svg" height="200.0000" stroke-opacity="1" viewBox="0 0 300 200" font-size="1" width="300.0000" xmlns:xlink="http://www.w3.org/1999/xlink" stroke="rgb(0,0,0)" version="1.1">
+  <defs>
+  </defs>
+  <g stroke-linejoin="miter" stroke-opacity="1.0" fill-opacity="0.5" stroke="rgb(102,102,102)" stroke-width="0.8682431421244593" fill="rgb(93,165,218)" stroke-linecap="butt" stroke-miterlimit="10.0">
+    <path d="M 225.3846,169.2308 l -0.0000,-15.3846 h -12.3077 l -0.0000,15.3846 Z"/>
+  </g>
+  <g stroke-linejoin="miter" stroke-opacity="1.0" fill-opacity="0.5" stroke="rgb(102,102,102)" stroke-width="0.8682431421244593" fill="rgb(93,165,218)" stroke-linecap="butt" stroke-miterlimit="10.0">
+    <path d="M 210.0000,169.2308 l -0.0000,-30.7692 h -12.3077 l -0.0000,30.7692 Z"/>
+  </g>
+  <g stroke-linejoin="miter" stroke-opacity="1.0" fill-opacity="0.5" stroke="rgb(102,102,102)" stroke-width="0.8682431421244593" fill="rgb(93,165,218)" stroke-linecap="butt" stroke-miterlimit="10.0">
+    <path d="M 194.6154,169.2308 l -0.0000,-169.2308 h -12.3077 l -0.0000,169.2308 Z"/>
+  </g>
+  <g stroke-linejoin="miter" stroke-opacity="1.0" fill-opacity="0.5" stroke="rgb(102,102,102)" stroke-width="0.8682431421244593" fill="rgb(93,165,218)" stroke-linecap="butt" stroke-miterlimit="10.0">
+    <path d="M 179.2308,200.0000 l -0.0000,-30.7692 h -12.3077 l -0.0000,30.7692 Z"/>
+  </g>
+  <g stroke-linejoin="miter" stroke-opacity="1.0" fill-opacity="0.5" stroke="rgb(102,102,102)" stroke-width="0.8682431421244593" fill="rgb(93,165,218)" stroke-linecap="butt" stroke-miterlimit="10.0">
+    <path d="M 163.8462,169.2308 l -0.0000,-0.0000 h -12.3077 l -0.0000,0.0000 Z"/>
+  </g>
+  <g stroke-linejoin="miter" stroke-opacity="1.0" fill-opacity="0.5" stroke="rgb(102,102,102)" stroke-width="0.8682431421244593" fill="rgb(93,165,218)" stroke-linecap="butt" stroke-miterlimit="10.0">
+    <path d="M 148.4615,169.2308 l -0.0000,-123.0769 h -12.3077 l -0.0000,123.0769 Z"/>
+  </g>
+  <g stroke-linejoin="miter" stroke-opacity="1.0" fill-opacity="0.5" stroke="rgb(102,102,102)" stroke-width="0.8682431421244593" fill="rgb(93,165,218)" stroke-linecap="butt" stroke-miterlimit="10.0">
+    <path d="M 133.0769,169.2308 l -0.0000,-76.9231 h -12.3077 l -0.0000,76.9231 Z"/>
+  </g>
+  <g stroke-linejoin="miter" stroke-opacity="1.0" fill-opacity="0.5" stroke="rgb(102,102,102)" stroke-width="0.8682431421244593" fill="rgb(93,165,218)" stroke-linecap="butt" stroke-miterlimit="10.0">
+    <path d="M 117.6923,169.2308 l -0.0000,-46.1538 h -12.3077 l -0.0000,46.1538 Z"/>
+  </g>
+  <g stroke-linejoin="miter" stroke-opacity="1.0" fill-opacity="0.5" stroke="rgb(102,102,102)" stroke-width="0.8682431421244593" fill="rgb(93,165,218)" stroke-linecap="butt" stroke-miterlimit="10.0">
+    <path d="M 102.3077,169.2308 l -0.0000,-30.7692 h -12.3077 l -0.0000,30.7692 Z"/>
+  </g>
+  <g stroke-linejoin="miter" stroke-opacity="1.0" fill-opacity="0.5" stroke="rgb(102,102,102)" stroke-width="0.8682431421244593" fill="rgb(93,165,218)" stroke-linecap="butt" stroke-miterlimit="10.0">
+    <path d="M 86.9231,169.2308 l -0.0000,-15.3846 h -12.3077 l -0.0000,15.3846 Z"/>
+  </g>
+</svg>
