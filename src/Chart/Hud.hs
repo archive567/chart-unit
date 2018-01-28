@@ -48,6 +48,7 @@ import Chart.Line (LineOptions(LineOptions), lines, oneline)
 import Chart.Rect
 import Chart.Text
 import qualified Control.Foldl as L
+import Data.Generics.Product
 import Data.List (nub)
 import Data.Ord (max)
 import Data.Scientific
@@ -55,7 +56,6 @@ import Diagrams.Prelude
        hiding (Color, D, (*.), (<>), project, width, zero, (<>))
 import qualified Diagrams.TwoD.Size as D
 import Formatting
-import Data.Generics.Product
 import NumHask.Pair
 import NumHask.Prelude hiding (max)
 import NumHask.Range

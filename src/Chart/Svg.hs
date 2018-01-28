@@ -2,10 +2,11 @@
 {-# LANGUAGE DuplicateRecordFields #-}
 {-# LANGUAGE DataKinds #-}
 {-# OPTIONS_GHC -Wall #-}
+{-# OPTIONS_GHC -Wno-unused-top-binds #-}
 
 -- | Svg rendering
 module Chart.Svg
-  ( SvgOptions(..)
+  ( SvgOptions(SvgOptions)
   , renderSvg
   , toText
   , toFile

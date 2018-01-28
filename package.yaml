@@ -37,9 +37,6 @@ extra-source-files:
 - other/*.svg
 dependencies:
 - base >=4.7 && <5
-- generic-lens >= 0.5.1.0
-- generic-lens-labels
-- lens
 - numhask
 - numhask-range
 library:
@@ -69,6 +66,8 @@ library:
   - diagrams-svg
   - foldl
   - formatting
+  - generic-lens
+  - lens
   - linear
   - palette
   - protolude
@@ -102,6 +101,8 @@ executables:
     - -with-rtsopts=-N
     dependencies:
     - chart-unit
+    - generic-lens-labels
+    - lens
   chart-unit-source-examples:
     main: sourceExamples.hs
     source-dirs: examples
@@ -114,6 +115,8 @@ executables:
     dependencies:
     - chart-unit
     - diagrams-lib
+    - generic-lens-labels
+    - lens
     - protolude
     - text
   chart-unit-gallery:
@@ -129,6 +132,8 @@ executables:
     - chart-unit
     - diagrams-lib
     - formatting
+    - generic-lens-labels
+    - lens
     - mwc-probability
     - mwc-random
     - numhask-histogram
