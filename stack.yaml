@@ -1,12 +1,8 @@
-resolver: lts-10.2
+resolver: nightly-2018-02-17
 
 packages:
   - .
 
 extra-deps:
-  - git: https://github.com/kcsongor/generic-lens.git
-    commit: 876ad15282e2ea5e5d77e3eae4c4a2bba77bd81a
-  - git: https://github.com/tonyday567/generic-lens-labels.git
-    commit: 268482be078e543c1f8fef33ae8ceabc7a201f8b
-  - git: https://github.com/tonyday567/numhask-histogram.git
-    commit: 31041224eef1a56d132dbeae6c65c477881b82f9
+  - generic-lens-labels-0.1.0.2
+  - numhask-histogram-0.0.1.0
