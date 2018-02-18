@@ -1,0 +1,213 @@
+-- This file has been generated from package.yaml by hpack version 0.20.0.
+--
+-- see: https://github.com/sol/hpack
+--
+-- hash: c39db1e3a55127346b3e41e1ba315b1d704563184f7b39b9a3885f64e76b4387
+
+name:           chart-unit
+version:        0.6.0.1
+synopsis:       Native haskell charts.
+description:    .
+                <<https://tonyday567.github.io/other/mainExample.svg>>
+                .
+                chart-unit is a native haskell charting library designed:
+                .
+                - as a chart DSL and algebra
+                .
+                - towards a minimalist look and feel
+                .
+                - to provide a set of default values that are robust across differet data and physical chart scales
+                .
+                - around provision of a small but core set of chart types.
+                .
+                See <https://tonyday567.github.io/chart-unit/index.html chart-unit> for a chart gallery.
+category:       charts
+homepage:       https://github.com/tonyday567/chart-unit#readme
+bug-reports:    https://github.com/tonyday567/chart-unit/issues
+author:         Tony Day
+maintainer:     tonyday567@gmail.com
+copyright:      2016 Tony Day
+license:        BSD3
+license-file:   LICENSE
+build-type:     Simple
+cabal-version:  >= 1.10
+
+extra-doc-files:
+    other/arrowChart_Example.svg
+    other/arrowHudExample.svg
+    other/arrowsExample.svg
+    other/axisExample.svg
+    other/barExample.svg
+    other/clippingExample.svg
+    other/glineChart_Example.svg
+    other/glineHudExample.svg
+    other/glyph_Example.svg
+    other/glyphChart_Example.svg
+    other/glyphHudExample.svg
+    other/glyphsExample.svg
+    other/gridExample.svg
+    other/histDiffExample.svg
+    other/hud.svg
+    other/hudExample.svg
+    other/labelledBarExample.svg
+    other/labelledExample.svg
+    other/legendExample.svg
+    other/lglyphChart_Example.svg
+    other/lglyphHudExample.svg
+    other/lglyphsExample.svg
+    other/lineChart_Example.svg
+    other/lineHudExample.svg
+    other/linesExample.svg
+    other/mainExample.svg
+    other/pixel_Example.svg
+    other/pixelChart_Example.svg
+    other/pixelHudExample.svg
+    other/pixelsExample.svg
+    other/q24Example.svg
+    other/q7Example.svg
+    other/rect_Example.svg
+    other/rectChart_Example.svg
+    other/rectHudExample.svg
+    other/rectsExample.svg
+    other/scaleExample.svg
+    other/scatterHistExample.svg
+    other/schoolbookExample.svg
+    other/scratch.svg
+    other/scratchpad.svg
+    other/skinnyExample.svg
+    other/test1.svg
+    other/test2.svg
+    other/testTextDiffs.svg
+    other/text_Example.svg
+    other/textChart_Example.svg
+    other/textHudExample.svg
+    other/textsExample.svg
+    other/timeExample.svg
+    other/withHudExample.svg
+
+extra-source-files:
+    stack.yaml
+
+source-repository head
+  type: git
+  location: https://github.com/tonyday567/chart-unit
+
+library
+  hs-source-dirs:
+      src
+  default-extensions: DeriveGeneric DeriveTraversable FlexibleContexts FlexibleInstances InstanceSigs MultiParamTypeClasses NegativeLiterals NoImplicitPrelude OverloadedStrings PatternSynonyms RankNTypes TypeFamilies UnicodeSyntax
+  ghc-options: -funbox-strict-fields -fforce-recomp
+  build-depends:
+      SVGFonts
+    , base >=4.7 && <5
+    , colour
+    , data-default
+    , diagrams-lib
+    , diagrams-svg
+    , foldl
+    , formatting
+    , generic-lens
+    , lens
+    , linear
+    , numhask
+    , numhask-range
+    , palette
+    , protolude
+    , scientific
+    , svg-builder
+    , text
+    , time
+  exposed-modules:
+      Chart
+      Chart.ADT
+      Chart.Arrow
+      Chart.Bar
+      Chart.Core
+      Chart.Data
+      Chart.Data.Time
+      Chart.Glyph
+      Chart.Hud
+      Chart.Line
+      Chart.Rect
+      Chart.Svg
+      Chart.Text
+  other-modules:
+      Paths_chart_unit
+  default-language: Haskell2010
+
+executable chart-unit-gallery
+  main-is: gallery.hs
+  hs-source-dirs:
+      examples
+  ghc-options: -funbox-strict-fields -fforce-recomp -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      base >=4.7 && <5
+    , chart-unit
+    , diagrams-lib
+    , formatting
+    , generic-lens-labels
+    , lens
+    , mwc-probability
+    , mwc-random
+    , numhask
+    , numhask-histogram
+    , numhask-range
+    , primitive
+    , protolude
+    , text
+    , time
+  other-modules:
+      Paths_chart_unit
+  default-language: Haskell2010
+
+executable chart-unit-main-example
+  main-is: mainExample.hs
+  hs-source-dirs:
+      examples
+  ghc-options: -funbox-strict-fields -fforce-recomp -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      base >=4.7 && <5
+    , chart-unit
+    , generic-lens-labels
+    , lens
+    , numhask
+    , numhask-range
+  other-modules:
+      Paths_chart_unit
+  default-language: Haskell2010
+
+executable chart-unit-source-examples
+  main-is: sourceExamples.hs
+  hs-source-dirs:
+      examples
+  ghc-options: -funbox-strict-fields -fforce-recomp -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      base >=4.7 && <5
+    , chart-unit
+    , diagrams-lib
+    , generic-lens-labels
+    , lens
+    , numhask
+    , numhask-range
+    , protolude
+    , text
+  other-modules:
+      Paths_chart_unit
+  default-language: Haskell2010
+
+test-suite test
+  type: exitcode-stdio-1.0
+  main-is: test.hs
+  hs-source-dirs:
+      test
+  build-depends:
+      base >=4.7 && <5
+    , chart-unit
+    , doctest
+    , numhask
+    , numhask-range
+    , tasty
+    , tasty-hspec
+  other-modules:
+      Paths_chart_unit
+  default-language: Haskell2010

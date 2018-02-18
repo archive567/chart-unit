@@ -1,7 +1,5 @@
 /.stack-work/
 /test/*.svg
-/*/.DS_Store
-/*/*/.DS_Store
-chart-unit.cabal
+*.DS_Store
 /other/test1.svg
 /other/test2.svg
