@@ -385,8 +385,8 @@ axisExample = axis aopts one (Range 0 100000)
        (#alignH .~ AlignLeft)) $
       #gap .~ 0.0001 $ def
 
-legends :: [(LegendType, Text)]
-legends =
+legends' :: [(LegendType, Text)]
+legends' =
   [(LegendText def, "legend")] <> [(LegendPixel (blob ublue) 0.05, "pixel")] <>
     -- [ (LegendArrow (def & #minStaffWidth .~ 0.01 & #minHeadLength .~ 0.03) 0.05, "arrow")] <>
   [(LegendRect def 0.05, "rect")] <>
@@ -398,7 +398,7 @@ legends =
     ["short", "much longer name", "line 3"]
 
 legendExample :: Chart b
-legendExample = legend $ #chartType .~ legends $ def
+legendExample = legend $ #chartType .~ legends' $ def
 
 -- * Chart.Bar examples
 barExample :: Chart b

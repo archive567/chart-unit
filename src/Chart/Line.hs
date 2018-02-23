@@ -7,7 +7,7 @@
 
 -- | Points on a chart connected by lines.
 module Chart.Line
-  ( LineOptions(LineOptions)
+  ( LineOptions(..)
   , oneline
   , lines
   , glines

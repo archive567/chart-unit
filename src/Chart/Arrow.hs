@@ -4,7 +4,7 @@
 module Chart.Arrow
   ( Arrow(..)
   , ArrowHTStyle(..)
-  , ArrowOptions(ArrowOptions)
+  , ArrowOptions(..)
   , normArrows
   , arrows
   , arrowChart

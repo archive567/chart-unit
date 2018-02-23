@@ -5,10 +5,9 @@
 -- hash: c39db1e3a55127346b3e41e1ba315b1d704563184f7b39b9a3885f64e76b4387
 
 name:           chart-unit
-version:        0.6.0.2
+version:        0.6.1.0
 synopsis:       Native haskell charts.
-description:    .
-                <<https://tonyday567.github.io/other/mainExample.svg>>
+description:    <<https://tonyday567.github.io/other/mainExample.svg>>
                 .
                 chart-unit is a native haskell charting library designed:
                 .
@@ -16,7 +15,7 @@ description:    .
                 .
                 - towards a minimalist look and feel
                 .
-                - to provide a set of default values that are robust across differet data and physical chart scales
+                - to provide a set of default values that are robust across different data and physical chart scales
                 .
                 - around provision of a small but core set of chart types.
                 .

@@ -7,7 +7,7 @@
 
 -- | rectangular chart elements
 module Chart.Rect
-  ( RectOptions(RectOptions)
+  ( RectOptions(..)
   , blob
   , box
   , clear
@@ -21,7 +21,7 @@ module Chart.Rect
   , pixels
   , pixelChart
   , pixelChart_
-  , PixelationOptions(PixelationOptions)
+  , PixelationOptions(..)
   , pixelate
   , pixelateChart
   ) where
