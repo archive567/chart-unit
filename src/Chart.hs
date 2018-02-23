@@ -77,8 +77,8 @@
 --
 -- Using data-default, lens and OverloadedLabels tends to encourage a vertical style, which may annoy line counters, but lead to clear code and ease of editing.
 --
--- > titles :: [(TitleOptions, Text)]
--- > titles =
+-- > titles' :: [(TitleOptions, Text)]
+-- > titles' =
 -- >   [ (def, "Example Chart")
 -- >   , ( #align .~ AlignCenter $
 -- >       #text . #rotation .~ 90 $
@@ -94,8 +94,8 @@
 -- >     , "bottom right, non-essential note")
 -- >   ]
 -- > 
--- > legends :: [(LegendType, Text)]
--- > legends =
+-- > legends' :: [(LegendType, Text)]
+-- > legends' =
 -- >   [(LegendText def, "legend")] <>
 -- >   [(LegendPixel (blob ublue) 0.05, "pixel")] <>
 -- >   [(LegendRect def 0.05, "rect")] <>
@@ -113,10 +113,10 @@
 -- > mainExample = withHud_ opts sixbyfour (lineChart lopts) ls
 -- >   where
 -- >     opts =
--- >       #titles .~ titles $
+-- >       #titles .~ titles' $
 -- >       #axes .~ as $
 -- >       #axes %~ map (#outerPad .~ 1) $
--- >       #legends .~ [#chartType .~ legends $ def] $
+-- >       #legends .~ [#chartType .~ legends' $ def] $
 -- >       def
 -- > 
 -- > main :: IO ()
@@ -171,17 +171,17 @@ module Chart
   ) where
 
 import Chart.ADT
-import Chart.Arrow
-import Chart.Bar
+import Chart.Arrow hiding (color)
+import Chart.Bar hiding (orientation)
 import Chart.Core
 import Chart.Data
 import Chart.Data.Time
-import Chart.Glyph
+import Chart.Glyph hiding (color, size, borderSize, borderColor)
 import Chart.Hud
-import Chart.Line
-import Chart.Rect
+import Chart.Line hiding (color)
+import Chart.Rect hiding (borderSize, borderColor)
 import Chart.Svg
-import Chart.Text
+import Chart.Text hiding (orientation, size, color)
 import Data.Colour
 import Data.Colour.Names
 import Data.Colour.Palette.ColorSet

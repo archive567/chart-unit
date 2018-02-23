@@ -10,7 +10,7 @@
 
 -- | bar charts
 module Chart.Bar
-  ( BarOptions(BarOptions)
+  ( BarOptions(..)
   , BarValueAcc(..)
   , BarData(..)
   , barDataLowerUpper

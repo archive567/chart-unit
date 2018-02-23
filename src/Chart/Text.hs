@@ -4,9 +4,9 @@
 
 -- | textual chart elements
 module Chart.Text
-  ( TextOptions(TextOptions)
-  , TextPathOptions(TextPathOptions)
-  , TextSvgOptions(TextSvgOptions)
+  ( TextOptions(..)
+  , TextPathOptions(..)
+  , TextSvgOptions(..)
   , TextType(..)
   , TextFont(..)
   , textFont
@@ -14,7 +14,7 @@ module Chart.Text
   , texts
   , textChart
   , textChart_
-  , LabelOptions(LabelOptions)
+  , LabelOptions(..)
   , labelled
   ) where
 
@@ -28,7 +28,6 @@ import Graphics.SVGFonts.ReadFont
 import NumHask.Pair
 import NumHask.Prelude hiding (rotate)
 import NumHask.Rect
-
 
 -- | options specific to text as an SVG path
 newtype TextPathOptions = TextPathOptions
@@ -57,13 +56,13 @@ data TextType
 
 -- | text options
 data TextOptions = TextOptions
-  { size :: Double
-  , alignH :: AlignH
-  , alignV :: AlignV
-  , color :: AlphaColour Double
-  , textFillRule :: FillRule
-  , rotation :: Double
-  , textType :: TextType
+  { size :: Double  -- ^ size as ratio to overall chart size (default: 0.08)
+  , alignH :: AlignH -- ^ horizontal alignment (default: 'AlignCenter')
+  , alignV :: AlignV -- ^ vertical alignment (default: 'AlignMid')
+  , color :: AlphaColour Double -- ^ default: greyish
+  , textFillRule :: FillRule -- ^ default: 'EvenOdd'
+  , rotation :: Double -- ^ in degrees from the horozontal (default: 0 degrees)
+  , textType :: TextType -- ^ default: 'TextPath' def
   } deriving (Show, Generic)
 
 instance Default TextOptions where

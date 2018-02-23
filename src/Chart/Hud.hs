@@ -11,7 +11,7 @@
 -- | Hud (Heads up display) is a collective noun for axes, titles & legends
 --
 module Chart.Hud
-  ( HudOptions(HudOptions)
+  ( HudOptions(..)
   , hud
   , withHud
   , withHud_
@@ -19,21 +19,21 @@ module Chart.Hud
   , placeGap
   , TickStyle(..)
   , precision
-  , AxisOptions(AxisOptions)
+  , AxisOptions(..)
   , defXAxis
   , defYAxis
   , axis
-  , AutoOptions(AutoOptions)
+  , AutoOptions(..)
   , adjustAxis
   , axisSane
   , computeTicks
-  , TitleOptions(TitleOptions)
+  , TitleOptions(..)
   , title
   , LegendType(..)
-  , LegendOptions(LegendOptions)
+  , LegendOptions(..)
   , legend
   , GridStyle(..)
-  , GridOptions(GridOptions)
+  , GridOptions(..)
   , GridPos(..)
   , gridPos
   , defXGrid
@@ -44,7 +44,7 @@ module Chart.Hud
 import Chart.Arrow
 import Chart.Core
 import Chart.Glyph
-import Chart.Line (LineOptions(LineOptions), lines, oneline)
+import Chart.Line (LineOptions(..), lines, oneline)
 import Chart.Rect
 import Chart.Text
 import qualified Control.Foldl as L
@@ -460,8 +460,8 @@ instance Default LegendOptions where
 
 -- | Create a legend based on a LegendOptions
 --
--- > legends :: [(LegendType, Text)]
--- > legends =
+-- > legends' :: [(LegendType, Text)]
+-- > legends' =
 -- >   [(LegendText def, "legend")] <> [(LegendPixel (blob ublue) 0.05, "pixel")] <>
 -- >     -- [ (LegendArrow (def & #minStaffWidth .~ 0.01 & #minHeadLength .~ 0.03) 0.05, "arrow")] <>
 -- >   [(LegendRect def 0.05, "rect")] <>
@@ -473,7 +473,7 @@ instance Default LegendOptions where
 -- >     ["short", "much longer name", "line 3"]
 -- > 
 -- > legendExample :: Chart b
--- > legendExample = legend $ #chartType .~ legends $ def
+-- > legendExample = legend $ #chartType .~ legends' $ def
 --
 -- ![legend example](other/legendExample.svg)
 --

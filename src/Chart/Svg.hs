@@ -6,7 +6,7 @@
 
 -- | Svg rendering
 module Chart.Svg
-  ( SvgOptions(SvgOptions)
+  ( SvgOptions(..)
   , renderSvg
   , toText
   , toFile

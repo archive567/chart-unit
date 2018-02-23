@@ -3,7 +3,7 @@
 
 -- | Glyphs are (typically) small shapes symbolically representing a data point.
 module Chart.Glyph
-  ( GlyphOptions(GlyphOptions)
+  ( GlyphOptions(..)
   , GlyphShape(..)
   , glyphShape
   , glyph_

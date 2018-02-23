@@ -7,7 +7,6 @@
 import Chart
 import Control.Lens
 import Data.Generics.Labels()
--- import qualified Diagrams.Prelude as D
 import NumHask.Prelude
 
 ls :: [[Pair Double]]
@@ -37,8 +36,8 @@ as =
     defYAxis
   ] 
 
-titles :: [(TitleOptions, Text)]
-titles =
+titles' :: [(TitleOptions, Text)]
+titles' =
   [ (def, "Example Chart")
   , ( #align .~ AlignCenter $
       #text . #rotation .~ 90 $
@@ -54,8 +53,8 @@ titles =
     , "bottom right, non-essential note")
   ]
 
-legends :: [(LegendType, Text)]
-legends =
+legends' :: [(LegendType, Text)]
+legends' =
   [(LegendText def, "legend")] <>
   [(LegendPixel (blob ublue) 0.05, "pixel")] <>
   [(LegendRect def 0.05, "rect")] <>
@@ -74,10 +73,10 @@ mainExample =
    sixbyfour
    [ LineChart (zip lopts ls)
    , HudChart $
-     #titles .~ titles $
+     #titles .~ titles' $
      #axes .~ as $
      #axes %~ map (#outerPad .~ 1) $
-     #legends .~ [#chartType .~ legends $ def] $
+     #legends .~ [#chartType .~ legends' $ def] $
      def])
 
 main :: IO ()
