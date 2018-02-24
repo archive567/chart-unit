@@ -13,9 +13,9 @@
 import Chart
 import Control.Lens
 import Data.Generics.Labels()
-import qualified Diagrams.Prelude as D
 import NumHask.Prelude
 import qualified Data.Text as Text
+import qualified Diagrams.Prelude as D
 
 -- * Chart.Core examples 
 scaleExample :: IO ()
@@ -49,33 +49,43 @@ hudbits t subt ts ls x =
          def, subt')]) $ 
   #legends .~
   [#chartType .~ zip ls ts $
-   #align .~ AlignRight $ def ] $
+   #align .~ AlignRight $
+   #text . #size .~ 0.2 $
+   def ] $
   #axes . each . #gap .~ 0.1 $
   x
 
 -- * Chart.Text examples
 text_Example :: Chart b
-text_Example = text_ def "Welcome to chart-unit!"
+text_Example = text_ (#textType .~ TextPath def $ def) "Welcome to chart-unit!"
+
+text_SvgExample :: Chart b
+text_SvgExample = text_
+  (#textType .~ TextSvg (#textBox .~ def $ #svgFont .~ Just "Comic Sans MS" $ def) $
+   #size .~ 0.2 $
+   def)
+  "abc & 0123 & POW!"
+
+text_PathExample :: Chart b
+text_PathExample = text_
+  (#textType .~ TextPath (#font .~ FromFontFile "other/Hasklig-Regular.svg" $ def) $
+   #size .~ 0.2 $
+   def)
+   "0123 <*> <$> <| |> <> <- -> => ::"
 
 ts :: [(Text, Pair Double)]
 ts = zip
   (map Text.singleton ['a' .. 'z'])
   [Pair (sin (x * 0.1)) x | x <- [0 .. 25]]
 
-textsExample :: Chart b
-textsExample = texts def ts
-
 textChart_Example :: Chart b
 textChart_Example =
-  textChart_ [#size .~ 0.33 $ def] widescreen [ts]
+  D.pad 1.1 $ textChart_ [#size .~ 0.33 $ def] widescreen [ts]
 
 labelledExample :: Chart b
-labelledExample =
-  labelled
-  (LabelOptions
-    (#alignH .~ AlignLeft $ #rotation .~ 45 $ def)
-    (Pair 1 1)
-    0.05)
+labelledExample = D.pad 1.1 $
+  labelled (LabelOptions
+    (#alignH .~ AlignLeft $ #rotation .~ 45 $ def) (Pair 1 1) 0.02)
   "a label"
   (glyph_ def)
 
@@ -95,7 +105,9 @@ glyphsExample = glyphs def (dataXY sin (Range 0 (2*pi)) 30)
 
 gopts :: [GlyphOptions]
 gopts =
-  [ #borderSize .~ 0.001 $ def
+  [ #borderSize .~ 0.001 $
+    #size .~ 0.1 $
+    def
   , #borderSize .~ 0.001 $
     #size .~ 0.1 $
     #color .~ rybColor 7 `withOpacity` 0.4 $
@@ -140,11 +152,12 @@ glyphHudExample =
    ["sin", "cos"]
    (LegendGlyph <$> gopts) $
    #axes .~
-    [ #label . #text . #size .~ 0.2 $
+    [ #label . #text . #size .~ 0.3 $
       #tickStyle .~ TickPlaced pis $
-      #label . #text . #textType .~ TextPath (TextPathOptions Lin) $
+      #label . #text . #textType .~
+      TextPath (TextPathOptions (FromFontFile "other/SourceCodePro-Regular.svg")) $
       defXAxis
-    , defYAxis] $ def)
+    ] $ def)
   widescreen
   (range gdata)
   where
@@ -388,7 +401,7 @@ axisExample = axis aopts one (Range 0 100000)
 legends' :: [(LegendType, Text)]
 legends' =
   [(LegendText def, "legend")] <> [(LegendPixel (blob ublue) 0.05, "pixel")] <>
-    -- [ (LegendArrow (def & #minStaffWidth .~ 0.01 & #minHeadLength .~ 0.03) 0.05, "arrow")] <>
+  -- [(LegendArrow (def & #minStaffWidth .~ 0.01 & #minHeadLength .~ 0.03) 0.05, "arrow")] <>
   [(LegendRect def 0.05, "rect")] <>
   [(LegendGLine def def 0.10, "glyph+line")] <>
   [(LegendGlyph def, "just a glyph")] <>
@@ -420,8 +433,8 @@ barExample  =
     ys = [1,2,3,5,8,0,-2,11,2,1]
 
 -- * difference between svg text and path text
-testTextDiffs :: Double -> Double -> Text -> (Double, Double, Double) -> Chart b
-testTextDiffs s ns txt (nb, nm, nt) =
+testTextDiffs :: Double -> Double -> Text -> (Double, Double, Double) -> Maybe Text -> Chart b
+testTextDiffs s ns txt (nb, nm, nt) fnt =
   D.pad 1.1 $ vert identity $ D.centerXY .
   (\(ah,av,txt) ->
      D.showOrigin' (D.OriginOpts red 0.001 0.001)
@@ -436,7 +449,7 @@ testTextDiffs s ns txt (nb, nm, nt) =
       (#alignV .~ av $
        #alignH .~ ah $
        #size .~ s $
-       #textType .~ TextSvg (TextSvgOptions ns nb nm nt) $
+       #textType .~ TextSvg (TextSvgOptions ns nb nm nt fnt 1.1 0.55 clear) $
        def) txt)) <$>
   ((\x y -> (x,y,txt)) <$>
    [AlignLeft, AlignCenter, AlignRight] <*>
@@ -446,10 +459,11 @@ main :: IO ()
 main = do
   scaleExample
   fileSvg "other/text_Example.svg" (#size .~ Pair 400 100 $ def) text_Example
-  fileSvg "other/textsExample.svg" (#size .~ Pair 400 100 $ def) textsExample
+  fileSvg "other/text_SvgExample.svg" (#size .~ Pair 400 100 $ def) text_SvgExample
+  fileSvg "other/text_PathExample.svg" (#size .~ Pair 400 100 $ def) text_PathExample
   fileSvg "other/textChart_Example.svg" (#size .~ Pair 400 100 $ def)
     textChart_Example
-  fileSvg "other/labelledExample.svg" (#size .~ Pair 300 100 $ def) labelledExample
+  fileSvg "other/labelledExample.svg" (#size .~ Pair 100 100 $ def) labelledExample
   fileSvg "other/textHudExample.svg" def $
     textHudExample <> textChart_Example
   fileSvg "other/glyph_Example.svg" (#size .~ Pair 400 100 $ def) glyph_Example
@@ -502,4 +516,4 @@ main = do
   -- tests
   putStrLn ("testing text differences" :: Text)
   fileSvg "other/testTextDiffs.svg" (#size .~ Pair 400 600 $ def) $
-    testTextDiffs 1 0.77 "abcdefghij012345" (0.25,-0.1,0.25)
+    testTextDiffs 1 0.77 "abcdefghij012345" (0.25,-0.1,0.25) (Just "san-serif")
