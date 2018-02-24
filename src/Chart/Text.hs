@@ -19,15 +19,17 @@ module Chart.Text
   ) where
 
 import Chart.Core
-import qualified Data.Text as Text
-import Diagrams.Prelude hiding (Color, D, scale, (<>))
-import qualified Diagrams.TwoD.Size as D
-import qualified Diagrams.TwoD.Text as D
+import Chart.Rect
+import Diagrams.Prelude hiding (Color, D, scale, (<>), (*.))
 import Graphics.SVGFonts hiding (textFont)
 import Graphics.SVGFonts.ReadFont
 import NumHask.Pair
 import NumHask.Prelude hiding (rotate)
 import NumHask.Rect
+import System.IO.Unsafe (unsafePerformIO)
+import qualified Data.Text as Text
+import qualified Diagrams.TwoD.Size as D
+import qualified Diagrams.TwoD.Text as D
 
 -- | options specific to text as an SVG path
 newtype TextPathOptions = TextPathOptions
@@ -37,16 +39,31 @@ newtype TextPathOptions = TextPathOptions
 instance Default TextPathOptions where
   def = TextPathOptions Lin2
 
+-- | ADT of fonts
+data TextFont
+  = Lin2
+  | FromFontFile Text
+  deriving (Show)
+
+-- | transform from chart-unit to SVGFonts rep of font
+textFont :: TextFont -> PreparedFont Double
+textFont Lin2 = lin2
+textFont (FromFontFile f) = unsafePerformIO (loadFont (Text.unpack f))
+
 -- | options specific to text as SVG text
 data TextSvgOptions = TextSvgOptions
   { nudgeSize :: Double
   , nudgeBottom :: Double
   , nudgeMid :: Double
   , nudgeTop :: Double
+  , svgFont :: Maybe Text
+  , sizeVert :: Double -- ^ approximate divisor of vertical size
+  , sizeHori :: Double -- ^ approximate divisor of horizontal size per character
+  , textBox :: RectOptions -- ^ bounding box 
   } deriving (Show, Generic)
 
 instance Default TextSvgOptions where
-  def = TextSvgOptions 0.78 0.25 -0.10 0.25
+  def = TextSvgOptions 0.78 0.25 -0.10 0.25 Nothing 1.1 0.55 clear
 
 -- | text as a path or as svg text
 data TextType
@@ -74,26 +91,37 @@ instance Default TextOptions where
       (withOpacity black 0.33)
       EvenOdd
       0
-      (TextPath def)
-
--- | ADT of fonts
-data TextFont
-  = Lin2
-  | Lin
-  | Bit
-  deriving (Show)
-
--- | transform from chart-unit to SVGFonts rep of font
-textFont :: TextFont -> PreparedFont Double
-textFont Lin = lin
-textFont Lin2 = lin2
-textFont Bit = Graphics.SVGFonts.bit
+      (TextSvg def)
 
 -- | Create a textual chart element
 --
 -- > text_ def "Welcome to chart-unit!"
 --
 -- ![text_ example](other/text_Example.svg)
+--
+-- Text can be either SVG text or text rendered as an SVG path.  Text as SVG can be overridden by an opinionated browser.
+-- SVG Text not have a size, according to diagrams, and according to the svg standards for all I know.
+-- textSvg corrects for this by adding an approximately bounding rectangle so that size is forced.
+--
+-- > text_SvgExample :: Chart b
+-- > text_SvgExample = text_
+-- >   (#textType .~ TextSvg (#textBox .~ def $ #svgFont .~ Just "Comic Sans MS" $ def) $
+-- >   #size .~ 0.2 $
+-- >   def)
+-- >   "abc & 0123 & POW!"
+--
+-- ![text_Svg example](other/text_SvgExample.svg)
+--
+-- Text as an SVG path can use the fonts supplied in [SVGFonts](https://hackage.haskell.org/package/SVGFonts), follow the instructions there to make your own, or use the [Hasklig](https://github.com/i-tu/Hasklig) font supplied in chart-unit.
+--
+-- > text_PathExample :: Chart b
+-- > text_PathExample = text_
+-- >   (#textType .~ TextPath (#font .~ FromFontFile "other/Hasklig-Regular.svg" $ def) $
+-- >    #size .~ 0.2 $
+-- >    def)
+-- >    "0123 <*> <$> <| |> <> <- -> => ::"
+--
+-- ![text_Path example](other/text_PathExample.svg)
 --
 text_ :: TextOptions -> Text -> Chart b
 text_ (TextOptions s ah av c fr rot (TextPath (TextPathOptions f))) t =
@@ -106,35 +134,33 @@ text_ (TextOptions s ah av c fr rot (TextPath (TextPathOptions f))) t =
       AlignBottom -> 0
       AlignMid -> -0.25
       AlignTop -> -0.5
-text_ (TextOptions s ah av c fr rot (TextSvg (TextSvgOptions ns nb nm nt))) t =
+text_ (TextOptions s ah av c fr rot (TextSvg (TextSvgOptions ns nb nm nt f v h bx))) t =
   txt #
   moveTo (p_ (Pair 0 mv)) #
   Chart.Core.scaleX (s * ns) #
   Chart.Core.scaleY (s * ns) #
-  fcA c # lw 0 # fillRule fr # rotate (rot @@ deg)
+  maybe identity (D.font . Text.unpack) f #
+  fcA c #
+  lw 0 #
+  fillRule fr #
+  rotate (rot @@ deg)
   where
-    txt = D.alignedText ah'' av'' (Text.unpack t)
-    ah'' = case ah of
-      AlignLeft -> 0
-      AlignCenter -> 0.5
-      AlignRight -> 1
-    (av'',mv) = case av of
-      AlignBottom -> (0.5, nb)
-      AlignMid -> (0.5, nm)
-      AlignTop -> (1, nt)
+    txt =
+      D.alignedText ah'' av'' (Text.unpack t) <>
+      Chart.Core.scaleX (h*fromIntegral(Text.length t))
+      (Chart.Core.scaleY v $
+       moveOriginTo (p_ (Pair boxh boxv)) $
+       rect_ bx one)
+    (ah'', boxh) = case ah of
+      AlignLeft -> (0, -0.5)
+      AlignCenter -> (0.5, 0)
+      AlignRight -> (1, 0.5)
+    (av'', mv, boxv) = case av of
+      AlignBottom -> (0.5, nb, 0)
+      AlignMid -> (0.5, nm, 0)
+      AlignTop -> (1, nt, 0.5)
 
 -- | Create positioned text from a list
---
--- > ts :: [(Text, Pair Double)]
--- > ts = zip
--- >   (map Text.singleton ['a' .. 'z'])
--- >   [Pair (sin (x * 0.1)) x | x <- [0 .. 25]]
--- >
--- > textsExample :: Chart b
--- > textsExample = texts def ts
---
--- ![texts example](other/textsExample.svg)
---
 texts :: (R2 r) =>
   TextOptions -> [(Text, r Double)] -> Chart b
 texts opts ts = mconcat $ (\(t, p) -> positioned p (text_ opts t)) <$> ts
@@ -155,6 +181,11 @@ textChart optss asp r xyss =
 
 -- | A chart of text scaled to its own range
 --
+-- > ts :: [(Text, Pair Double)]
+-- > ts = zip
+-- >   (map Text.singleton ['a' .. 'z'])
+-- >   [Pair (sin (x * 0.1)) x | x <- [0 .. 25]]
+-- >
 -- > textChart_Example :: Chart b
 -- > textChart_Example =
 -- >   textChart_ [#size .~ 0.33 $ def] widescreen [ts]
@@ -179,17 +210,15 @@ instance Default LabelOptions where
 -- | Label a chart element with some text
 --
 -- > labelledExample :: Chart b
--- > labelledExample =
--- >   labelled
--- >     (LabelOptions
--- >        (#alignH .~ AlignLeft $ #rotation .~ 45 $ def)
--- >        (Pair 1 1)
--- >        0.05)
--- >     "a label"
--- >     (glyph_ def)
+-- > labelledExample = D.pad 1.1 $
+-- >   labelled (LabelOptions
+-- >     (#alignH .~ AlignLeft $ #rotation .~ 45 $ def) (Pair 1 1) 0.02)
+-- >   "a label"
+-- >   (glyph_ def)
 --
 -- ![labelled example](other/labelledExample.svg)
 --
 labelled :: LabelOptions -> Text -> Chart b -> Chart b
 labelled (LabelOptions texto o g) t ch =
   beside (r_ o) (beside (r_ o) ch (strut (r_ o) # scale g)) (text_ texto t)
+

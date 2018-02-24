@@ -521,7 +521,10 @@ legend opts =
     legend__ (LegendPixel c s, t) =
       hori
         identity
-        [rect_ c (s *. one), strutX (opts ^. field @"sep"), text_ (opts ^. field @"text") t]
+        [ rect_ c (s *. one)
+        , strutX (opts ^. field @"sep")
+        , text_ (opts ^. field @"text") t
+        ]
 
 -- | The positioning of boundaries for a grid over a space
 data GridPos
