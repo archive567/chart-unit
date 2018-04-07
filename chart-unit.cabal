@@ -96,7 +96,7 @@ executable chart-unit-gallery
     , formatting
     , generic-lens-labels
     , lens
-    , mwc-probability >= 1.2.0 && < 2
+    , mwc-probability >= 1.2.0 && < 3
     , mwc-random
     , numhask
     , numhask-histogram
