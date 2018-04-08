@@ -1,4 +1,4 @@
-resolver: lts-10.10
+resolver: lts-11.3
 
 packages:
   - .
@@ -9,6 +9,11 @@ extra-deps:
   - numhask-0.2.0.0
   - numhask-prelude-0.0.3.0
   - numhask-range-0.2.1.0
-  - mwc-probability-2.0.2
+  - SVGFonts-1.6.0.3
+  - diagrams-lib-1.4.2
+  - diagrams-svg-1.4.1.1
+  - diagrams-core-1.4.0.1
+  - diagrams-solve-0.1.1
+  - dual-tree-0.2.1.1
 
 allow-newer: true
