@@ -1,11 +1,5 @@
--- This file has been generated from package.yaml by hpack version 0.20.0.
---
--- see: https://github.com/sol/hpack
---
--- hash: c39db1e3a55127346b3e41e1ba315b1d704563184f7b39b9a3885f64e76b4387
-
 name:           chart-unit
-version:        0.6.1.0
+version:        0.6.2.0
 synopsis:       Native haskell charts.
 description:    <<https://tonyday567.github.io/other/mainExample.svg>>
                 .
@@ -59,6 +53,7 @@ library
     , lens
     , linear
     , numhask
+    , numhask-prelude
     , numhask-range
     , palette
     , protolude
@@ -96,9 +91,10 @@ executable chart-unit-gallery
     , formatting
     , generic-lens-labels
     , lens
-    , mwc-probability >= 1.2.0 && < 3
+    , mwc-probability >= 2.0.2
     , mwc-random
     , numhask
+    , numhask-prelude
     , numhask-histogram
     , numhask-range
     , primitive
@@ -120,6 +116,7 @@ executable chart-unit-main-example
     , generic-lens-labels
     , lens
     , numhask
+    , numhask-prelude
     , numhask-range
   other-modules:
       Paths_chart_unit
@@ -137,6 +134,7 @@ executable chart-unit-source-examples
     , generic-lens-labels
     , lens
     , numhask
+    , numhask-prelude
     , numhask-range
     , protolude
     , text
@@ -154,6 +152,7 @@ test-suite test
     , chart-unit
     , doctest
     , numhask
+    , numhask-prelude
     , numhask-range
     , tasty
     , tasty-hspec

@@ -31,7 +31,7 @@ import qualified Data.Text as Text
 -- * example data generation
 -- Standard normal random variates in one dimension.
 rvs :: Gen (PrimState IO) -> Int -> IO [Double]
-rvs gen n = samples n standard gen
+rvs gen n = samples n standardNormal gen
 
 -- This generates n V2 random variates where the x and y parts are correlated.
 rvsCorr :: Gen (PrimState IO) -> Int -> Double -> IO [Pair Double]
