@@ -65,19 +65,23 @@ legends' =
     lopts
     ["short", "much longer name", "line 3"]
 
+mainChart :: [ChartSpec]
+mainChart =
+  [ LineChart (zip lopts ls)
+  , HudChart $
+    #titles .~ titles' $
+    #axes .~ as $
+    #axes %~ map (#outerPad .~ 1) $
+    #legends .~ [#chartType .~ legends' $ def] $
+    def]
+
 mainExample :: Chart b
 mainExample =
   renderChart
   (ChartOptions
    Nothing
    sixbyfour
-   [ LineChart (zip lopts ls)
-   , HudChart $
-     #titles .~ titles' $
-     #axes .~ as $
-     #axes %~ map (#outerPad .~ 1) $
-     #legends .~ [#chartType .~ legends' $ def] $
-     def])
+   mainChart)
 
 main :: IO ()
-main = fileSvg "other/mainExample.svg" def mainExample
+main = fileSvg "../chart-unit/other/mainExample.svg" def mainExample

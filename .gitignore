@@ -1,4 +1,5 @@
 /.stack-work/
+*/.stack-work/
 /test/*.svg
 *.DS_Store
 /other/test1.svg

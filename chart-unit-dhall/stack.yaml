@@ -1,16 +1,18 @@
 resolver: lts-10.10
 
 packages:
-  - chart-unit
-  - chart-unit-tests
-  - chart-unit-examples
+  - .
+  - ../chart-unit
+  - ../../numhask-range/numhask-range
 
 extra-deps:
+  - dhall-1.12.0
+  - formatting-6.3.2
   - generic-lens-labels-0.1.0.2
   - numhask-histogram-0.1.1.0
   - numhask-0.2.0.0
   - numhask-prelude-0.0.3.0
-  - numhask-range-0.2.1.0
+  # - numhask-range-0.2.1.0
   - mwc-probability-2.0.2
 
 allow-newer: true

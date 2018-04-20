@@ -1,0 +1,65 @@
+name:           chart-unit-dhall
+version:        0.0.0.1
+synopsis:       chart-unit via dhall
+description:    chart-unit support for configuring a chart via dhall.
+category:       charts
+homepage:       https://github.com/tonyday567/chart-unit#readme
+bug-reports:    https://github.com/tonyday567/chart-unit/issues
+author:         Tony Day
+maintainer:     tonyday567@gmail.com
+copyright:      2016 Tony Day
+license:        BSD3
+license-file:   LICENSE
+build-type:     Simple
+cabal-version:  >= 1.18
+
+extra-source-files:
+    stack.yaml
+
+source-repository head
+  type: git
+  location: https://github.com/tonyday567/chart-unit
+
+library
+  hs-source-dirs:
+      src
+  default-extensions: DeriveGeneric DeriveTraversable FlexibleContexts FlexibleInstances InstanceSigs MultiParamTypeClasses NegativeLiterals NoImplicitPrelude OverloadedStrings PatternSynonyms RankNTypes TypeFamilies UnicodeSyntax
+  ghc-options: -funbox-strict-fields -fforce-recomp
+  build-depends:
+      base >=4.7 && <5
+    , dhall == 1.12.0
+    , chart-unit
+    , insert-ordered-containers
+    , numhask-prelude
+    , svg-builder
+    , text
+  exposed-modules:
+      Chart.Dhall
+  default-language: Haskell2010
+
+executable chart-unit-dhall
+  main-is: dhallExample.hs
+  hs-source-dirs:
+      example
+  ghc-options: -funbox-strict-fields -fforce-recomp -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      base >=4.7 && <5
+    , chart-unit
+    , chart-unit-dhall
+    , diagrams-lib
+    , dhall
+    , formatting
+    , generic-lens-labels
+    , lens
+    , mwc-probability >= 2.0.2
+    , mwc-random
+    , numhask
+    , numhask-prelude
+    , numhask-histogram
+    , numhask-range
+    , primitive
+    , protolude
+    , text
+    , time
+  default-language: Haskell2010
+

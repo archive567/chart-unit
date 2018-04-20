@@ -46,7 +46,7 @@ main = do
     (lineChart_ (repeat def) sixbyfour lineData <>
      hud def sixbyfour (range lineData))
   doctest
-      [ "src/Chart/Data/Time.hs"
+      [ "../chart-unit/src/Chart/Data/Time.hs"
       -- , "src/Chart/Core.hs"
       ]
   t1 <- testSpec "withChart" testWithChart

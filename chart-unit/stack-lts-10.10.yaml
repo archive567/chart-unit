@@ -1,9 +1,7 @@
 resolver: lts-10.10
 
 packages:
-  - chart-unit
-  - chart-unit-tests
-  - chart-unit-examples
+  - .
 
 extra-deps:
   - generic-lens-labels-0.1.0.2

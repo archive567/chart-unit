@@ -5,30 +5,30 @@
 
 `chart-unit` is a haskell chart library focusing on a small set of high-quality charts using native haskell. Here's a recent example, chock-a-block full of titles and legends (that needed testing):
 
-![](other/mainExample.svg)
+![](chart-unit/other/mainExample.svg)
 
 Chart Types
 ===
 
 So far, there are 9 major chart types:
 
-![](other/textHudExample.svg)
+![](chart-unit/other/textHudExample.svg)
 
-![](other/glyphHudExample.svg)
+![](chart-unit/other/glyphHudExample.svg)
 
-![](other/lglyphHudExample.svg)
+![](chart-unit/other/lglyphHudExample.svg)
 
-![](other/lineHudExample.svg)
+![](chart-unit/other/lineHudExample.svg)
 
-![](other/glineHudExample.svg)
+![](chart-unit/other/glineHudExample.svg)
 
-![](other/rectHudExample.svg)
+![](chart-unit/other/rectHudExample.svg)
 
-![](other/pixelHudExample.svg)
+![](chart-unit/other/pixelHudExample.svg)
 
-![](other/arrowHudExample.svg)
+![](chart-unit/other/arrowHudExample.svg)
 
-![](other/barExample.svg)
+![](chart-unit/other/barExample.svg)
 
 
 
@@ -71,19 +71,19 @@ Composable chart types and the power of diagrams make it easy to invent new char
 grid
 ---
 
-![](other/gridExample.svg)
+![](chart-unit/other/gridExample.svg)
 
 time
 ---
 
 `Chart.Data.Time` deals with the scenario where you want to plot a time series consecutively (y values are [0..]) but there are gaps in the seris such as no data on weekend days.
 
-![](other/timeExample.svg)
+![](chart-unit/other/timeExample.svg)
 
 schoolbook
 ---
 
-![](other/schoolbookExample.svg)
+![](chart-unit/other/schoolbookExample.svg)
 
 
 From the Haskell survey ...
@@ -92,13 +92,13 @@ From the Haskell survey ...
 q7
 ---
 
-![](other/q7Example.svg)
+![](chart-unit/other/q7Example.svg)
 
 
 q24
 ---
 
-![](other/q24Example.svg)
+![](chart-unit/other/q24Example.svg)
 
 
 
@@ -106,24 +106,24 @@ q24
 histogram diff
 ---
 
-![](other/histDiffExample.svg)
+![](chart-unit/other/histDiffExample.svg)
 
 
 combined scatter histogram
 ---
 
-![](other/scatterHistExample.svg)
+![](chart-unit/other/scatterHistExample.svg)
 
 
 clipping
 ---
 
-![](other/clippingExample.svg)
+![](chart-unit/other/clippingExample.svg)
 
 skinny
 ---
 
-![](other/skinnyExample.svg)
+![](chart-unit/other/skinnyExample.svg)
 
 
 tests
@@ -131,7 +131,7 @@ tests
 
 Differences between text methods, across alignments
 
-![](other/testTextDiffs.svg)
+![](chart-unit/other/testTextDiffs.svg)
 
 
 workflow
