@@ -339,7 +339,7 @@ computeTicks opts r asp =
     case opts ^. field @"tickStyle" of
       TickNone -> ([], [])
       TickRound n -> (project r asp <$> ticks0, precision 0 ticks0)
-        where ticks0 = gridSensible OuterPos r n
+        where ticks0 = gridSensible OuterPos r (fromIntegral n)
       TickExact n -> (project r asp <$> ticks0, precision 3 ticks0)
         where ticks0 = grid OuterPos r n
       TickLabels ls ->
@@ -363,7 +363,7 @@ precision n0 xs
   | foldr max 0 xs < 0.01 = precLoop expt' n0 (fromFloatDigits <$> xs)
   | foldr max 0 xs > 100000 = precLoop expt' n0 (fromFloatDigits <$> xs)
   | foldr max 0 xs > 1000 =
-    precLoopInt (const Formatting.commas) n0 (floor <$> xs)
+    precLoopInt (const Formatting.commas) n0 (floor <$> xs :: [Integer])
   | otherwise = precLoop fixed n0 xs
   where
     expt' x = scifmt Exponent (Just x)
@@ -585,7 +585,7 @@ gridl gopt (Ranges aspx aspy) (Ranges rx ry) = ls
     lineLocations =
       case gridStyle gopt of
         GridNone -> []
-        GridRound p n -> project r0 asp0 <$> gridSensible (gridPos p) r0 n
+        GridRound p n -> project r0 asp0 <$> gridSensible (gridPos p) r0 (fromIntegral n)
         GridExact p n -> project r0 asp0 <$> grid (gridPos p) r0 n
         GridPlaced xs -> project r0 asp0 <$> xs
     (asp0, r0) =

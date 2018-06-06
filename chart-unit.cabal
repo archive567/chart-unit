@@ -1,5 +1,5 @@
 name:           chart-unit
-version:        0.6.2.0
+version:        0.6.3.0
 synopsis:       Native haskell charts.
 description:    <<https://tonyday567.github.io/other/mainExample.svg>>
                 .

@@ -1,8 +1,10 @@
 {-# LANGUAGE DuplicateRecordFields #-}
+{-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE OverloadedLabels #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE NoImplicitPrelude #-}
 {-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE ScopedTypeVariables #-}
 {-# OPTIONS_GHC -Wall #-}
 {-# OPTIONS_GHC -Wno-unused-top-binds #-}
 
@@ -147,20 +149,20 @@ floorGrain (Years n) (UTCTime d _) = UTCTime (addDays (-1) $ fromGregorian y' 1 
 floorGrain (Months n) (UTCTime d _) = UTCTime (addDays (-1) $ fromGregorian y m' 1) 0
   where
     (y,m,_) = toGregorian (addDays 1 d)
-    m' = fromIntegral $ 1 + fromIntegral n * floor (fromIntegral (m - 1) / fromIntegral n :: Double)
+    m' = fromIntegral $ (1 + fromIntegral n * floor (fromIntegral (m - 1) / fromIntegral n :: Double) :: Integer)
 floorGrain (Days _) (UTCTime d _) = UTCTime d 0
 floorGrain (Hours h) u@(UTCTime _ t) = addUTCTime x u
   where
     s = toDouble' t
-    x = fromDouble $ fromIntegral (h * 3600 * fromIntegral (floor (s / (fromIntegral h*3600)))) - s
+    x = fromDouble $ fromIntegral ((h * 3600 * fromIntegral ((floor (s / (fromIntegral h*3600)) :: Integer)))) - s
 floorGrain (Minutes m) u@(UTCTime _ t) = addUTCTime x u
   where
     s = toDouble' t
-    x = fromDouble $ fromIntegral (m * 60 * fromIntegral (floor (s / (fromIntegral m*60)))) - s
+    x = fromDouble $ fromIntegral (m * 60 * fromIntegral (floor (s / (fromIntegral m*60)) :: Integer)) - s
 floorGrain (Seconds secs) u@(UTCTime _ t) = addUTCTime x u
   where
     s = toDouble' t
-    x = fromDouble $ (secs * fromIntegral (floor (s / secs))) - s
+    x = fromDouble $ (secs * fromIntegral (floor (s / secs) :: Integer)) - s
 
 -- | compute the ceiling UTCTime based on the timegrain
 --
@@ -187,21 +189,21 @@ ceilingGrain (Years n) (UTCTime d _) = UTCTime (addDays (-1) $ fromGregorian y' 
 ceilingGrain (Months n) (UTCTime d _) = UTCTime (addDays (-1) $ fromGregorian y' m'' 1) 0
   where
     (y,m,_) = toGregorian (addDays 1 d)
-    m' = fromIntegral n * ceiling (fromIntegral m / fromIntegral n :: Double)
+    m' = fromIntegral n * ceiling (fromIntegral m / fromIntegral n :: Double) :: Integer
     (y',m'') = fromIntegral <$> if m' == 12 then (y+1,1) else (y,m'+1)
 ceilingGrain (Days _) (UTCTime d t) = if t==0 then UTCTime d 0 else UTCTime (addDays 1 d) 0
 ceilingGrain (Hours h) u@(UTCTime _ t) = addUTCTime x u
   where
     s = toDouble' t
-    x = fromDouble $ fromIntegral (h * 3600 * fromIntegral (ceiling (s / (fromIntegral h*3600)))) - s
+    x = fromDouble $ fromIntegral (h * 3600 * fromIntegral (ceiling (s / (fromIntegral h*3600)) :: Integer)) - s
 ceilingGrain (Minutes m) u@(UTCTime _ t) = addUTCTime x u
   where
     s = toDouble' t
-    x = fromDouble $ fromIntegral (m * 60 * fromIntegral (ceiling (s / (fromIntegral m*60)))) - s
+    x = fromDouble $ fromIntegral (m * 60 * fromIntegral (ceiling (s / (fromIntegral m*60)) :: Integer)) - s
 ceilingGrain (Seconds secs) u@(UTCTime _ t) = addUTCTime x u
   where
     s = toDouble' t
-    x = fromDouble $ (secs * fromIntegral (ceiling (s / secs))) - s
+    x = fromDouble $ (secs * fromIntegral (ceiling (s / secs) :: Integer)) - s
 
 -- | whether to include lower and upper times
 data PosDiscontinuous = PosInnerOnly | PosIncludeBoundaries
@@ -213,7 +215,7 @@ data PosDiscontinuous = PosInnerOnly | PosIncludeBoundaries
 -- ([(0,"06 Dec"),(1,"31 Dec"),(2,"28 Feb"),(3,"03 Mar")],[])
 --
 placedTimeLabelDiscontinuous :: PosDiscontinuous -> Maybe Text -> Int -> [UTCTime] -> ([(Int, Text)], [UTCTime])
-placedTimeLabelDiscontinuous posd format n ts = (zip (fst <$> inds') labels, rem)
+placedTimeLabelDiscontinuous posd format n ts = (zip (fst <$> inds') labels, rem')
   where
     l = minimum ts
     u = maximum ts
@@ -221,7 +223,7 @@ placedTimeLabelDiscontinuous posd format n ts = (zip (fst <$> inds') labels, rem
     tps' = case posd of
       PosInnerOnly -> tps
       PosIncludeBoundaries -> [l] <> tps <> [u]
-    (rem, inds) = L.fold (matchTimes tps') ts
+    (rem', inds) = L.fold (matchTimes tps') ts
     inds' = laterTimes inds
     fmt = case format of
       Just f -> Text.unpack f
@@ -278,7 +280,7 @@ sensibleTimeGrid p n (l, u) = (grain, ts)
     grain = stepSensibleTime p span n
     first' = floorGrain grain l
     last' = ceilingGrain grain u
-    n' = round $ toDouble (diffUTCTime last' first') / grainSecs grain
+    n' = round $ toDouble (diffUTCTime last' first') / grainSecs grain :: Integer
     posns = case p of
       OuterPos -> take (fromIntegral $ n'+1)
       InnerPos -> drop (if first'==l then 0 else 1) . take (fromIntegral $ n' + if last'==u then 1 else 0)
@@ -291,7 +293,7 @@ sensibleTimeGrid p n (l, u) = (grain, ts)
 
 -- come up with a sensible step for a grid over a Field
 stepSensible ::
-     (Fractional a, Ord a, FromInteger a, QuotientField a, ExpField a)
+     (Fractional a, Ord a, FromInteger a, QuotientField a Integer, ExpField a)
   => Pos
   -> a
   -> Int
@@ -313,7 +315,7 @@ stepSensible tp span n =
 -- come up with a sensible step for a grid over a Field, where sensible means the 18th century
 -- practice of using multiples of 3 to round
 stepSensible3 ::
-     (Fractional a, Ord a, FromInteger a, QuotientField a, ExpField a)
+     (Fractional a, Ord a, FromInteger a, QuotientField a Integer, ExpField a)
   => Pos
   -> a
   -> Int
@@ -336,10 +338,10 @@ stepSensible3 tp span n =
 stepSensibleTime :: Pos -> NominalDiffTime -> Int -> TimeGrain
 stepSensibleTime tp span n
   | yearsstep >= 1 = Years (floor yearsstep)
-  | monthsstep >= 1 = Months (fromIntegral $ floor monthsstep)
-  | daysstep >= 1 = Days (fromIntegral $ floor daysstep)
-  | hoursstep >= 1 = Hours (fromIntegral $ floor hoursstep)
-  | minutesstep >= 1 = Minutes (fromIntegral $ floor minutesstep)
+  | monthsstep >= 1 = Months (fromIntegral $ (floor monthsstep :: Integer))
+  | daysstep >= 1 = Days (fromIntegral $ (floor daysstep :: Integer))
+  | hoursstep >= 1 = Hours (fromIntegral $ (floor hoursstep :: Integer))
+  | minutesstep >= 1 = Minutes (fromIntegral $ (floor minutesstep :: Integer))
   | secondsstep >= 1 = Seconds secondsstep3
   | otherwise = Seconds secondsstep
   where
