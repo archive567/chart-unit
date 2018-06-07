@@ -121,7 +121,9 @@
 -- > 
 -- > main :: IO ()
 -- > main = fileSvg "other/mainExample.svg" def mainExample
--- > 
+-- >
+--
+-- ![main example](other/mainExample.svg)
 --
 -- There are three different ways of combining charts (and note adding a hud to a chart is a subset of combining charts):
 --

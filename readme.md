@@ -5,30 +5,30 @@
 
 `chart-unit` is a haskell chart library focusing on a small set of high-quality charts using native haskell. Here's a recent example, chock-a-block full of titles and legends (that needed testing):
 
-![](other/mainExample.svg)
+![](chart-unit/other/mainExample.svg)
 
 Chart Types
 ===
 
 So far, there are 9 major chart types:
 
-![](other/textHudExample.svg)
+![](chart-unit-examples/other/textHudExample.svg)
 
-![](other/glyphHudExample.svg)
+![](chart-unit-examples/other/glyphHudExample.svg)
 
-![](other/lglyphHudExample.svg)
+![](chart-unit-examples/other/lglyphHudExample.svg)
 
-![](other/lineHudExample.svg)
+![](chart-unit-examples/other/lineHudExample.svg)
 
-![](other/glineHudExample.svg)
+![](chart-unit-examples/other/glineHudExample.svg)
 
-![](other/rectHudExample.svg)
+![](chart-unit-examples/other/rectHudExample.svg)
 
-![](other/pixelHudExample.svg)
+![](chart-unit-examples/other/pixelHudExample.svg)
 
-![](other/arrowHudExample.svg)
+![](chart-unit-examples/other/arrowHudExample.svg)
 
-![](other/barExample.svg)
+![](chart-unit-examples/other/barExample.svg)
 
 
 
@@ -71,19 +71,19 @@ Composable chart types and the power of diagrams make it easy to invent new char
 grid
 ---
 
-![](other/gridExample.svg)
+![](chart-unit-examples/other/gridExample.svg)
 
 time
 ---
 
 `Chart.Data.Time` deals with the scenario where you want to plot a time series consecutively (y values are [0..]) but there are gaps in the seris such as no data on weekend days.
 
-![](other/timeExample.svg)
+![](chart-unit-examples/other/timeExample.svg)
 
 schoolbook
 ---
 
-![](other/schoolbookExample.svg)
+![](chart-unit-examples/other/schoolbookExample.svg)
 
 
 From the Haskell survey ...
@@ -92,13 +92,13 @@ From the Haskell survey ...
 q7
 ---
 
-![](other/q7Example.svg)
+![](chart-unit-examples/other/q7Example.svg)
 
 
 q24
 ---
 
-![](other/q24Example.svg)
+![](chart-unit-examples/other/q24Example.svg)
 
 
 
@@ -106,24 +106,24 @@ q24
 histogram diff
 ---
 
-![](other/histDiffExample.svg)
+![](chart-unit-examples/other/histDiffExample.svg)
 
 
 combined scatter histogram
 ---
 
-![](other/scatterHistExample.svg)
+![](chart-unit-examples/other/scatterHistExample.svg)
 
 
 clipping
 ---
 
-![](other/clippingExample.svg)
+![](chart-unit-examples/other/clippingExample.svg)
 
 skinny
 ---
 
-![](other/skinnyExample.svg)
+![](chart-unit-examples/other/skinnyExample.svg)
 
 
 tests
@@ -131,7 +131,7 @@ tests
 
 Differences between text methods, across alignments
 
-![](other/testTextDiffs.svg)
+![](chart-unit-examples/other/testTextDiffs.svg)
 
 
 workflow

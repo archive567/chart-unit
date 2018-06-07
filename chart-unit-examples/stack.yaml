@@ -1,8 +1,7 @@
 resolver: nightly-2018-06-05
 
 packages:
-  - chart-unit
-  - chart-unit-examples
+  - .
 
 extra-deps:
   - generic-lens-labels-0.1.0.2
