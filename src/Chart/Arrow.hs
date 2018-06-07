@@ -1,3 +1,7 @@
+{-# LANGUAGE NoImplicitPrelude #-}
+{-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE RankNTypes #-}
+{-# LANGUAGE FlexibleContexts #-}
 {-# OPTIONS_GHC -Wall #-}
 
 -- | Charts that depict gradients and similar data, using arrows in positions
@@ -46,7 +50,7 @@ data ArrowHTStyle a
   | Block
   | Quill2 a
   | Block2 a
-  deriving (Show)
+  deriving (Show, Generic)
 
 -- | conversion between unit and diagrams
 -- ToDo: abstract ArrowHT usage
@@ -83,7 +87,7 @@ data ArrowOptions = ArrowOptions
   , maxHeadLength :: Double
   , minStaffWidth :: Double
   , maxStaffWidth :: Double
-  , color :: AlphaColour Double
+  , color :: UColor Double
   , hStyle :: ArrowHTStyle Double
   } deriving (Show, Generic)
 
@@ -109,7 +113,7 @@ normArrows xs = zipWith Arrow ps as'
 data Arrow = Arrow
   { arrowPos :: Pair Double -- position of arrow tail
   , arrowDir :: Pair Double -- direction and strength of arrow
-  } deriving (Eq, Show)
+  } deriving (Eq, Show, Generic)
 
 -- | Rescale data across position, and between position and arrow direction.
 --
@@ -131,7 +135,7 @@ arrows :: (Traversable f) => ArrowOptions -> f Arrow -> Chart b
 arrows opts xs = c
   where
     c =
-      fcA (color opts) $
+      fcA (acolor $ color opts) $
       position $
       getZipList $
       (\ps' as' hrel' wrel' srel' ->
@@ -168,9 +172,9 @@ arrows opts xs = c
     arropts lh lw'' =
       with & arrowHead .~ arrowHTStyle (hStyle opts) & headLength .~ global lh &
       shaftStyle %~
-      (lwG lw'' & lcA (color opts)) &
+      (lwG lw'' & lcA (acolor $ color opts)) &
       headStyle %~
-      (lcA (color opts) & fcA (color opts))
+      (lcA (acolor $ color opts) & fcA (acolor $ color opts))
 
 -- | A chart of arrows
 arrowChart ::

@@ -5207,7 +5207,7 @@
   <g stroke-linejoin="miter" stroke-opacity="0.0" fill-opacity="0.0" stroke="rgb(0,0,0)" fill-rule="evenodd" stroke-width="0.0" fill="rgb(0,0,0)" stroke-linecap="butt" stroke-miterlimit="10.0">
     <path d="M 121.4067,40.1461 l -50.2529,0.0000 l -0.0000,276.3908 l 50.2529,0.0000 Z"/>
   </g>
-  <g stroke-linejoin="miter" stroke-opacity="1.0" fill-opacity="1.0" font-size="45.68443185844855px" stroke="rgb(0,0,0)" fill-rule="evenodd" stroke-width="0.0" fill="rgb(31,119,180)" stroke-linecap="butt" stroke-miterlimit="10.0">
+  <g stroke-linejoin="miter" stroke-opacity="1.0" fill-opacity="1.0" font-size="45.68443185844855px" stroke="rgb(0,0,0)" fill-rule="evenodd" stroke-width="0.0" fill="rgb(31,180,119)" stroke-linecap="butt" stroke-miterlimit="10.0">
     <text dominant-baseline="middle" transform="matrix(0.0000,-1.0000,1.0000,0.0000,96.2802,316.5369)" stroke="none" text-anchor="start">Arrow Chart
     </text>
   </g>

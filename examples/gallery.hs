@@ -49,11 +49,11 @@ gridExample =
      [ GridOptions
          Vert
          (GridExact GridOuterPos 10)
-         (LineOptions 0.001 (black `withOpacity` 1))
+         (LineOptions 0.001 (ucolor $ black `withOpacity` 1))
      , GridOptions
          Hori
          (GridExact GridOuterPos 10)
-         (LineOptions 0.001 (black `withOpacity` 1))
+         (LineOptions 0.001 (ucolor $ black `withOpacity` 1))
      ] &
      #axes .
      ix 0 %~
@@ -84,13 +84,13 @@ timeExample :: [Day] -> Chart b
 timeExample dates =
   hud (#axes .~ [adef, defYAxis] $ def) sixbyfour r <>
   glyphChart
-    [#color .~ red `withOpacity` 1 $ #borderSize .~ 0 $ #size .~ 0.01 $ def]
+    [#color .~ ucolor (red `withOpacity` 1) $ #borderSize .~ 0 $ #size .~ 0.01 $ def]
     sixbyfour
     r
     [xs'] <>
   lglyphChart
     [def]
-    [ #shape .~ Square $ #color .~ blue `withOpacity` 1 $ #borderSize .~ 0 $
+    [ #shape .~ Square $ #color .~ ucolor (blue `withOpacity` 1) $ #borderSize .~ 0 $
       #size .~ 0.04 $ def
     ]
     sixbyfour
@@ -139,9 +139,9 @@ scatterHistExample xys =
   where
     sopts =
       zipWith3
-        (\x y z -> GlyphOptions x y (ucolor 0 0 0 0) 0 z)
+        (\x y z -> GlyphOptions x y (UColor 0 0 0 0) 0 z)
         [0.01, 0.02, 0.03]
-        ((\x -> withOpacity (d3Colors1 x) 0.3) <$> [6, 8])
+        ((\x -> ucolor (withOpacity (d3Colors1 x) 0.3)) <$> [6, 8])
         [Circle, Triangle, Square]
     mainAspect = Rect -0.5 0.5 -0.5 0.5
     minorAspect = Rect -0.5 0.5 -0.1 0.1
@@ -155,7 +155,7 @@ scatterHistExample xys =
         mainAspect
         (range xys)
     defHist =
-      (\x -> #borderSize .~ 0 $ #color .~ d3Colors1 x `withOpacity` 0.5 $ def) <$>
+      (\x -> #borderSize .~ 0 $ #color .~ (ucolor $ d3Colors1 x `withOpacity` 0.5) $ def) <$>
       [6, 8]
     makeHist n = makeRects IgnoreOvers . regular n
     hx = makeHist 50 . fmap (view D._x) <$> xys
@@ -167,8 +167,8 @@ data SurveyQ = SurveyQ
   , surveyData :: [(Text, Int)]
   , surveyBarGap :: Double
   , surveyNumberDrop :: Double
-  , surveyBarColor :: AlphaColour Double
-  , surveyNumberColor :: AlphaColour Double
+  , surveyBarColor :: UColor Double
+  , surveyNumberColor :: UColor Double
   , surveyAutoOptions :: AutoOptions
   } deriving (Show, Generic)
 
@@ -184,8 +184,8 @@ q7 =
     ]
     0.2
     0.07
-    (ucolor 0.341 0.224 0.388 1)
-    (ucolor 1 1 0.33 1)
+    (UColor 0.341 0.224 0.388 1)
+    (UColor 1 1 0.33 1)
     (#allowDiagonal .~ False $ #maxXRatio .~ 0.16 $ def)
  
 q24 :: SurveyQ
@@ -203,8 +203,8 @@ q24 =
     ]
     0.2
     (-0.03)
-    (ucolor 0.341 0.224 0.388 1)
-    (ucolor 0.33 0.33 0.33 1)
+    (UColor 0.341 0.224 0.388 1)
+    (UColor 0.33 0.33 0.33 1)
     def
 
 surveyChart :: SurveyQ -> Chart b
@@ -212,7 +212,7 @@ surveyChart (SurveyQ t d bgap ngap bc tc ao) =
   surveyText tc ngap (snd <$> d) <> surveyBars bc bgap (snd <$> d) <>
   surveyHud ao t d
 
-surveyBars :: AlphaColour Double -> Double -> [Int] -> Chart b
+surveyBars :: UColor Double -> Double -> [Int] -> Chart b
 surveyBars rc gap d =
   rectChart
     [#borderSize .~ 0 $ #color .~ rc $ def]
@@ -236,7 +236,7 @@ surveyHud ao t d =
     (Ranges rx _) = r
     (Ranges aspx _) = sixbyfour
 
-surveyText :: AlphaColour Double -> Double -> [Int] -> Chart b
+surveyText :: UColor Double -> Double -> [Int] -> Chart b
 surveyText tc gap ys =
   textChart
     (repeat (#color .~ tc $ def))
@@ -314,19 +314,19 @@ histDiffExample (h1, h2) =
      D.beside
        (D.r2 (0, -1))
        (rectChart
-          [ #borderColor .~ ucolor 0 0 0 0 $
-            #color .~ ucolor 0.365 0.647 0.855 0.2 $
+          [ #borderColor .~ utrans $
+            #color .~ UColor 0.365 0.647 0.855 0.2 $
             def
-          , #borderColor .~ ucolor 0 0 0 0 $
-            #color .~ ucolor 0.88 0.53 0.23 0.8 $
+          , #borderColor .~ utrans $
+            #color .~ UColor 0.88 0.53 0.23 0.8 $
             def
           ]
           mainAspect
           (Ranges rx ry)
           [h1, h2])
        (rectChart
-          [ #borderColor .~ ucolor 0 0 0 0 $
-            #color .~ ucolor 0.88 0.53 0.23 0.8 $
+          [ #borderColor .~ utrans $
+            #color .~ UColor 0.88 0.53 0.23 0.8 $
             def
           ]
           botAspect
@@ -401,12 +401,12 @@ schoolbookHud =
     asquare
     (Rect -5 5 -5 5)
   where
-    schoolBlue = ucolor 0.19 0.74 0.89 0.7
+    schoolBlue = UColor 0.19 0.74 0.89 0.7
 
 parabola :: Rect Double -> (Double -> Double) -> Int -> Range Double -> Chart b
 parabola r f grain xscope =
   lineChart
-    [#size .~ 0.01 $ #color .~ ucolor 0.6 0.6 0.6 1 $ def]
+    [#size .~ 0.01 $ #color .~ UColor 0.6 0.6 0.6 1 $ def]
     asquare
     r
     [dataXY f xscope grain]
@@ -418,7 +418,7 @@ ceptLines ::
   -> Double
   -> Chart b
 ceptLines asp r@(Ranges rx ry) f x =
-  mconcat $ lines (#color .~ ucolor 0.2 0.2 0.2 1 $ #size .~ 0.005 $ def) .
+  mconcat $ lines (#color .~ UColor 0.2 0.2 0.2 1 $ #size .~ 0.005 $ def) .
   fmap (Chart.project r asp) <$>
   [[Pair (lower rx) (f x), Pair x (f x)], [Pair x (lower ry), Pair x (f x)]]
 
@@ -439,10 +439,10 @@ cepts a r@(Ranges rx ry) f x =
 
 schoolbookExample :: Double -> Chart b
 schoolbookExample x =
-  bound (#color .~ ucolor 1 1 1 0.1 $ def) 1.05 $ schoolbookHud <>
+  bound (#color .~ UColor 0 0 0 0.1 $ def) 1.05 $ schoolbookHud <>
   parabola r f grain xscope <>
   ceptLines asquare r f x <>
-  glyphChart [#color .~ red `withOpacity` 0.5 $ def] asquare r [[Pair x (f x)]] <>
+  glyphChart [#color .~ ucolor (red `withOpacity` 0.5) $ def] asquare r [[Pair x (f x)]] <>
   cepts asquare r f x
   where
     f x = x * x - 3
@@ -472,7 +472,7 @@ main = do
   putStrLn ("clippingExample" :: Text)
   fileSvg "other/clippingExample.svg" (#size .~ Pair 600 600 $ def) $
     clippingExample
-      (#color .~ ucolor 0.3 0.3 0.3 0.1 $ def)
+      (#color .~ UColor 0.3 0.3 0.3 0.1 $ def)
       1.1
       5
       (schoolbookExample -1)

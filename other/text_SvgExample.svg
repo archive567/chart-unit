@@ -7,7 +7,7 @@
   <g stroke-linejoin="miter" stroke-opacity="1.0" fill-opacity="0.5" stroke="rgb(102,102,102)" fill-rule="evenodd" stroke-width="0.6859943405700352" fill="rgb(93,165,218)" stroke-linecap="butt" font-family="Comic Sans MS" stroke-miterlimit="10.0">
     <path d="M 400.0000,73.5294 l -0.0000,-47.0588 h -400.0000 l -0.0000,47.0588 Z"/>
   </g>
-  <g stroke-linejoin="miter" stroke-opacity="1.0" fill-opacity="0.33" font-size="42.78074866310159px" stroke="rgb(0,0,0)" fill-rule="evenodd" stroke-width="0.0" fill="rgb(0,0,0)" stroke-linecap="butt" font-family="Comic Sans MS" stroke-miterlimit="10.0">
+  <g stroke-linejoin="miter" stroke-opacity="1.0" fill-opacity="0.33" font-size="42.78074866310159px" stroke="rgb(0,0,0)" fill-rule="evenodd" stroke-width="0.0" fill="rgb(255,255,255)" stroke-linecap="butt" font-family="Comic Sans MS" stroke-miterlimit="10.0">
     <text dominant-baseline="middle" transform="matrix(1.0000,-0.0000,0.0000,1.0000,200.0000,50.0000)" stroke="none" text-anchor="middle">abc &amp; 0123 &amp; POW!
     </text>
   </g>

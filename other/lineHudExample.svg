@@ -4,19 +4,19 @@
 <svg xmlns="http://www.w3.org/2000/svg" height="400.0000" stroke-opacity="1" viewBox="0 0 600 400" font-size="1" width="600.0000" xmlns:xlink="http://www.w3.org/1999/xlink" stroke="rgb(0,0,0)" version="1.1">
   <defs>
   </defs>
-  <g stroke-linejoin="miter" stroke-opacity="0.6" fill-opacity="0.0" stroke="rgb(44,160,44)" stroke-width="1.8341212792306685" fill="rgb(0,0,0)" stroke-linecap="butt" stroke-miterlimit="10.0">
+  <g stroke-linejoin="miter" stroke-opacity="0.6" fill-opacity="0.0" stroke="rgb(33,33,127)" stroke-width="1.8341212792306685" fill="rgb(0,0,0)" stroke-linecap="butt" stroke-miterlimit="10.0">
     <path d="M 145.6608,133.9858 v 131.3525 "/>
   </g>
-  <g stroke-linejoin="miter" stroke-opacity="0.6" fill-opacity="0.0" stroke="rgb(255,127,14)" stroke-width="7.336485116922674" fill="rgb(0,0,0)" stroke-linecap="butt" stroke-miterlimit="10.0">
+  <g stroke-linejoin="miter" stroke-opacity="0.6" fill-opacity="0.0" stroke="rgb(203,9,100)" stroke-width="7.336485116922674" fill="rgb(0,0,0)" stroke-linecap="butt" stroke-miterlimit="10.0">
     <path d="M 104.6131,265.3384 l 246.2860,-98.5144 "/>
   </g>
-  <g stroke-linejoin="miter" stroke-opacity="0.6" fill-opacity="0.0" stroke="rgb(31,119,180)" stroke-width="3.668242558461337" fill="rgb(0,0,0)" stroke-linecap="butt" stroke-miterlimit="10.0">
+  <g stroke-linejoin="miter" stroke-opacity="0.6" fill-opacity="0.0" stroke="rgb(22,143,93)" stroke-width="3.668242558461337" fill="rgb(0,0,0)" stroke-linecap="butt" stroke-miterlimit="10.0">
     <path d="M 104.6131,232.5002 h 82.0953 l 82.0953,-131.3525 "/>
   </g>
   <g stroke-linejoin="miter" stroke-opacity="0.0" fill-opacity="0.0" stroke="rgb(0,0,0)" fill-rule="evenodd" stroke-width="0.0" fill="rgb(0,0,0)" stroke-linecap="butt" stroke-miterlimit="10.0">
     <path d="M 48.8802,124.4628 l -28.1751,0.0000 l -0.0000,140.8756 l 28.1751,0.0000 Z"/>
   </g>
-  <g stroke-linejoin="miter" stroke-opacity="1.0" fill-opacity="1.0" font-size="25.613744729479446px" stroke="rgb(0,0,0)" fill-rule="evenodd" stroke-width="0.0" fill="rgb(31,119,180)" stroke-linecap="butt" stroke-miterlimit="10.0">
+  <g stroke-linejoin="miter" stroke-opacity="1.0" fill-opacity="1.0" font-size="25.613744729479446px" stroke="rgb(0,0,0)" fill-rule="evenodd" stroke-width="0.0" fill="rgb(31,180,119)" stroke-linecap="butt" stroke-miterlimit="10.0">
     <text dominant-baseline="middle" transform="matrix(0.0000,-1.0000,1.0000,0.0000,34.7927,265.3384)" stroke="none" text-anchor="start">Line Chart
     </text>
   </g>
@@ -27,7 +27,7 @@
     <text dominant-baseline="middle" transform="matrix(1.0000,-0.0000,0.0000,1.0000,444.4320,246.5320)" stroke="none" text-anchor="middle">vertical
     </text>
   </g>
-  <g stroke-linejoin="miter" stroke-opacity="0.6" fill-opacity="0.0" stroke="rgb(44,160,44)" stroke-width="1.8341212792306685" fill="rgb(0,0,0)" stroke-linecap="butt" stroke-miterlimit="10.0">
+  <g stroke-linejoin="miter" stroke-opacity="0.6" fill-opacity="0.0" stroke="rgb(33,33,127)" stroke-width="1.8341212792306685" fill="rgb(0,0,0)" stroke-linecap="butt" stroke-miterlimit="10.0">
     <path d="M 376.5884,243.9706 h 8.2095 "/>
   </g>
   <g stroke-linejoin="miter" stroke-opacity="0.0" fill-opacity="0.0" stroke="rgb(0,0,0)" fill-rule="evenodd" stroke-width="0.0" fill="rgb(0,0,0)" stroke-linecap="butt" stroke-miterlimit="10.0">
@@ -37,7 +37,7 @@
     <text dominant-baseline="middle" transform="matrix(1.0000,-0.0000,0.0000,1.0000,423.3006,213.4311)" stroke="none" text-anchor="middle">slope
     </text>
   </g>
-  <g stroke-linejoin="miter" stroke-opacity="0.6" fill-opacity="0.0" stroke="rgb(255,127,14)" stroke-width="7.336485116922674" fill="rgb(0,0,0)" stroke-linecap="butt" stroke-miterlimit="10.0">
+  <g stroke-linejoin="miter" stroke-opacity="0.6" fill-opacity="0.0" stroke="rgb(203,9,100)" stroke-width="7.336485116922674" fill="rgb(0,0,0)" stroke-linecap="butt" stroke-miterlimit="10.0">
     <path d="M 376.5884,210.8698 h 8.2095 "/>
   </g>
   <g stroke-linejoin="miter" stroke-opacity="0.0" fill-opacity="0.0" stroke="rgb(0,0,0)" fill-rule="evenodd" stroke-width="0.0" fill="rgb(0,0,0)" stroke-linecap="butt" stroke-miterlimit="10.0">
@@ -47,7 +47,7 @@
     <text dominant-baseline="middle" transform="matrix(1.0000,-0.0000,0.0000,1.0000,472.6071,180.3303)" stroke="none" text-anchor="middle">hockey stick
     </text>
   </g>
-  <g stroke-linejoin="miter" stroke-opacity="0.6" fill-opacity="0.0" stroke="rgb(31,119,180)" stroke-width="3.668242558461337" fill="rgb(0,0,0)" stroke-linecap="butt" stroke-miterlimit="10.0">
+  <g stroke-linejoin="miter" stroke-opacity="0.6" fill-opacity="0.0" stroke="rgb(22,143,93)" stroke-width="3.668242558461337" fill="rgb(0,0,0)" stroke-linecap="butt" stroke-miterlimit="10.0">
     <path d="M 376.5884,177.7689 h 8.2095 "/>
   </g>
   <g stroke-linejoin="miter" stroke-opacity="0.2" fill-opacity="0.0" stroke="rgb(0,0,0)" stroke-width="0.7336485116922673" fill="rgb(0,0,0)" stroke-linecap="butt" stroke-miterlimit="10.0">

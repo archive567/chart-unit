@@ -34,9 +34,9 @@ import NumHask.Space
 -- | A single Chart specification
 data ChartSpec
   = GlyphChart [(GlyphOptions, [Pair Double])]
-  | LGlyphChart [(LabelOptions, GlyphOptions, [(Text, Pair Double)])]
+  | LGlyphChart [((LabelOptions, GlyphOptions), [(Text, Pair Double)])]
   | LineChart [(LineOptions, [Pair Double])]
-  | GlineChart [(LineOptions, GlyphOptions, [Pair Double])]
+  | GlineChart [((LineOptions, GlyphOptions), [Pair Double])]
   | TextChart [(TextOptions, [(Text, Pair Double)])]
   | RectChart [(RectOptions, [Rect Double])]
   | PixelChart [[Pixel]]
@@ -65,19 +65,19 @@ renderSpec :: Rect Double -> Rect Double -> ChartSpec -> Chart b
 renderSpec a r (GlyphChart xs) = glyphChart (fst <$> xs) a r (snd <$> xs)
 renderSpec a r (LGlyphChart xs) =
   lglyphChart
-  ((\(x,_,_) -> x) <$> xs)
-  ((\(_,x,_) -> x) <$> xs)
+  (fst . fst <$> xs)
+  (snd . fst <$> xs)
   a
   r
-  ((\(_,_,x) -> x) <$> xs)
+  (snd <$> xs)
 renderSpec a r (LineChart xs) = lineChart (fst <$> xs) a r (snd <$> xs)
 renderSpec a r (GlineChart xs) =
   glineChart
-  ((\(x,_,_) -> x) <$> xs)
-  ((\(_,x,_) -> x) <$> xs)
+  (fst . fst <$> xs)
+  (snd . fst <$> xs)
   a
   r
-  ((\(_,_,x) -> x) <$> xs)
+  (snd <$> xs)
 renderSpec a r (TextChart xs) = textChart (fst <$> xs) a r (snd <$> xs)
 renderSpec a r (RectChart xs) = rectChart (fst <$> xs) a r (snd <$> xs)
 renderSpec a r (PixelChart xs) = pixelChart a r xs
@@ -89,9 +89,9 @@ renderSpec a r (HudChart o) = hud o a r
 rangeSpec :: ChartSpec -> Maybe (Rect Double)
 rangeSpec (GlyphChart xs) = Just $ range (snd <$> xs)
 rangeSpec (LGlyphChart xs) = Just $ range $ (\x -> fmap snd . toList <$> x)
-  ((\(_,_,x) -> x) <$> xs)
+  (snd <$> xs)
 rangeSpec (LineChart xs) = Just $ range (snd <$> xs)
-rangeSpec (GlineChart xs) = Just $ range ((\(_,_,x) -> x) <$> xs)
+rangeSpec (GlineChart xs) = Just $ range (snd <$> xs)
 rangeSpec (TextChart xs) = Just $ range $ (\x -> fmap snd . toList <$> x) (snd <$> xs)
 rangeSpec (RectChart xs) = Just $ (\rs -> fold $ fold <$> rs) (snd <$> xs)
 rangeSpec (PixelChart xs) = Just $ fold $ fold . map pixelRect <$> xs

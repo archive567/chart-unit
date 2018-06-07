@@ -51,7 +51,7 @@ data BarOptions = BarOptions
 instance Default BarOptions where
   def =
     BarOptions
-      ((\x -> RectOptions 0.002 ugrey (d3Colors1 x `withOpacity` 0.5)) <$>
+      ((\x -> RectOptions 0.002 ugrey (ucolor $ d3Colors1 x `withOpacity` 0.5)) <$>
        [0 .. 10])
       0.1
       zero

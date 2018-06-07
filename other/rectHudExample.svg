@@ -307,7 +307,7 @@
   <g stroke-linejoin="miter" stroke-opacity="0.0" fill-opacity="0.0" stroke="rgb(0,0,0)" fill-rule="evenodd" stroke-width="0.0" fill="rgb(0,0,0)" stroke-linecap="butt" stroke-miterlimit="10.0">
     <path d="M 57.8693,78.1762 l -28.6846,0.0000 l -0.0000,143.4228 l 28.6846,0.0000 Z"/>
   </g>
-  <g stroke-linejoin="miter" stroke-opacity="1.0" fill-opacity="1.0" font-size="26.076868814405135px" stroke="rgb(0,0,0)" fill-rule="evenodd" stroke-width="0.0" fill="rgb(31,119,180)" stroke-linecap="butt" stroke-miterlimit="10.0">
+  <g stroke-linejoin="miter" stroke-opacity="1.0" fill-opacity="1.0" font-size="26.076868814405135px" stroke="rgb(0,0,0)" fill-rule="evenodd" stroke-width="0.0" fill="rgb(31,180,119)" stroke-linecap="butt" stroke-miterlimit="10.0">
     <text dominant-baseline="middle" transform="matrix(0.0000,-1.0000,1.0000,0.0000,43.5270,221.5990)" stroke="none" text-anchor="start">Rect Chart
     </text>
   </g>

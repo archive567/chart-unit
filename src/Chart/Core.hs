@@ -6,6 +6,8 @@
 {-# OPTIONS_GHC -Wall #-}
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 {-# LANGUAGE CPP #-}
+{-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE ViewPatterns #-}
 #if ( __GLASGOW_HASKELL__ < 820 )
 {-# OPTIONS_GHC -fno-warn-incomplete-patterns #-}
 #endif
@@ -69,9 +71,15 @@ module Chart.Core
     -- * Color
     --
     -- | chart-unit exposes the 'colour' and 'palette' libraries for color combinators
+  , UColor(..)
+  , acolor
   , ucolor
+  , ccolor
   , ublue
   , ugrey
+  , utrans
+  , ublack
+  , uwhite
     -- * Compatability
   , scaleX
   , scaleY
@@ -79,13 +87,14 @@ module Chart.Core
   ) where
 
 import Diagrams.Prelude
-       hiding (Color, D, aspect, project, scale, scaleX, scaleY, zero)
+       hiding (Color, D, aspect, project, scale, scaleX, scaleY, zero, over)
 import qualified Diagrams.Prelude as Diagrams
 import qualified Diagrams.TwoD.Text
 import NumHask.Pair
 import NumHask.Prelude
 import NumHask.Rect
 import NumHask.Space
+import Data.Colour (over)
 
 -- | A Chart is simply a type synonym for a typical Diagrams object.  A close relation to this type is 'Diagram' 'B', but this usage tends to force a single backend (B comes from the backend libraries), so making Chart b's maintains backend polymorphism.
 --
@@ -137,14 +146,14 @@ data AlignH
   = AlignLeft
   | AlignCenter
   | AlignRight
-  deriving (Eq, Show)
+  deriving (Eq, Show, Generic)
 
 -- | vertical alignment
 data AlignV
   = AlignTop
   | AlignMid
   | AlignBottom
-  deriving (Eq, Show)
+  deriving (Eq, Show, Generic)
 
 -- | conversion of horizontal alignment to (one :: Range Double) limits
 alignHU :: AlignH -> Double
@@ -182,7 +191,7 @@ alignVTU a =
 data Orientation
   = Hori
   | Vert
-  deriving (Eq, Show)
+  deriving (Eq, Show, Generic)
 
 -- | Placement of elements around (what is implicity but maybe shouldn't just be) a rectangular canvas
 data Place
@@ -190,7 +199,7 @@ data Place
   | PlaceRight
   | PlaceTop
   | PlaceBottom
-  deriving (Eq, Show)
+  deriving (Eq, Show, Generic)
 
 -- | position an element at a point
 positioned :: (R2 r) => r Double -> Chart b -> Chart b
@@ -244,17 +253,46 @@ sepHori s x = beside (r2 (0, -1)) x (strutX s)
 sepVert :: Double -> Chart b -> Chart b
 sepVert s x = beside (r2 (1, 0)) x (strutY s)
 
--- | convert an rgba spec to an AlphaColour
-ucolor :: (Floating a, Ord a) => a -> a -> a -> a -> AlphaColour a
-ucolor r g b o = withOpacity (sRGB r g b) o
+
+data UColor a =
+  UColor
+  { ucred :: a
+  , ucgreen :: a
+  , ucblue :: a
+  , ucopacity :: a
+  } deriving (Eq, Ord, Show, Generic)
+
+-- | convert a UColor to an AlphaColour
+acolor :: (Floating a, Num a, Ord a) => UColor a -> AlphaColour a
+acolor (UColor r g b o) = withOpacity (sRGB r g b) o
+
+-- | convert an AlphaColour to a UColor
+ucolor :: (Floating a, Num a, Ord a) => AlphaColour a -> UColor a
+ucolor a = let (RGB r g b) = toSRGB (a `over` black) in UColor r g b (alphaChannel a)
+
+-- | convert a Colour to a UColor
+ccolor :: (Floating a, Num a, Ord a) => Colour a -> UColor a
+ccolor (toSRGB -> RGB r g b) = UColor r g b 1
 
 -- | the official chart-unit blue
-ublue :: AlphaColour Double
-ublue = ucolor 0.365 0.647 0.855 0.5
+ublue :: UColor Double
+ublue = UColor 0.365 0.647 0.855 0.5
 
 -- | the official chart-unit grey
-ugrey :: AlphaColour Double
-ugrey = ucolor 0.4 0.4 0.4 1
+ugrey :: UColor Double
+ugrey = UColor 0.4 0.4 0.4 1
+
+-- | transparent
+utrans :: UColor Double
+utrans = UColor 0 0 0 0
+
+-- | black
+ublack :: UColor Double
+ublack = UColor 0 0 0 1
+
+-- | white
+uwhite :: UColor Double
+uwhite = UColor 1 1 1 1
 
 -- | These are difficult to avoid
 instance R1 Pair where

@@ -9,6 +9,7 @@ module Chart.Text
   , TextSvgOptions(..)
   , TextType(..)
   , TextFont(..)
+  , UFillRule(..)
   , textFont
   , text_
   , texts
@@ -43,7 +44,7 @@ instance Default TextPathOptions where
 data TextFont
   = Lin2
   | FromFontFile Text
-  deriving (Show)
+  deriving (Show, Generic)
 
 -- | transform from chart-unit to SVGFonts rep of font
 textFont :: TextFont -> PreparedFont Double
@@ -71,13 +72,19 @@ data TextType
   | TextSvg TextSvgOptions
   deriving (Show, Generic)
 
+data UFillRule = UWinding | UEvenOdd deriving (Show, Eq, Generic)
+
+uFillRule :: UFillRule -> FillRule
+uFillRule UWinding = Winding
+uFillRule UEvenOdd = EvenOdd
+
 -- | text options
 data TextOptions = TextOptions
   { size :: Double  -- ^ size as ratio to overall chart size (default: 0.08)
   , alignH :: AlignH -- ^ horizontal alignment (default: 'AlignCenter')
   , alignV :: AlignV -- ^ vertical alignment (default: 'AlignMid')
-  , color :: AlphaColour Double -- ^ default: greyish
-  , textFillRule :: FillRule -- ^ default: 'EvenOdd'
+  , color :: UColor Double -- ^ default: greyish
+  , textFillRule :: UFillRule -- ^ default: 'EvenOdd'
   , rotation :: Double -- ^ in degrees from the horozontal (default: 0 degrees)
   , textType :: TextType -- ^ default: 'TextPath' def
   } deriving (Show, Generic)
@@ -88,8 +95,8 @@ instance Default TextOptions where
       0.08
       AlignCenter
       AlignMid
-      (withOpacity black 0.33)
-      EvenOdd
+      (UColor 0 0 0 0.33)
+      UEvenOdd
       0
       (TextSvg def)
 
@@ -126,7 +133,7 @@ instance Default TextOptions where
 text_ :: TextOptions -> Text -> Chart b
 text_ (TextOptions s ah av c fr rot (TextPath (TextPathOptions f))) t =
   moveTo (p_ (Pair (alignHTU ah * D.width path) (av' * D.height path))) $
-  path # fcA c # lw 0 # fillRule fr # rotate (rot @@ deg)
+  path # fcA (acolor c) # lw 0 # fillRule (uFillRule fr) # rotate (rot @@ deg)
   where
     path =
       textSVG_ (TextOpts (textFont f) INSIDE_H KERN False s s) (Text.unpack t)
@@ -140,9 +147,9 @@ text_ (TextOptions s ah av c fr rot (TextSvg (TextSvgOptions ns nb nm nt f v h b
   Chart.Core.scaleX (s * ns) #
   Chart.Core.scaleY (s * ns) #
   maybe identity (D.font . Text.unpack) f #
-  fcA c #
+  fcA (acolor c) #
   lw 0 #
-  fillRule fr #
+  fillRule (uFillRule fr) #
   rotate (rot @@ deg)
   where
     txt =

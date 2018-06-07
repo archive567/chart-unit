@@ -34,7 +34,7 @@ import NumHask.Rect
 --
 data LineOptions = LineOptions
   { size :: Double -- ^ normalized
-  , color :: AlphaColour Double
+  , color :: UColor Double
   } deriving (Show, Generic)
 
 instance Default LineOptions where
@@ -55,13 +55,13 @@ lines (LineOptions s c) xs =
   case NumHask.Prelude.head xs of
     Nothing -> mempty
     Just p ->
-      trailLike (trailFromVertices (toList $ p_ <$> xs) `at` p_ p) # lcA c #
+      trailLike (trailFromVertices (toList $ p_ <$> xs) `at` p_ p) # lcA (acolor c) #
       lwN s
 
 -- | A single line connecting 2 points
 oneline :: (R2 r) => LineOptions -> Pair (r Double) -> Chart b
 oneline (LineOptions s c) (Pair x0 x1) =
-  stroke (trailFromVertices [p_ x0, p_ x1] `at` p_ x0) # lcA c # lwN s
+  stroke (trailFromVertices [p_ x0, p_ x1] `at` p_ x0) # lcA (acolor c) # lwN s
 
 -- | A chart of lines
 lineChart ::

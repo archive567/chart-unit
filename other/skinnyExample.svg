@@ -7,35 +7,35 @@
   <g stroke-linejoin="miter" stroke-opacity="0.0" fill-opacity="0.0" stroke="rgb(0,0,0)" fill-rule="evenodd" stroke-width="0.0" fill="rgb(0,0,0)" stroke-linecap="butt" stroke-miterlimit="10.0">
     <path d="M 588.7672,72.3731 l -12.7328,-12.7328 l -19.0992,19.0992 l 12.7328,12.7328 Z"/>
   </g>
-  <g stroke-linejoin="miter" stroke-opacity="1.0" fill-opacity="0.33" font-size="16.369932491517716px" stroke="rgb(0,0,0)" fill-rule="evenodd" stroke-width="0.0" fill="rgb(0,0,0)" stroke-linecap="butt" stroke-miterlimit="10.0">
+  <g stroke-linejoin="miter" stroke-opacity="1.0" fill-opacity="0.33" font-size="16.369932491517716px" stroke="rgb(0,0,0)" fill-rule="evenodd" stroke-width="0.0" fill="rgb(255,255,255)" stroke-linecap="butt" stroke-miterlimit="10.0">
     <text dominant-baseline="middle" transform="matrix(0.7071,-0.7071,0.7071,0.7071,563.3015,85.1059)" stroke="none" text-anchor="start">max
     </text>
   </g>
   <g stroke-linejoin="miter" stroke-opacity="0.0" fill-opacity="0.0" stroke="rgb(0,0,0)" fill-rule="evenodd" stroke-width="0.0" fill="rgb(0,0,0)" stroke-linecap="butt" stroke-miterlimit="10.0">
     <path d="M 377.3556,59.6403 l -12.7328,-12.7328 l -31.8320,31.8320 l 12.7328,12.7328 Z"/>
   </g>
-  <g stroke-linejoin="miter" stroke-opacity="1.0" fill-opacity="0.33" font-size="16.369932491517716px" stroke="rgb(0,0,0)" fill-rule="evenodd" stroke-width="0.0" fill="rgb(0,0,0)" stroke-linecap="butt" stroke-miterlimit="10.0">
+  <g stroke-linejoin="miter" stroke-opacity="1.0" fill-opacity="0.33" font-size="16.369932491517716px" stroke="rgb(0,0,0)" fill-rule="evenodd" stroke-width="0.0" fill="rgb(255,255,255)" stroke-linecap="butt" stroke-miterlimit="10.0">
     <text dominant-baseline="middle" transform="matrix(0.7071,-0.7071,0.7071,0.7071,339.1572,85.1059)" stroke="none" text-anchor="start">1st Q
     </text>
   </g>
   <g stroke-linejoin="miter" stroke-opacity="0.0" fill-opacity="0.0" stroke="rgb(0,0,0)" fill-rule="evenodd" stroke-width="0.0" fill="rgb(0,0,0)" stroke-linecap="butt" stroke-miterlimit="10.0">
     <path d="M 345.3096,53.2739 l -12.7328,-12.7328 l -38.1985,38.1985 l 12.7328,12.7328 Z"/>
   </g>
-  <g stroke-linejoin="miter" stroke-opacity="1.0" fill-opacity="0.33" font-size="16.369932491517716px" stroke="rgb(0,0,0)" fill-rule="evenodd" stroke-width="0.0" fill="rgb(0,0,0)" stroke-linecap="butt" stroke-miterlimit="10.0">
+  <g stroke-linejoin="miter" stroke-opacity="1.0" fill-opacity="0.33" font-size="16.369932491517716px" stroke="rgb(0,0,0)" fill-rule="evenodd" stroke-width="0.0" fill="rgb(255,255,255)" stroke-linecap="butt" stroke-miterlimit="10.0">
     <text dominant-baseline="middle" transform="matrix(0.7071,-0.7071,0.7071,0.7071,300.7447,85.1059)" stroke="none" text-anchor="start">median
     </text>
   </g>
   <g stroke-linejoin="miter" stroke-opacity="0.0" fill-opacity="0.0" stroke="rgb(0,0,0)" fill-rule="evenodd" stroke-width="0.0" fill="rgb(0,0,0)" stroke-linecap="butt" stroke-miterlimit="10.0">
     <path d="M 300.2458,59.6403 l -12.7328,-12.7328 l -31.8320,31.8320 l 12.7328,12.7328 Z"/>
   </g>
-  <g stroke-linejoin="miter" stroke-opacity="1.0" fill-opacity="0.33" font-size="16.369932491517716px" stroke="rgb(0,0,0)" fill-rule="evenodd" stroke-width="0.0" fill="rgb(0,0,0)" stroke-linecap="butt" stroke-miterlimit="10.0">
+  <g stroke-linejoin="miter" stroke-opacity="1.0" fill-opacity="0.33" font-size="16.369932491517716px" stroke="rgb(0,0,0)" fill-rule="evenodd" stroke-width="0.0" fill="rgb(255,255,255)" stroke-linecap="butt" stroke-miterlimit="10.0">
     <text dominant-baseline="middle" transform="matrix(0.7071,-0.7071,0.7071,0.7071,262.0473,85.1059)" stroke="none" text-anchor="start">3rd Q
     </text>
   </g>
   <g stroke-linejoin="miter" stroke-opacity="0.0" fill-opacity="0.0" stroke="rgb(0,0,0)" fill-rule="evenodd" stroke-width="0.0" fill="rgb(0,0,0)" stroke-linecap="butt" stroke-miterlimit="10.0">
     <path d="M 64.0899,72.3731 l -12.7328,-12.7328 l -19.0992,19.0992 l 12.7328,12.7328 Z"/>
   </g>
-  <g stroke-linejoin="miter" stroke-opacity="1.0" fill-opacity="0.33" font-size="16.369932491517716px" stroke="rgb(0,0,0)" fill-rule="evenodd" stroke-width="0.0" fill="rgb(0,0,0)" stroke-linecap="butt" stroke-miterlimit="10.0">
+  <g stroke-linejoin="miter" stroke-opacity="1.0" fill-opacity="0.33" font-size="16.369932491517716px" stroke="rgb(0,0,0)" fill-rule="evenodd" stroke-width="0.0" fill="rgb(255,255,255)" stroke-linecap="butt" stroke-miterlimit="10.0">
     <text dominant-baseline="middle" transform="matrix(0.7071,-0.7071,0.7071,0.7071,38.6242,85.1059)" stroke="none" text-anchor="start">min
     </text>
   </g>

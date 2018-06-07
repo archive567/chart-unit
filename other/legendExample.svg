@@ -11,7 +11,7 @@
     <text dominant-baseline="middle" transform="matrix(1.0000,-0.0000,0.0000,1.0000,134.9320,274.6623)" stroke="none" text-anchor="middle">line 3
     </text>
   </g>
-  <g stroke-linejoin="miter" stroke-opacity="0.6" fill-opacity="0.0" stroke="rgb(44,160,44)" stroke-width="1.498900770352478" fill="rgb(0,0,0)" stroke-linecap="butt" stroke-miterlimit="10.0">
+  <g stroke-linejoin="miter" stroke-opacity="0.6" fill-opacity="0.0" stroke="rgb(33,33,127)" stroke-width="1.498900770352478" fill="rgb(0,0,0)" stroke-linecap="butt" stroke-miterlimit="10.0">
     <path d="M 72.5522,272.5348 h 19.4827 "/>
   </g>
   <g stroke-linejoin="miter" stroke-opacity="0.0" fill-opacity="0.0" stroke="rgb(0,0,0)" fill-rule="evenodd" stroke-width="0.0" fill="rgb(0,0,0)" stroke-linecap="butt" stroke-miterlimit="10.0">
@@ -21,7 +21,7 @@
     <text dominant-baseline="middle" transform="matrix(1.0000,-0.0000,0.0000,1.0000,193.4387,239.5700)" stroke="none" text-anchor="middle">much longer name
     </text>
   </g>
-  <g stroke-linejoin="miter" stroke-opacity="0.6" fill-opacity="0.0" stroke="rgb(255,127,14)" stroke-width="5.995603081409912" fill="rgb(0,0,0)" stroke-linecap="butt" stroke-miterlimit="10.0">
+  <g stroke-linejoin="miter" stroke-opacity="0.6" fill-opacity="0.0" stroke="rgb(203,9,100)" stroke-width="5.995603081409912" fill="rgb(0,0,0)" stroke-linecap="butt" stroke-miterlimit="10.0">
     <path d="M 72.5522,237.4425 h 19.4827 "/>
   </g>
   <g stroke-linejoin="miter" stroke-opacity="0.0" fill-opacity="0.0" stroke="rgb(0,0,0)" fill-rule="evenodd" stroke-width="0.0" fill="rgb(0,0,0)" stroke-linecap="butt" stroke-miterlimit="10.0">
@@ -31,7 +31,7 @@
     <text dominant-baseline="middle" transform="matrix(1.0000,-0.0000,0.0000,1.0000,129.0814,204.4777)" stroke="none" text-anchor="middle">short
     </text>
   </g>
-  <g stroke-linejoin="miter" stroke-opacity="0.6" fill-opacity="0.0" stroke="rgb(31,119,180)" stroke-width="2.997801540704956" fill="rgb(0,0,0)" stroke-linecap="butt" stroke-miterlimit="10.0">
+  <g stroke-linejoin="miter" stroke-opacity="0.6" fill-opacity="0.0" stroke="rgb(22,143,93)" stroke-width="2.997801540704956" fill="rgb(0,0,0)" stroke-linecap="butt" stroke-miterlimit="10.0">
     <path d="M 72.5522,202.3501 h 19.4827 "/>
   </g>
   <g stroke-linejoin="miter" stroke-opacity="0.0" fill-opacity="0.0" stroke="rgb(0,0,0)" fill-rule="evenodd" stroke-width="0.0" fill="rgb(0,0,0)" stroke-linecap="butt" stroke-miterlimit="10.0">
@@ -80,7 +80,7 @@
   <g stroke-linejoin="miter" stroke-opacity="0.0" fill-opacity="0.0" stroke="rgb(0,0,0)" fill-rule="evenodd" stroke-width="0.0" fill="rgb(0,0,0)" stroke-linecap="butt" stroke-miterlimit="10.0">
     <path d="M 112.6711,40.3823 l -0.0000,-26.7459 h -80.2377 l -0.0000,26.7459 Z"/>
   </g>
-  <g stroke-linejoin="miter" stroke-opacity="1.0" fill-opacity="0.33" font-size="24.31446710792921px" stroke="rgb(0,0,0)" fill-rule="evenodd" stroke-width="0.0" fill="rgb(0,0,0)" stroke-linecap="butt" stroke-miterlimit="10.0">
+  <g stroke-linejoin="miter" stroke-opacity="1.0" fill-opacity="0.33" font-size="24.31446710792921px" stroke="rgb(0,0,0)" fill-rule="evenodd" stroke-width="0.0" fill="rgb(255,255,255)" stroke-linecap="butt" stroke-miterlimit="10.0">
     <text dominant-baseline="middle" transform="matrix(1.0000,-0.0000,0.0000,1.0000,72.5522,27.0093)" stroke="none" text-anchor="middle">legend
     </text>
   </g>

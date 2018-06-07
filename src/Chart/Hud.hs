@@ -201,13 +201,13 @@ defXAxis =
     1
     Hori
     PlaceBottom
-    (RectOptions 0 transparent (withOpacity black 0.1))
+    (RectOptions 0 utrans (UColor 0 0 0 0.1))
     0.02
-    (GlyphOptions 0.03 transparent (withOpacity black 0.6) 0.005 (VLine 1.0))
+    (GlyphOptions 0.03 utrans (UColor 0 0 0 0.6) 0.005 (VLine 1.0))
     0
     0.04
     (LabelOptions
-       (field @"color" .~ withOpacity black 0.6 $ def)
+       (field @"color" .~ UColor 0 0 0 0.6 $ def)
        (Pair 0 -1)
        0.015)
     (TickRound 8)
@@ -219,13 +219,13 @@ defYAxis =
     1
     Vert
     PlaceLeft
-    (RectOptions 0 transparent (withOpacity black 0.1))
+    (RectOptions 0 utrans (UColor 0 0 0 0.1))
     0.02
-    (GlyphOptions 0.03 transparent (withOpacity black 0.6) 0.005 (HLine 1.0))
+    (GlyphOptions 0.03 utrans (UColor 0 0 0 0.6) 0.005 (HLine 1.0))
     0
     0.04
     (LabelOptions
-       (field @"color" .~ withOpacity black 0.6 $ def)
+       (field @"color" .~ (UColor 0 0 0 0.6) $ def)
        (Pair -1 0)
        0.015)
     (TickRound 8)
@@ -390,7 +390,7 @@ instance Default TitleOptions where
   def =
     TitleOptions
        (field @"size" .~ 0.12 $
-        field @"color" .~ withOpacity black 0.6 $
+        field @"color" .~ UColor 0 0 0 0.6 $
         def)
       AlignCenter
       PlaceTop
@@ -453,9 +453,9 @@ instance Default LegendOptions where
       PlaceRight
       AlignRight
       0.02
-      (RectOptions 0.002 (withOpacity black 0.2) transparent)
+      (RectOptions 0.002 (UColor 0 0 0 0.2) utrans)
       (field @"size" .~ 0.07 $
-       field @"color" .~ withOpacity black 0.63 $
+       field @"color" .~ (UColor 0 0 0 0.63) $
        def)
 
 -- | Create a legend based on a LegendOptions

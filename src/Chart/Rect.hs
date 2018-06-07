@@ -37,29 +37,29 @@ import NumHask.Space
 -- | Just about everything on a chart is a rectangle.
 data RectOptions = RectOptions
   { borderSize :: Double
-  , borderColor :: AlphaColour Double
-  , color :: AlphaColour Double
+  , borderColor :: UColor Double
+  , color :: UColor Double
   } deriving (Show, Generic)
 
 instance Default RectOptions where
   def = RectOptions 0.005 ugrey ublue
 
 -- | solid rectangle, no border
-blob :: AlphaColour Double -> RectOptions
-blob c = RectOptions 0 transparent c
+blob :: UColor Double -> RectOptions
+blob c = RectOptions 0 utrans c
 
--- | clear and transparent rect
+-- | clear and utrans rect
 clear :: RectOptions
-clear = RectOptions 0 transparent transparent
+clear = RectOptions 0 utrans utrans
 
 -- | clear rect, with border
-box :: AlphaColour Double -> RectOptions
-box c = RectOptions 0.015 c transparent
+box :: UColor Double -> RectOptions
+box c = RectOptions 0.015 c utrans
 
 -- | place a rect around an Chart, with a size equal to the chart range
 bound :: RectOptions -> Double -> Chart b -> Chart b
 bound (RectOptions bs bc c) p x =
-  (boundingRect x' # lcA bc # lwN bs # fcA c) <> x'
+  (boundingRect x' # lcA (acolor bc) # lwN bs # fcA (acolor c)) <> x'
   where
     x' = pad p x
 
@@ -99,8 +99,8 @@ rect_ ::
 rect_ (RectOptions bs bc c) (Rect x z y w) =
   unitSquare # moveTo (p2 (0.5, 0.5)) # scaleX (z - x) # scaleY (w - y) #
   moveTo (p2 (x, y)) #
-  fcA c #
-  lcA bc #
+  fcA (acolor c) #
+  lcA (acolor bc) #
   lwN bs
 
 -- | Create rectangles (with the same configuration).
@@ -166,8 +166,8 @@ rectChart_ optss asp rs = rectChart optss asp (fold $ fold <$> rs) rs
 -- | At some point, a color of a rect becomes more about data than stylistic option, hence the pixel.  Echewing rect border leaves a Pixel with no stylistic options to choose.
 data Pixel = Pixel
   { pixelRect :: Rect Double
-  , pixelColor :: AlphaColour Double
-  } deriving Show
+  , pixelColor :: UColor Double
+  } deriving (Show, Generic)
 
 -- | A pixel is a rectangle with a color.
 --
@@ -185,8 +185,8 @@ pixel_ :: Pixel -> Chart b
 pixel_ (Pixel (Rect x z y w) c) =
   unitSquare # moveTo (p2 (0.5, 0.5)) # scaleX (z - x) # scaleY (w - y) #
   moveTo (p2 (x, y)) #
-  fcA c #
-  lcA transparent #
+  fcA (acolor c) #
+  lcA (acolor utrans) #
   lw 0
 
 -- | Render multiple pixels
@@ -241,13 +241,13 @@ data PixelationOptions = PixelationOptions
 instance Default PixelationOptions where
   def =
     PixelationOptions
-      (Range (ucolor 0.47 0.73 0.86 1) (ucolor 0.01 0.06 0.22 1))
+      (Range (acolor $ UColor 0.47 0.73 0.86 1) (acolor $ UColor 0.01 0.06 0.22 1))
       (Pair 40 40)
 
 -- | Transform a Rect into Pixels using a function over a Pair
 pixelate ::
      PixelationOptions -> Rect Double -> (Pair Double -> Double) -> [Pixel]
-pixelate (PixelationOptions (Range lc0 uc0) grain) xy f = zipWith Pixel g cs
+pixelate (PixelationOptions (Range lc0 uc0) grain) xy f = zipWith Pixel g (ucolor <$> cs)
   where
     g = gridSpace xy grain
     xs = f . mid <$> g

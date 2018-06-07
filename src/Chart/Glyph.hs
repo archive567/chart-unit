@@ -25,8 +25,8 @@ import NumHask.Rect
 -- | The actual shape of a glyph can be any Chart element
 data GlyphOptions = GlyphOptions
   { size :: Double -- ^ glyph radius
-  , color :: AlphaColour Double
-  , borderColor :: AlphaColour Double
+  , color :: UColor Double
+  , borderColor :: UColor Double
   , borderSize :: Double -- ^ normalized
   , shape :: GlyphShape
   } deriving (Show, Generic)
@@ -49,7 +49,7 @@ data GlyphShape
                 Double
   | VLine Double
   | HLine Double
-  deriving (Show)
+  deriving (Show, Generic)
 
 -- | convert from chart-unit to diagrams shapes
 glyphShape :: GlyphShape -> (Double -> Chart b)
@@ -73,7 +73,7 @@ glyphShape (HLine a) = \x -> hrule x # scaleY (1.6 / 0.5 * a)
 -- ![glyph_ example](other/glyph_Example.svg)
 --
 glyph_ :: GlyphOptions -> Chart b
-glyph_ (GlyphOptions s c bc bs sh) = glyphShape sh s # fcA c # lcA bc # lwN bs
+glyph_ (GlyphOptions s c bc bs sh) = glyphShape sh s # fcA (acolor c) # lcA (acolor bc) # lwN bs
 
 -- | Create positioned glyphs.
 --

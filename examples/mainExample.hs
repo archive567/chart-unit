@@ -20,7 +20,7 @@ ls =
 lopts :: [LineOptions]
 lopts =
   zipWith
-  (\x y -> LineOptions x (withOpacity (d3Colors1 y) 0.6))
+  (\x y -> LineOptions x (ucolor $ withOpacity (d3Colors1 y) 0.6))
   [0.01, 0.02, 0.005]
   [0,1,2]
 

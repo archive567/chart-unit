@@ -36,7 +36,7 @@ hudbits t subt ts ls x =
     #align .~ AlignLeft $
     #text . #rotation .~ 90 $
     #text . #size .~ 0.2 $
-    #text . #color .~ d3Colors1 0 `withOpacity` 1 $
+    #text . #color .~ ucolor (d3Colors1 0 `withOpacity` 1) $
     def, t)] <>
   (case subt of
      Nothing -> []
@@ -45,7 +45,7 @@ hudbits t subt ts ls x =
          #align .~ AlignRight $
          #text . #rotation .~ 0 $
          #text . #size .~ 0.12 $
-         #text . #color .~ d3Colors1 0 `withOpacity` 1 $
+         #text . #color .~ ucolor (d3Colors1 0 `withOpacity` 1) $
          def, subt')]) $ 
   #legends .~
   [#chartType .~ zip ls ts $
@@ -110,7 +110,7 @@ gopts =
     def
   , #borderSize .~ 0.001 $
     #size .~ 0.1 $
-    #color .~ rybColor 7 `withOpacity` 0.4 $
+    #color .~ ucolor (rybColor 7 `withOpacity` 0.4) $
     #shape .~ Triangle $ def
   ]
 
@@ -137,7 +137,7 @@ lglyphChart_Example :: Rect Double -> Chart b
 lglyphChart_Example a =
   lglyphChart_
   [#gap .~ 0.015 $ #text . #size .~ 0.12 $ def]
-  [#color .~ black `withOpacity` 1 $
+  [#color .~ ublack $
    #borderSize .~ 0 $
    #size .~ 0.01 $
    def]
@@ -182,7 +182,7 @@ lglyphHudExample = hud
 linesExample :: Int -> Chart b
 linesExample n =
   lines
-  (#color .~ red `withOpacity` 0.5 $ def)
+  (#color .~ ucolor (red `withOpacity` 0.5) $ def)
   (dataXY cos (Range 0 (4*pi)) n)
 
 ls :: [[Pair Double]]
@@ -196,7 +196,7 @@ ls =
 lopts :: [LineOptions]
 lopts =
   zipWith
-  (\x y -> LineOptions x (withOpacity (d3Colors1 y) 0.6))
+  (\x y -> LineOptions x (ucolor $ withOpacity (d3Colors1 y) 0.6))
   [0.01, 0.02, 0.005]
   [0,1,2]
 
@@ -207,8 +207,8 @@ gopts3 :: [GlyphOptions]
 gopts3 =
   zipWith
   (\x y ->
-     #color .~ withOpacity (d3Colors1 x) 0.2 $
-     #borderColor .~ withOpacity (d3Colors1 x) 1 $
+     #color .~ ucolor (withOpacity (d3Colors1 x) 0.2) $
+     #borderColor .~ ucolor (withOpacity (d3Colors1 x) 1) $
      #borderSize .~ 0.005 $
      #shape .~ y $
      #size .~ 0.08 $
@@ -232,7 +232,7 @@ glineHudExample = renderChart
   (ChartOptions (Just (Rect 0 5 0 5)) sixbyfour
   [ GlineChart
     (getZipList $
-      (\x y z -> (x,y,z)) <$> ZipList
+      (\x y z -> ((x,y),z)) <$> ZipList
       lopts <*> ZipList
       gopts3 <*> ZipList
       ls)
@@ -244,11 +244,11 @@ glineHudExample = renderChart
      #axes .~ [] $
      def)
   , LGlyphChart
-    [ ( #gap .~ 0.015 $ #text . #size .~ 0.12 $ def
-      , #color .~ black `withOpacity` 1 $
+    [ ( (#gap .~ 0.015 $ #text . #size .~ 0.12 $ def
+      , #color .~ ublack $
         #borderSize .~ 0 $
         #size .~ 0.01 $
-        def
+        def)
       , lgdata)]
   ])
 
@@ -264,7 +264,7 @@ rect_Example n =
     opts :: Pair Double -> LabelOptions
     opts o =
       #text %~
-        ( (#color .~ black `withOpacity` 0.8) .
+        ( (#color .~ UColor 0 0 0 0.8) .
           (#size .~ 0.3)) $
       #orientation .~ o $
       def
@@ -276,7 +276,7 @@ rectsExample =
 ropts :: [RectOptions]
 ropts =
   [ #borderSize .~ 0 $ def
-  , #borderSize .~ 0 $ #color .~ ucolor 0.3 0.3 0.3 0.2 $ def
+  , #borderSize .~ 0 $ #color .~ UColor 0.3 0.3 0.3 0.2 $ def
   ]
  
 rss :: [[Rect Double]]
@@ -292,7 +292,7 @@ pixel_Example :: Chart b
 pixel_Example = text_ opt "I'm a pixel!" <> pixel_ (Pixel one ublue)
   where
     opt =
-      #color .~ withOpacity black 0.8 $
+      #color .~ UColor 0 0 0 0.8 $
       #size .~ 0.2 $
       def
 
@@ -301,7 +301,7 @@ pixelsExample =
   pixels
     [ Pixel
       (Rect (5 * x) (5 * x + 0.1) (sin (10 * x)) (sin (10 * x) + 0.1))
-      (dissolve (2 * x) ublue)
+      (ucolor $ dissolve (2 * x) (acolor ublue))
     | x <- grid OuterPos (Range 0 1) 100
     ]
 
@@ -310,9 +310,9 @@ pixelChart_Example =
   pixelChart_ asquare
   [(\(r,c) ->
       Pixel r
-      (blend c
-       (ucolor 0.47 0.73 0.86 1)
-       (ucolor 0.01 0.06 0.22 1)
+      (ucolor $ blend c
+       (acolor $ UColor 0.47 0.73 0.86 1)
+       (acolor $ UColor 0.01 0.06 0.22 1)
       )) <$>
    rectF (\(Pair x y) -> (x+y)*(x+y))
    one (Pair 40 40)]
@@ -442,7 +442,7 @@ testTextDiffs s ns txt (nb, nm, nt) fnt =
       (#alignH .~ ah $
        #alignV .~ av $
        #size .~ s $
-       #color .~ red `withOpacity` 1 $
+       #color .~ ucolor (red `withOpacity` 1) $
        def) txt) <>
      D.showOrigin' (D.OriginOpts blue 0.003 0.003)
       (text_
