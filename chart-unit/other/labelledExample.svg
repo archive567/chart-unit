@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+    "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg xmlns="http://www.w3.org/2000/svg" height="100.0000" stroke-opacity="1" viewBox="0 0 100 100" font-size="1" width="100.0000" xmlns:xlink="http://www.w3.org/1999/xlink" stroke="rgb(0,0,0)" version="1.1">
+  <defs>
+  </defs>
+  <g stroke-linejoin="miter" stroke-opacity="0.0" fill-opacity="0.0" stroke="rgb(0,0,0)" fill-rule="evenodd" stroke-width="0.0" fill="rgb(0,0,0)" stroke-linecap="butt" stroke-miterlimit="10.0">
+    <path d="M 91.4676,28.0824 l -18.0714,-18.0714 l -63.2498,63.2498 l 18.0714,18.0714 Z"/>
+  </g>
+  <g stroke-linejoin="miter" stroke-opacity="1.0" fill-opacity="0.33" font-size="23.233439086394384px" stroke="rgb(0,0,0)" fill-rule="evenodd" stroke-width="0.0" fill="rgb(0,0,0)" stroke-linecap="butt" stroke-miterlimit="10.0">
+    <text dominant-baseline="middle" transform="matrix(0.7071,-0.7071,0.7071,0.7071,19.1821,82.2965)" stroke="none" text-anchor="start">a label
+    </text>
+  </g>
+  <g stroke-linejoin="miter" stroke-opacity="1.0" fill-opacity="0.5" stroke="rgb(102,102,102)" stroke-width="1.4726434784003364" fill="rgb(93,165,218)" stroke-linecap="butt" stroke-miterlimit="10.0">
+    <path d="M 11.7284,92.0494 c 0.0000,-3.0845 -2.5005,-5.5850 -5.5850 -5.5850c -3.0845,-0.0000 -5.5850,2.5005 -5.5850 5.5850c -0.0000,3.0845 2.5005,5.5850 5.5850 5.5850c 3.0845,0.0000 5.5850,-2.5005 5.5850 -5.5850Z"/>
+  </g>
+</svg>

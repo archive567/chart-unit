@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+    "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg xmlns="http://www.w3.org/2000/svg" height="100.0000" stroke-opacity="1" viewBox="0 0 400 100" font-size="1" width="400.0000" xmlns:xlink="http://www.w3.org/1999/xlink" stroke="rgb(0,0,0)" version="1.1">
+  <defs>
+  </defs>
+  <g stroke-linejoin="miter" stroke-opacity="1.0" fill-opacity="0.5" stroke="rgb(102,102,102)" fill-rule="evenodd" stroke-width="0.6859943405700352" fill="rgb(93,165,218)" stroke-linecap="butt" font-family="Comic Sans MS" stroke-miterlimit="10.0">
+    <path d="M 400.0000,73.5294 l -0.0000,-47.0588 h -400.0000 l -0.0000,47.0588 Z"/>
+  </g>
+  <g stroke-linejoin="miter" stroke-opacity="1.0" fill-opacity="0.33" font-size="42.78074866310159px" stroke="rgb(0,0,0)" fill-rule="evenodd" stroke-width="0.0" fill="rgb(0,0,0)" stroke-linecap="butt" font-family="Comic Sans MS" stroke-miterlimit="10.0">
+    <text dominant-baseline="middle" transform="matrix(1.0000,-0.0000,0.0000,1.0000,200.0000,50.0000)" stroke="none" text-anchor="middle">abc &amp; 0123 &amp; POW!
+    </text>
+  </g>
+</svg>

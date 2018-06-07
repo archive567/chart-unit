@@ -1,7 +1,8 @@
 resolver: lts-11.3
 
 packages:
-  - .
+  - ./chart-unit
+  - ./chart-unit-examples
 
 extra-deps:
   - generic-lens-labels-0.1.0.2
