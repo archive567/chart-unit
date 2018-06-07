@@ -75,8 +75,6 @@ library
       Chart.Rect
       Chart.Svg
       Chart.Text
-  other-modules:
-      Paths_chart_unit
   default-language: Haskell2010
 
 test-suite test

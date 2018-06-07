@@ -17,8 +17,10 @@ import NumHask.Prelude
 import qualified Data.Text as Text
 import qualified Diagrams.Prelude as D
 
+coreDir :: FilePath
 coreDir = "./chart-unit/other/"
 
+examplesDir :: FilePath
 examplesDir = "./chart-unit-examples/other/"
 
 -- * Chart.Core examples 
@@ -160,7 +162,7 @@ glyphHudExample =
     [ #label . #text . #size .~ 0.3 $
       #tickStyle .~ TickPlaced pis $
       #label . #text . #textType .~
-      TextPath (TextPathOptions (FromFontFile "other/SourceCodePro-Regular.svg")) $
+      TextPath (TextPathOptions (FromFontFile "./chart-unit-examples/other/SourceCodePro-Regular.svg")) $
       defXAxis
     ] $ def)
   widescreen
@@ -491,7 +493,7 @@ main = do
     glyphHudExample <> glyphChart_Example
   fileSvg (examplesDir <> "lglyphHudExample.svg") def $
     lglyphHudExample <> lglyphChart_Example widescreen
-  fileSvg (examplesDir <> "linesExample.svg") (#size .~ Pair 400 100 $ def)
+  fileSvg (coreDir <> "linesExample.svg") (#size .~ Pair 400 100 $ def)
     (linesExample 100)
   fileSvg (coreDir <> "lineChart_Example.svg") (#size .~ Pair 300 200 $ def)
     lineChart_Example
