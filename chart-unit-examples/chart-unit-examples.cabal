@@ -71,8 +71,6 @@ executable chart-unit-main-example
     , lens
     , numhask-prelude
     , numhask-range
-  other-modules:
-      Paths_chart_unit
   default-language: Haskell2010
 
 executable chart-unit-source-examples
@@ -91,6 +89,4 @@ executable chart-unit-source-examples
     , numhask-range
     , protolude
     , text
-  other-modules:
-      Paths_chart_unit
   default-language: Haskell2010

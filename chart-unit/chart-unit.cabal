@@ -43,6 +43,7 @@ library
   build-depends:
       SVGFonts
     , base >=4.7 && <5
+    , binary
     , colour
     , data-default
     , diagrams-lib
@@ -84,6 +85,7 @@ test-suite test
       test
   build-depends:
       base >=4.7 && <5
+    , binary
     , chart-unit
     , doctest
     , numhask
@@ -91,6 +93,4 @@ test-suite test
     , numhask-range
     , tasty
     , tasty-hspec
-  other-modules:
-      Paths_chart_unit
   default-language: Haskell2010
