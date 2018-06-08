@@ -1,13 +1,15 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE NoImplicitPrelude #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE OverloadedLabels #-}
+{-# LANGUAGE TypeApplications #-}
 {-# OPTIONS_GHC -Wall #-}
 
 import Chart
 import Control.Lens
-import Data.Generics.Labels()
 import NumHask.Prelude
+import Data.Generics.Product
 
 ls :: [[Pair Double]]
 ls =
@@ -28,27 +30,27 @@ as :: [AxisOptions]
 as = 
   [ defXAxis
   , defYAxis
-  , #label . #orientation .~ Pair 0 1 $
-    #place .~ PlaceTop $
+  , field @"label" . field @"orientation" .~ Pair 0 1 $
+    field @"place" .~ PlaceTop $
     defXAxis
-  , #label . #orientation .~ Pair 1 0 $
-    #place .~ PlaceRight $
+  , field @"label" . field @"orientation" .~ Pair 1 0 $
+    field @"place" .~ PlaceRight $
     defYAxis
   ] 
 
 titles' :: [(TitleOptions, Text)]
 titles' =
   [ (defaultTitleOptions, "Example Chart")
-  , ( #align .~ AlignCenter $
-      #text . #rotation .~ 90 $
-      #text . #size .~ 0.12 $
-      #place .~ PlaceLeft $
+  , ( field @"align" .~ AlignCenter $
+      field @"text" . field @"rotation" .~ 90 $
+      field @"text" . field @"size" .~ 0.12 $
+      field @"place" .~ PlaceLeft $
       defaultTitleOptions
     , "left axis title")
-  , ( #text . #color .~ ublue $
-      #text . #size .~ 0.08 $
-      #align .~ AlignRight $
-      #place .~ PlaceBottom $
+  , ( field @"text" . field @"color" .~ ublue $
+      field @"text" . field @"size" .~ 0.08 $
+      field @"align" .~ AlignRight $
+      field @"place" .~ PlaceBottom $
       defaultTitleOptions
     , "bottom right, non-essential note")
   ]
@@ -73,10 +75,10 @@ mainExample =
    sixbyfour
    [ LineChart (zip lopts ls)
    , HudChart $
-     #titles .~ titles' $
-     #axes .~ as $
-     #axes %~ map (#outerPad .~ 1) $
-     #legends .~ [#chartType .~ legends' $ defaultLegendOptions] $
+     field @"titles" .~ titles' $
+     field @"axes" .~ as $
+     field @"axes" %~ map (field @"outerPad" .~ 1) $
+     field @"legends" .~ [field @"chartType" .~ legends' $ defaultLegendOptions] $
      defaultHudOptions])
 
 main :: IO ()

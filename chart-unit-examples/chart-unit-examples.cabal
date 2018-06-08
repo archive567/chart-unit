@@ -45,7 +45,7 @@ executable chart-unit-gallery
     , chart-unit
     , diagrams-lib
     , formatting
-    , generic-lens-labels
+    , generic-lens
     , lens
     , mwc-probability >= 2.0.2
     , mwc-random
@@ -67,7 +67,7 @@ executable chart-unit-main-example
   build-depends:
       base >=4.7 && <5
     , chart-unit
-    , generic-lens-labels
+    , generic-lens
     , lens
     , numhask-prelude
     , numhask-range
@@ -82,7 +82,7 @@ executable chart-unit-source-examples
       base >=4.7 && <5
     , chart-unit
     , diagrams-lib
-    , generic-lens-labels
+    , generic-lens
     , lens
     , numhask
     , numhask-prelude
