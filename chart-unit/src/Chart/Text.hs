@@ -5,8 +5,11 @@
 -- | textual chart elements
 module Chart.Text
   ( TextOptions(..)
+  , defaultTextOptions
   , TextPathOptions(..)
+  , defaultTextPathOptions
   , TextSvgOptions(..)
+  , defaultTextSvgOptions
   , TextType(..)
   , TextFont(..)
   , UFillRule(..)
@@ -16,6 +19,7 @@ module Chart.Text
   , textChart
   , textChart_
   , LabelOptions(..)
+  , defaultLabelOptions
   , labelled
   ) where
 
@@ -35,16 +39,16 @@ import qualified Diagrams.TwoD.Text as D
 -- | options specific to text as an SVG path
 newtype TextPathOptions = TextPathOptions
   { font :: TextFont
-  } deriving (Show, Generic)
+  } deriving (Show, Eq, Generic)
 
-instance Default TextPathOptions where
-  def = TextPathOptions Lin2
+defaultTextPathOptions :: TextPathOptions
+defaultTextPathOptions = TextPathOptions Lin2
 
 -- | ADT of fonts
 data TextFont
   = Lin2
   | FromFontFile Text
-  deriving (Show, Generic)
+  deriving (Show, Eq, Generic)
 
 -- | transform from chart-unit to SVGFonts rep of font
 textFont :: TextFont -> PreparedFont Double
@@ -61,16 +65,16 @@ data TextSvgOptions = TextSvgOptions
   , sizeVert :: Double -- ^ approximate divisor of vertical size
   , sizeHori :: Double -- ^ approximate divisor of horizontal size per character
   , textBox :: RectOptions -- ^ bounding box 
-  } deriving (Show, Generic)
+  } deriving (Show, Eq, Generic)
 
-instance Default TextSvgOptions where
-  def = TextSvgOptions 0.78 0.25 -0.10 0.25 Nothing 1.1 0.55 clear
+defaultTextSvgOptions :: TextSvgOptions
+defaultTextSvgOptions = TextSvgOptions 0.78 0.25 -0.10 0.25 Nothing 1.1 0.55 clear
 
 -- | text as a path or as svg text
 data TextType
   = TextPath TextPathOptions
   | TextSvg TextSvgOptions
-  deriving (Show, Generic)
+  deriving (Show, Eq, Generic)
 
 data UFillRule = UWinding | UEvenOdd deriving (Show, Eq, Generic)
 
@@ -87,10 +91,10 @@ data TextOptions = TextOptions
   , textFillRule :: UFillRule -- ^ default: 'EvenOdd'
   , rotation :: Double -- ^ in degrees from the horozontal (default: 0 degrees)
   , textType :: TextType -- ^ default: 'TextPath' def
-  } deriving (Show, Generic)
+  } deriving (Show, Eq, Generic)
 
-instance Default TextOptions where
-  def =
+defaultTextOptions :: TextOptions
+defaultTextOptions =
     TextOptions
       0.08
       AlignCenter
@@ -98,7 +102,7 @@ instance Default TextOptions where
       (UColor 0 0 0 0.33)
       UEvenOdd
       0
-      (TextSvg def)
+      (TextSvg defaultTextSvgOptions)
 
 -- | Create a textual chart element
 --
@@ -209,10 +213,10 @@ data LabelOptions = LabelOptions
   { text :: TextOptions
   , orientation :: Pair Double -- ^ direction of label
   , gap :: Double -- ^ distance to label
-  } deriving (Show, Generic)
+  } deriving (Show, Eq, Generic)
 
-instance Default LabelOptions where
-  def = LabelOptions def (Pair 0 1) 0.05
+defaultLabelOptions :: LabelOptions
+defaultLabelOptions = LabelOptions defaultTextOptions (Pair 0 1) 0.05
 
 -- | Label a chart element with some text
 --

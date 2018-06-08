@@ -1,13 +1,12 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE FlexibleContexts #-}
-{-# LANGUAGE NoImplicitPrelude #-}
+{-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE OverloadedLabels #-}
+{-# LANGUAGE TypeApplications #-}
 {-# OPTIONS_GHC -Wall #-}
 
 import Chart
-import Control.Lens
-import Data.Generics.Labels()
-import NumHask.Prelude
+import Protolude
 
 ls :: [[Pair Double]]
 ls =
@@ -19,51 +18,29 @@ ls =
 
 lopts :: [LineOptions]
 lopts =
-  zipWith
-  (\x y -> LineOptions x (ucolor $ withOpacity (d3Colors1 y) 0.6))
-  [0.01, 0.02, 0.005]
-  [0,1,2]
-
-as :: [AxisOptions]
-as = 
-  [ defXAxis
-  , defYAxis
-  , #label . #orientation .~ Pair 0 1 $
-    #place .~ PlaceTop $
-    defXAxis
-  , #label . #orientation .~ Pair 1 0 $
-    #place .~ PlaceRight $
-    defYAxis
-  ] 
+  zipWith LineOptions
+  [0.015, 0.03, 0.01]
+  [ UColor 0.773 0.510 0.294 0.6
+  , UColor 0.235 0.498 0.169 0.6
+  , UColor 0.204 0.161 0.537 1.0
+  ]
 
 titles' :: [(TitleOptions, Text)]
 titles' =
-  [ (def, "Example Chart")
-  , ( #align .~ AlignCenter $
-      #text . #rotation .~ 90 $
-      #text . #size .~ 0.12 $
-      #place .~ PlaceLeft $
-      def
-    , "left axis title")
-  , ( #text . #color .~ ublue $
-      #text . #size .~ 0.08 $
-      #align .~ AlignRight $
-      #place .~ PlaceBottom $
-      def
-    , "bottom right, non-essential note")
+  [ (defaultTitleOptions, "Example Chart")
+  , ( field @"text" . field @"size" .~ 0.08 $
+      field @"align" .~ AlignRight $
+      field @"place" .~ PlaceBottom $
+      defaultTitleOptions
+    , "an example chart for chart-unit")
   ]
 
 legends' :: [(LegendType, Text)]
 legends' =
-  [(LegendText def, "legend")] <>
-  [(LegendPixel (blob ublue) 0.05, "pixel")] <>
-  [(LegendRect def 0.05, "rect")] <>
-  [(LegendGLine def def 0.10, "glyph+line")] <>
-  [(LegendGlyph def, "just a glyph")] <>
   zipWith
-    (\x y -> (LegendLine x 0.05, y))
+    (\x y -> (LegendLine x 0.1, y))
     lopts
-    ["short", "much longer name", "line 3"]
+    ["hockey stick", "diagonal line", "verticle line"]
 
 mainExample :: Chart b
 mainExample =
@@ -73,11 +50,11 @@ mainExample =
    sixbyfour
    [ LineChart (zip lopts ls)
    , HudChart $
-     #titles .~ titles' $
-     #axes .~ as $
-     #axes %~ map (#outerPad .~ 1) $
-     #legends .~ [#chartType .~ legends' $ def] $
-     def])
+     field @"titles" .~ titles' $
+     field @"axes" %~ map (field @"outerPad" .~ 1) $
+     field @"legends" .~ [ field @"chartType" .~ legends' $
+                           defaultLegendOptions] $
+     defaultHudOptions])
 
 main :: IO ()
-main = fileSvg "./chart-unit/other/mainExample.svg" def mainExample
+main = fileSvg "./chart-unit/other/mainExample.svg" defaultSvgOptions mainExample

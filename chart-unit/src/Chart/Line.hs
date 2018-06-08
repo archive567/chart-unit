@@ -8,6 +8,7 @@
 -- | Points on a chart connected by lines.
 module Chart.Line
   ( LineOptions(..)
+  , defaultLineOptions
   , oneline
   , lines
   , glines
@@ -19,7 +20,6 @@ module Chart.Line
 
 import Chart.Core
 import Chart.Glyph
-import Data.Default (Default(..))
 import Diagrams.Prelude hiding ((<>))
 import GHC.Generics
 import NumHask.Pair
@@ -35,10 +35,10 @@ import NumHask.Rect
 data LineOptions = LineOptions
   { size :: Double -- ^ normalized
   , color :: UColor Double
-  } deriving (Show, Generic)
+  } deriving (Show, Eq, Generic)
 
-instance Default LineOptions where
-  def = LineOptions 0.02 ublue
+defaultLineOptions :: LineOptions
+defaultLineOptions = LineOptions 0.02 ublue
 
 -- | A line connecting a series of points
 --

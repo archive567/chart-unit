@@ -365,10 +365,10 @@
     <path d="M 91.2046,259.8343 c 0.0000,-0.4467 -0.3622,-0.8089 -0.8089 -0.8089c -0.4467,-0.0000 -0.8089,0.3622 -0.8089 0.8089c -0.0000,0.4467 0.3622,0.8089 0.8089 0.8089c 0.4467,0.0000 0.8089,-0.3622 0.8089 -0.8089Z"/>
   </g>
   <g stroke-linejoin="miter" stroke-opacity="0.0" fill-opacity="0.0" stroke="rgb(0,0,0)" fill-rule="evenodd" stroke-width="0.0" fill="rgb(0,0,0)" stroke-linecap="butt" stroke-miterlimit="10.0">
-    <path d="M 575.7331,308.8469 l -0.0000,-16.6568 h -324.8072 l -0.0000,16.6568 Z"/>
+    <path d="M 575.7331,308.8469 l -0.0000,-16.6568 h -233.1949 l -0.0000,16.6568 Z"/>
   </g>
   <g stroke-linejoin="miter" stroke-opacity="1.0" fill-opacity="1.0" font-size="15.14252742156408px" stroke="rgb(0,0,0)" fill-rule="evenodd" stroke-width="0.0" fill="rgb(31,119,180)" stroke-linecap="butt" stroke-miterlimit="10.0">
-    <text dominant-baseline="middle" transform="matrix(1.0000,-0.0000,0.0000,1.0000,575.7331,300.5186)" stroke="none" text-anchor="end">Glyphs with text labels are very useful
+    <text dominant-baseline="middle" transform="matrix(1.0000,-0.0000,0.0000,1.0000,575.7331,300.5186)" stroke="none" text-anchor="end">A LGlyph is a labelled glyph
     </text>
   </g>
   <g stroke-linejoin="miter" stroke-opacity="0.0" fill-opacity="0.0" stroke="rgb(0,0,0)" fill-rule="evenodd" stroke-width="0.0" fill="rgb(0,0,0)" stroke-linecap="butt" stroke-miterlimit="10.0">

@@ -26,7 +26,7 @@
 -- > scaleExample =
 -- >     fileSvg "other/scaleExample.svg" (#size .~ Pair 300 120 $ def) $
 -- >     withHud
--- >       def
+-- >       defaultHudOptions
 -- >       widescreen
 -- >       (Rect 0 12 0 0.2)
 -- >       (lineChart (repeat def))
@@ -146,14 +146,14 @@ data AlignH
   = AlignLeft
   | AlignCenter
   | AlignRight
-  deriving (Eq, Show, Generic)
+  deriving (Show, Eq, Generic)
 
 -- | vertical alignment
 data AlignV
   = AlignTop
   | AlignMid
   | AlignBottom
-  deriving (Eq, Show, Generic)
+  deriving (Show, Eq, Generic)
 
 -- | conversion of horizontal alignment to (one :: Range Double) limits
 alignHU :: AlignH -> Double
@@ -191,7 +191,7 @@ alignVTU a =
 data Orientation
   = Hori
   | Vert
-  deriving (Eq, Show, Generic)
+  deriving (Show, Eq, Generic)
 
 -- | Placement of elements around (what is implicity but maybe shouldn't just be) a rectangular canvas
 data Place
@@ -199,7 +199,7 @@ data Place
   | PlaceRight
   | PlaceTop
   | PlaceBottom
-  deriving (Eq, Show, Generic)
+  deriving (Show, Eq, Generic)
 
 -- | position an element at a point
 positioned :: (R2 r) => r Double -> Chart b -> Chart b

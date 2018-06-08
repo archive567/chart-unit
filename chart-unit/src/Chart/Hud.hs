@@ -12,6 +12,7 @@
 --
 module Chart.Hud
   ( HudOptions(..)
+  , defaultHudOptions
   , hud
   , withHud
   , withHud_
@@ -24,13 +25,16 @@ module Chart.Hud
   , defYAxis
   , axis
   , AutoOptions(..)
+  , defaultAutoOptions
   , adjustAxis
   , axisSane
   , computeTicks
   , TitleOptions(..)
+  , defaultTitleOptions
   , title
   , LegendType(..)
   , LegendOptions(..)
+  , defaultLegendOptions
   , legend
   , GridStyle(..)
   , GridOptions(..)
@@ -73,14 +77,14 @@ data HudOptions = HudOptions
   , titles :: [(TitleOptions, Text)]
   , legends :: [LegendOptions]
   , canvas :: RectOptions
-  } deriving (Show, Generic)
+  } deriving (Show, Eq, Generic)
 
-instance Default HudOptions where
-  def = HudOptions 1.1 [defXAxis, defYAxis] [] [] [] clear
+defaultHudOptions :: HudOptions
+defaultHudOptions = HudOptions 1.1 [defXAxis, defYAxis] [] [] [] clear
 
 -- | Create a hud.
 --
--- > hud def sixbyfour one
+-- > hud defaultHudOptions sixbyfour one
 --
 -- ![hud example](other/hudExample.svg)
 --
@@ -192,7 +196,7 @@ data AxisOptions = AxisOptions
   , gap :: Double -- distance of axis from plane
   , label :: LabelOptions
   , tickStyle :: TickStyle
-  } deriving (Show, Generic)
+  } deriving (Show, Eq, Generic)
 
 -- | default X axis
 defXAxis :: AxisOptions
@@ -207,7 +211,7 @@ defXAxis =
     0
     0.04
     (LabelOptions
-       (field @"color" .~ UColor 0 0 0 0.6 $ def)
+       (field @"color" .~ UColor 0 0 0 0.6 $ defaultTextOptions)
        (Pair 0 -1)
        0.015)
     (TickRound 8)
@@ -225,13 +229,10 @@ defYAxis =
     0
     0.04
     (LabelOptions
-       (field @"color" .~ (UColor 0 0 0 0.6) $ def)
+       (field @"color" .~ UColor 0 0 0 0.6 $ defaultTextOptions)
        (Pair -1 0)
        0.015)
     (TickRound 8)
-
-instance Default AxisOptions where
-  def = defXAxis
 
 -- | create an axis, based on AxisOptions, a physical aspect, and a range
 --
@@ -291,10 +292,10 @@ data AutoOptions =
   , maxYRatio :: Double
   , angledRatio :: Double
   , allowDiagonal :: Bool
-  } deriving (Show, Generic)
+  } deriving (Show, Eq, Generic)
 
-instance Default AutoOptions where
-  def = AutoOptions 0.08 0.06 0.12 True
+defaultAutoOptions :: AutoOptions
+defaultAutoOptions = AutoOptions 0.08 0.06 0.12 True
 
 -- | adjust an axis for sane font sizes etc
 adjustAxis :: AutoOptions -> Range Double -> Range Double ->
@@ -355,7 +356,7 @@ data TickStyle
   | TickRound Int -- ^ sensibly rounded ticks and a guide to how many
   | TickExact Int -- ^ exactly n equally spaced ticks
   | TickPlaced [(Double, Text)] -- ^ specific labels and placement
-  deriving (Show, Generic)
+  deriving (Show, Eq, Generic)
 
 -- | Provide formatted text for a list of numbers so that they are just distinguished.  'precision 2 ticks' means give the tick labels as much precision as is needed for them to be distinguished, but with at least 2 significant figues.
 precision :: Int -> [Double] -> [Text]
@@ -384,14 +385,14 @@ data TitleOptions = TitleOptions
   , align :: AlignH
   , place :: Place
   , gap :: Double
-  } deriving (Show, Generic)
+  } deriving (Show, Eq, Generic)
 
-instance Default TitleOptions where
-  def =
+defaultTitleOptions :: TitleOptions
+defaultTitleOptions =
     TitleOptions
        (field @"size" .~ 0.12 $
         field @"color" .~ UColor 0 0 0 0.6 $
-        def)
+        defaultTextOptions)
       AlignCenter
       PlaceTop
       0.04
@@ -426,7 +427,7 @@ data LegendType
                 Double
   | LegendPixel RectOptions
                 Double
-    deriving (Show, Generic)
+    deriving (Show, Eq, Generic)
 
 -- | Legend options. todo: allow for horizontal concatenation.
 data LegendOptions = LegendOptions
@@ -440,10 +441,10 @@ data LegendOptions = LegendOptions
   , sep :: Double
   , canvasRect :: RectOptions
   , text :: TextOptions
-  } deriving (Show, Generic)
+  } deriving (Show, Eq, Generic)
 
-instance Default LegendOptions where
-  def =
+defaultLegendOptions :: LegendOptions
+defaultLegendOptions =
     LegendOptions
       []
       1.1
@@ -455,15 +456,15 @@ instance Default LegendOptions where
       0.02
       (RectOptions 0.002 (UColor 0 0 0 0.2) utrans)
       (field @"size" .~ 0.07 $
-       field @"color" .~ (UColor 0 0 0 0.63) $
-       def)
+       field @"color" .~ UColor 0 0 0 0.63 $
+       defaultTextOptions)
 
 -- | Create a legend based on a LegendOptions
 --
 -- > legends' :: [(LegendType, Text)]
 -- > legends' =
--- >   [(LegendText def, "legend")] <> [(LegendPixel (blob ublue) 0.05, "pixel")] <>
--- >     -- [ (LegendArrow (def & #minStaffWidth .~ 0.01 & #minHeadLength .~ 0.03) 0.05, "arrow")] <>
+-- >   [(LegendText defaultTextOptions, "legend")] <> [(LegendPixel (blob ublue) 0.05, "pixel")] <>
+-- >     -- [ (LegendArrow (defaultArrowOptions & #minStaffWidth .~ 0.01 & #minHeadLength .~ 0.03) 0.05, "arrow")] <>
 -- >   [(LegendRect def 0.05, "rect")] <>
 -- >   [(LegendGLine def def 0.10, "glyph+line")] <>
 -- >   [(LegendGlyph def, "just a glyph")] <>
@@ -549,14 +550,14 @@ data GridStyle
   | GridRound GridPos Int -- ^ sensibly rounded line placement and a guide to how many
   | GridExact GridPos Int -- ^ exactly n lines using Pos
   | GridPlaced [Double] -- ^ specific line placement
-  deriving (Show, Generic)
+  deriving (Show, Eq, Generic)
 
 -- | Options for gridlines.
 data GridOptions = GridOptions
   { gridOrientation :: Orientation
   , gridStyle :: GridStyle
   , gridLine :: LineOptions
-  } deriving (Show, Generic)
+  } deriving (Show, Eq, Generic)
 
 -- | default horizontal grid
 defXGrid :: GridOptions

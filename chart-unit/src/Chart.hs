@@ -168,8 +168,9 @@ module Chart
   , module Data.Colour.Palette.ColorSet
     -- * fonts
   , module Graphics.SVGFonts
-    -- * Default
-  , Default(..)
+    -- * lens
+  , module Lens.Micro
+  , field
   ) where
 
 import Chart.ADT
@@ -188,8 +189,9 @@ import Data.Colour
 import Data.Colour.Names
 import Data.Colour.Palette.ColorSet
 import Data.Colour.Palette.Harmony
-import Data.Default (Default(..))
+import Data.Generics.Product (field)
 import Graphics.SVGFonts hiding (textFont)
+import Lens.Micro ((^.), (.~), (%~))
 import NumHask.Pair
 import NumHask.Range
 import NumHask.Rect

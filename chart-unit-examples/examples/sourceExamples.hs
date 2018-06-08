@@ -1,83 +1,85 @@
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE MonoLocalBinds #-}
 {-# LANGUAGE NegativeLiterals #-}
 {-# LANGUAGE NoImplicitPrelude #-}
 {-# LANGUAGE OverloadedLabels #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RankNTypes #-}
+{-# LANGUAGE TypeApplications #-}
 {-# OPTIONS_GHC -Wall #-}
-{-# OPTIONS_GHC -fno-warn-name-shadowing #-}
-{-# OPTIONS_GHC -fno-warn-type-defaults #-}
 
 -- | examples used in haddock docs
 import Chart
-import Control.Lens
-import Data.Generics.Labels()
+import Lens.Micro
 import NumHask.Prelude
 import qualified Data.Text as Text
 import qualified Diagrams.Prelude as D
 
-coreDir :: FilePath
-coreDir = "./chart-unit/other/"
-
-examplesDir :: FilePath
-examplesDir = "./chart-unit-examples/other/"
-
 -- * Chart.Core examples 
 scaleExample :: IO ()
 scaleExample =
-  fileSvg (coreDir <> "scaleExample.svg") (#size .~ Pair 300 120 $ def) $
+  fileSvg (coreDir <> "scaleExample.svg")
+  (field @"size" .~ Pair 300 120 $ defaultSvgOptions) $
   withHud
-  def
+  defaultHudOptions
   widescreen
   (Rect 0 12 0 0.2)
-  (lineChart (repeat def))
+  (lineChart (repeat defaultLineOptions))
   (vlineOneD ((0.01*) <$> [0..10]))
 
 -- * example charts look n feel
 hudbits :: Text -> Maybe Text -> [Text] -> [LegendType] -> HudOptions -> HudOptions
-hudbits t subt ts ls x =
-  #titles .~
-  [(#place .~ PlaceLeft $
-    #align .~ AlignLeft $
-    #text . #rotation .~ 90 $
-    #text . #size .~ 0.2 $
-    #text . #color .~ ucolor (d3Colors1 0 `withOpacity` 1) $
-    def, t)] <>
+hudbits t subt ts' ls' x =
+  field @"titles" .~
+  [(field @"place" .~ PlaceLeft $
+    field @"align" .~ AlignLeft $
+    field @"text" . field @"rotation" .~ 90 $
+    field @"text" . field @"size" .~ 0.2 $
+    field @"text" . field @"color" .~ ucolor (d3Colors1 0 `withOpacity` 1) $
+    defaultTitleOptions, t)] <>
   (case subt of
      Nothing -> []
      Just subt' -> 
-       [(#place .~ PlaceBottom $
-         #align .~ AlignRight $
-         #text . #rotation .~ 0 $
-         #text . #size .~ 0.12 $
-         #text . #color .~ ucolor (d3Colors1 0 `withOpacity` 1) $
-         def, subt')]) $ 
-  #legends .~
-  [#chartType .~ zip ls ts $
-   #align .~ AlignRight $
-   #text . #size .~ 0.2 $
-   def ] $
-  #axes . each . #gap .~ 0.1 $
+       [(field @"place" .~ PlaceBottom $
+         field @"align" .~ AlignRight $
+         field @"text" . field @"rotation" .~ 0 $
+         field @"text" . field @"size" .~ 0.12 $
+         field @"text" . field @"color" .~ ucolor (d3Colors1 0 `withOpacity` 1) $
+         defaultTitleOptions, subt')]) $ 
+  field @"legends" .~
+  [field @"chartType" .~ zip ls' ts' $
+   field @"align" .~ AlignRight $
+   field @"text" . field @"size" .~ 0.1 $
+   defaultLegendOptions ] $
+  field @"axes" . each . field @"gap" .~ 0.1 $
   x
 
 -- * Chart.Text examples
 text_Example :: Chart b
-text_Example = text_ (#textType .~ TextPath def $ def) "Welcome to chart-unit!"
+text_Example =
+  text_ (field @"textType" .~ TextPath defaultTextPathOptions $ defaultTextOptions)
+  "Welcome to chart-unit!"
 
 text_SvgExample :: Chart b
 text_SvgExample = text_
-  (#textType .~ TextSvg (#textBox .~ def $ #svgFont .~ Just "Comic Sans MS" $ def) $
-   #size .~ 0.2 $
-   def)
+  (field @"textType" .~
+   TextSvg
+   ( field @"textBox" .~ defaultRectOptions $
+     field @"svgFont" .~ Just "Comic Sans MS" $
+     defaultTextSvgOptions) $
+   field @"size" .~ 0.2 $
+   defaultTextOptions)
   "abc & 0123 & POW!"
 
 text_PathExample :: Chart b
 text_PathExample = text_
-  (#textType .~
-   TextPath (#font .~ FromFontFile ("./chart-unit/other/Hasklig-Regular.svg") $ def) $
-   #size .~ 0.2 $
-   def)
+  (field @"textType" .~
+   TextPath
+   (field @"font" .~ FromFontFile "./chart-unit/other/Hasklig-Regular.svg" $
+    defaultTextPathOptions) $
+   field @"size" .~ 0.2 $
+   defaultTextOptions)
    "0123 <*> <$> <| |> <> <- -> => ::"
 
 ts :: [(Text, Pair Double)]
@@ -87,38 +89,40 @@ ts = zip
 
 textChart_Example :: Chart b
 textChart_Example =
-  D.pad 1.1 $ textChart_ [#size .~ 0.33 $ def] widescreen [ts]
+  D.pad 1.1 $ textChart_ [field @"size" .~ 0.33 $ defaultTextOptions] widescreen [ts]
 
 labelledExample :: Chart b
 labelledExample = D.pad 1.1 $
   labelled (LabelOptions
-    (#alignH .~ AlignLeft $ #rotation .~ 45 $ def) (Pair 1 1) 0.02)
+    (field @"alignH" .~ AlignLeft $ field @"rotation" .~ 45 $ defaultTextOptions) (Pair 1 1) 0.02)
   "a label"
-  (glyph_ def)
+  (glyph_ defaultGlyphOptions)
 
 textHudExample :: Chart b
 textHudExample =
   hud
-  (hudbits "Text Chart" (Just "text and glyphs have a similar feel") [] [] def)
+  (hudbits "Text Chart" (Just "text can be treated as a glyph") [] []
+   defaultHudOptions)
   widescreen
   (range ts)
 
 -- * Chart.Glyph examples
 glyph_Example :: Chart b
-glyph_Example = glyph_ def
+glyph_Example = glyph_ defaultGlyphOptions
 
 glyphsExample :: Chart b
-glyphsExample = glyphs def (dataXY sin (Range 0 (2*pi)) 30)
+glyphsExample = glyphs defaultGlyphOptions (dataXY sin (Range 0 (2*pi)) 30)
 
 gopts :: [GlyphOptions]
 gopts =
-  [ #borderSize .~ 0.001 $
-    #size .~ 0.1 $
-    def
-  , #borderSize .~ 0.001 $
-    #size .~ 0.1 $
-    #color .~ ucolor (rybColor 7 `withOpacity` 0.4) $
-    #shape .~ Triangle $ def
+  [ field @"borderSize" .~ 0.001 $
+    field @"size" .~ 0.1 $
+    defaultGlyphOptions
+  , field @"borderSize" .~ 0.001 $
+    field @"size" .~ 0.1 $
+    field @"color" .~ ucolor (rybColor 7 `withOpacity` 0.4) $
+    field @"shape" .~ Triangle $
+    defaultGlyphOptions
   ]
 
 gdata :: [[Pair Double]]
@@ -132,8 +136,8 @@ glyphChart_Example = glyphChart_ gopts widescreen gdata
 
 lglyphsExample :: Chart b
 lglyphsExample =
-  lglyphs def def $
-  zip (show <$> [0 ..]) [Pair (x / 10) (sin x / 10) | x <- [0 .. 10]]
+  lglyphs defaultLabelOptions defaultGlyphOptions $
+  zip (show <$> [0::Int ..]) [Pair (x / 10) (sin x / 10) | x <- [0 .. 10]]
 
 lgdata :: [(Text, Pair Double)]
 lgdata =
@@ -143,28 +147,29 @@ lgdata =
 lglyphChart_Example :: Rect Double -> Chart b
 lglyphChart_Example a =
   lglyphChart_
-  [#gap .~ 0.015 $ #text . #size .~ 0.12 $ def]
-  [#color .~ ublack $
-   #borderSize .~ 0 $
-   #size .~ 0.01 $
-   def]
+  [field @"gap" .~ 0.015 $ field @"text" . field @"size" .~ 0.12 $
+   defaultLabelOptions]
+  [field @"color" .~ ublack $
+   field @"borderSize" .~ 0 $
+   field @"size" .~ 0.01 $
+   defaultGlyphOptions]
   a
   [lgdata]
 
 glyphHudExample :: Chart b
 glyphHudExample = 
   hud
-  (#legends . each . #align .~ AlignLeft $
-   hudbits "Glyph Chart" (Just "text elements are paths not svg text")
+  (field @"legends" . each . field @"align" .~ AlignLeft $
+   hudbits "Glyph Chart" (Just "text elements cab be svg paths or svg text")
    ["sin", "cos"]
    (LegendGlyph <$> gopts) $
-   #axes .~
-    [ #label . #text . #size .~ 0.3 $
-      #tickStyle .~ TickPlaced pis $
-      #label . #text . #textType .~
+   field @"axes" .~
+    [ field @"label" . field @"text" . field @"size" .~ 0.3 $
+      field @"tickStyle" .~ TickPlaced pis $
+      field @"label" . field @"text" . field @"textType" .~
       TextPath (TextPathOptions (FromFontFile "./chart-unit-examples/other/SourceCodePro-Regular.svg")) $
       defXAxis
-    ] $ def)
+    ] $ defaultHudOptions)
   widescreen
   (range gdata)
   where
@@ -178,10 +183,10 @@ glyphHudExample =
 
 lglyphHudExample :: Chart b
 lglyphHudExample = hud
-  (#titles . each . _1 . #gap .~ 0.2 $
-   hudbits "LGlyph Chart" (Just "Glyphs with text labels are very useful") [] [] $
-   #axes .~ [] $
-   def)
+  (field @"titles" . each . _1 . field @"gap" .~ 0.2 $
+   hudbits "LGlyph Chart" (Just "A LGlyph is a labelled glyph") [] [] $
+   field @"axes" .~ [] $
+   defaultHudOptions)
   widescreen
   (range (fmap snd <$> [lgdata]))
 
@@ -189,7 +194,7 @@ lglyphHudExample = hud
 linesExample :: Int -> Chart b
 linesExample n =
   lines
-  (#color .~ ucolor (red `withOpacity` 0.5) $ def)
+  (field @"color" .~ ucolor (red `withOpacity` 0.5) $ defaultLineOptions)
   (dataXY cos (Range 0 (4*pi)) n)
 
 ls :: [[Pair Double]]
@@ -202,10 +207,12 @@ ls =
 
 lopts :: [LineOptions]
 lopts =
-  zipWith
-  (\x y -> LineOptions x (ucolor $ withOpacity (d3Colors1 y) 0.6))
-  [0.01, 0.02, 0.005]
-  [0,1,2]
+  zipWith LineOptions
+  [0.015, 0.03, 0.01]
+  [ UColor 0.773 0.510 0.294 0.6
+  , UColor 0.235 0.498 0.169 0.6
+  , UColor 0.204 0.161 0.537 1.0
+  ]
 
 lineChart_Example :: Chart b
 lineChart_Example = lineChart_ lopts sixbyfour ls
@@ -214,12 +221,12 @@ gopts3 :: [GlyphOptions]
 gopts3 =
   zipWith
   (\x y ->
-     #color .~ ucolor (withOpacity (d3Colors1 x) 0.2) $
-     #borderColor .~ ucolor (withOpacity (d3Colors1 x) 1) $
-     #borderSize .~ 0.005 $
-     #shape .~ y $
-     #size .~ 0.08 $
-     def)
+     field @"color" .~ ucolor (withOpacity (d3Colors1 x) 0.2) $
+     field @"borderColor" .~ ucolor (withOpacity (d3Colors1 x) 1) $
+     field @"borderSize" .~ 0.005 $
+     field @"shape" .~ y $
+     field @"size" .~ 0.08 $
+     defaultGlyphOptions)
   [6,8,2]
   [Triangle, Square, Circle]
 
@@ -230,7 +237,7 @@ lineHudExample :: Chart b
 lineHudExample = 
   hud
   (hudbits "Line Chart" Nothing ["hockey stick", "slope", "vertical"]
-   ((`LegendLine` 0.05) <$> lopts) def)
+   ((`LegendLine` 0.05) <$> lopts) defaultHudOptions)
   sixbyfour
   (range ls)
 
@@ -244,18 +251,19 @@ glineHudExample = renderChart
       gopts3 <*> ZipList
       ls)
   , HudChart
-    (#legends . each . #gap .~ 0.2 $
-     #titles . each . _1 . #gap .~ 0.2 $
-     hudbits "Gline Chart" Nothing ["triangle", "square", "circle"]
+    (field @"legends" . each . field @"gap" .~ 0.2 $
+     field @"titles" . each . _1 . field @"gap" .~ 0.2 $
+     hudbits "Gline Chart" (Just "A GLine is a glyph-line combination")
+     ["triangle", "square", "circle"]
      (zipWith (\x y -> LegendGLine x y 0.1) gopts3 lopts) $
-     #axes .~ [] $
-     def)
+     field @"axes" .~ [] $
+     defaultHudOptions)
   , LGlyphChart
-    [ ( (#gap .~ 0.015 $ #text . #size .~ 0.12 $ def
-      , #color .~ ublack $
-        #borderSize .~ 0 $
-        #size .~ 0.01 $
-        def)
+    [ ( (field @"gap" .~ 0.015 $ field @"text" . field @"size" .~ 0.12 $ defaultLabelOptions
+      , field @"color" .~ ublack $
+        field @"borderSize" .~ 0 $
+        field @"size" .~ 0.01 $
+        defaultGlyphOptions)
       , lgdata)]
   ])
 
@@ -266,24 +274,24 @@ rect_Example n =
   labelled (opts (Pair n -1)) "z,y" $
   labelled (opts (Pair (-n) 1)) "x,w" $
   labelled (opts (Pair (-n) -1)) "x,y" $
-  rect_ def (Ranges (n *. one) one)
+  rect_ defaultRectOptions (Ranges (n *. one) one)
   where
     opts :: Pair Double -> LabelOptions
     opts o =
-      #text %~
-        ( (#color .~ UColor 0 0 0 0.8) .
-          (#size .~ 0.3)) $
-      #orientation .~ o $
-      def
+      field @"text" %~
+        ( (field @"color" .~ UColor 0 0 0 0.8) .
+          (field @"size" .~ 0.3)) $
+      field @"orientation" .~ o $
+      defaultLabelOptions
 
 rectsExample :: Chart b
 rectsExample =
-  rects def (rectBars 0.1 [1, 2, 3, 5, 8, 0, -2, 11, 2, 1])
+  rects defaultRectOptions (rectBars 0.1 [1, 2, 3, 5, 8, 0, -2, 11, 2, 1])
 
 ropts :: [RectOptions]
 ropts =
-  [ #borderSize .~ 0 $ def
-  , #borderSize .~ 0 $ #color .~ UColor 0.3 0.3 0.3 0.2 $ def
+  [ field @"borderSize" .~ 0 $ defaultRectOptions
+  , field @"borderSize" .~ 0 $ field @"color" .~ UColor 0.3 0.3 0.3 0.2 $ defaultRectOptions
   ]
  
 rss :: [[Rect Double]]
@@ -299,9 +307,9 @@ pixel_Example :: Chart b
 pixel_Example = text_ opt "I'm a pixel!" <> pixel_ (Pixel one ublue)
   where
     opt =
-      #color .~ UColor 0 0 0 0.8 $
-      #size .~ 0.2 $
-      def
+      field @"color" .~ UColor 0 0 0 0.8 $
+      field @"size" .~ 0.2 $
+      defaultTextOptions
 
 pixelsExample :: Chart b
 pixelsExample =
@@ -325,25 +333,26 @@ pixelChart_Example =
    one (Pair 40 40)]
 
 pixelateChartExample :: Chart b
-pixelateChartExample = pixelateChart def asquare one (\(Pair x y) -> (x+y)*(x+y))
+pixelateChartExample =
+  pixelateChart defaultPixelationOptions asquare one (\(Pair x y) -> (x+y)*(x+y))
 
 rectHudExample :: Chart b
 rectHudExample =
   hud
-  (#legends . each . #place .~ PlaceBottom $
-   #legends . each . #align .~ AlignCenter $
+  (field @"legends" . each . field @"place" .~ PlaceBottom $
+   field @"legends" . each . field @"align" .~ AlignCenter $
    hudbits "Rect Chart" Nothing ["blue gaussian", "grey wider distribution"]
    ((`LegendRect` 0.05) <$> ropts) $
-   #axes .~ [defXAxis] $
-   def)
+   field @"axes" .~ [defXAxis] $
+   defaultHudOptions)
   widescreen
   (fold $ fold rss)
 
 pixelHudExample :: Chart b
 pixelHudExample =
   hud
-  (hudbits "Pixel Chart" Nothing ["red", "blue"]
-   ((`LegendPixel` 0.05) <$> ropts) def)
+  (hudbits "Pixel Chart" Nothing ["blue", "grey"]
+   ((`LegendPixel` 0.05) <$> ropts) defaultHudOptions)
   asquare
   one
 
@@ -351,15 +360,16 @@ pixelHudExample =
 arrowsExample :: Chart b
 arrowsExample =
   arrows
-  (#maxLength .~ 0.5 $
-   #maxHeadLength .~ 0.2 $
-   #maxStaffWidth .~ 0.01 $ def)
+  (field @"maxLength" .~ 0.5 $
+   field @"maxHeadLength" .~ 0.2 $
+   field @"maxStaffWidth" .~ 0.01 $
+   defaultArrowOptions)
   [ Arrow (Pair x (sin (5 * x))) (Pair x (cos x))
   | x <- grid MidPos (one :: Range Double) 100
   ]
 
 arrowChart_Example :: Chart b
-arrowChart_Example = arrowChart_ [def] asquare [as]
+arrowChart_Example = arrowChart_ [defaultArrowOptions] asquare [as]
   where
     as =
       normArrows
@@ -373,65 +383,67 @@ arrowHudExample =
   hud
   (hudbits "Arrow Chart" Nothing ["this way up"] []
 -- ((`LegendArrow` 0.05) <$> [def]) $
-   def)
+   defaultHudOptions)
   asquare
   one
 
 -- * Chart.Hud examples
 hudExample :: Chart b
-hudExample = hud def sixbyfour one
+hudExample = hud defaultHudOptions sixbyfour one
 
 withHudExample :: Chart b
 withHudExample = withHud_ hopts sixbyfour (lineChart lopts) ls
   where
     hopts =
-      #titles .~ [(def, "withHud Example")] $
-      #legends .~
-      [ #chartType .~ zipWith
+      field @"titles" .~ [(defaultTitleOptions, "withHud Example")] $
+      field @"legends" .~
+      [ field @"chartType" .~ zipWith
         (\x y -> (LegendLine x 0.05, y))
         lopts
         ["line1", "line2", "line3"]
-        $ def
-      ] $ def
+        $ defaultLegendOptions
+      ] $ defaultHudOptions
 
 axisExample :: Chart b
 axisExample = axis aopts one (Range 0 100000)
   where
     aopts :: AxisOptions
     aopts =
-      #label . #text %~
-      ((#rotation .~ -45) .
-       (#size .~ 0.06) .
-       (#alignH .~ AlignLeft)) $
-      #gap .~ 0.0001 $ def
+      field @"label" . field @"text" %~
+      ((field @"rotation" .~ -45) .
+       (field @"size" .~ 0.06) .
+       (field @"alignH" .~ AlignLeft)) $
+      field @"gap" .~ 0.0001 $
+      defXAxis
 
 legends' :: [(LegendType, Text)]
 legends' =
-  [(LegendText def, "legend")] <> [(LegendPixel (blob ublue) 0.05, "pixel")] <>
-  -- [(LegendArrow (def & #minStaffWidth .~ 0.01 & #minHeadLength .~ 0.03) 0.05, "arrow")] <>
-  [(LegendRect def 0.05, "rect")] <>
-  [(LegendGLine def def 0.10, "glyph+line")] <>
-  [(LegendGlyph def, "just a glyph")] <>
+  [(LegendText defaultTextOptions, "legend")] <>
+  [(LegendPixel (blob ublue) 0.05, "pixel")] <>
+  -- [(LegendArrow (def & field @"minStaffWidth" .~ 0.01 & field @"minHeadLength" .~ 0.03) 0.05, "arrow")] <>
+  [(LegendRect defaultRectOptions 0.05, "rect")] <>
+  [(LegendGLine defaultGlyphOptions defaultLineOptions 0.10, "glyph+line")] <>
+  [(LegendGlyph defaultGlyphOptions, "just a glyph")] <>
   zipWith
     (\x y -> (LegendLine x 0.05, y))
     lopts
     ["short", "much longer name", "line 3"]
 
 legendExample :: Chart b
-legendExample = legend $ #chartType .~ legends' $ def
+legendExample = legend $ field @"chartType" .~ legends' $ defaultLegendOptions
 
 -- * Chart.Bar examples
 barExample :: Chart b
 barExample  =
-  barChart def (BarData [ys] Nothing Nothing) <>
+  barChart defaultBarOptions (BarData [ys] Nothing Nothing) <>
   hud
-  ( #titles .~ [(def,"Bar Chart")] $
-    #axes .~
-    [ #tickStyle .~
+  ( field @"titles" .~ [(defaultTitleOptions, "Bar Chart")] $
+    field @"axes" .~
+    [ field @"tickStyle" .~
       TickLabels labels' $
-      def
+      defXAxis
     ] $
-    def)
+    defaultHudOptions)
   sixbyfour
   (fold (abs <$> rs))
   where
@@ -443,94 +455,99 @@ barExample  =
 testTextDiffs :: Double -> Double -> Text -> (Double, Double, Double) -> Maybe Text -> Chart b
 testTextDiffs s ns txt (nb, nm, nt) fnt =
   D.pad 1.1 $ vert identity $ D.centerXY .
-  (\(ah,av,txt) ->
+  (\(ah,av,txt') ->
      D.showOrigin' (D.OriginOpts red 0.001 0.001)
       (text_
-      (#alignH .~ ah $
-       #alignV .~ av $
-       #size .~ s $
-       #color .~ ucolor (red `withOpacity` 1) $
-       def) txt) <>
+      (field @"alignH" .~ ah $
+       field @"alignV" .~ av $
+       field @"size" .~ s $
+       field @"color" .~ ucolor (red `withOpacity` 1) $
+       defaultTextOptions) txt') <>
      D.showOrigin' (D.OriginOpts blue 0.003 0.003)
       (text_
-      (#alignV .~ av $
-       #alignH .~ ah $
-       #size .~ s $
-       #textType .~ TextSvg (TextSvgOptions ns nb nm nt fnt 1.1 0.55 clear) $
-       def) txt)) <$>
+      (field @"alignV" .~ av $
+       field @"alignH" .~ ah $
+       field @"size" .~ s $
+       field @"textType" .~ TextSvg (TextSvgOptions ns nb nm nt fnt 1.1 0.55 clear) $
+       defaultTextOptions) txt')) <$>
   ((\x y -> (x,y,txt)) <$>
    [AlignLeft, AlignCenter, AlignRight] <*>
    [AlignBottom, AlignMid, AlignTop])
 
+coreDir :: FilePath
+coreDir = "./chart-unit/other/"
+
+exampleDir :: FilePath
+exampleDir = "./chart-unit-examples/other/"
+
+coreSvg :: FilePath -> Pair Double -> Chart SVG -> IO ()
+coreSvg t s c =
+  fileSvg
+  (coreDir <> t)
+  (field @"size" .~ s $ defaultSvgOptions)
+  c
+
+exampleSvg :: FilePath -> Pair Double -> Chart SVG -> IO ()
+exampleSvg t s c =
+  fileSvg
+  (exampleDir <> t)
+  (field @"size" .~ s $ defaultSvgOptions)
+  c
+
+sThin :: Pair Double
+sThin = Pair 400 100
+
+sStandard :: Pair Double
+sStandard = Pair 600 400
+
+sSmall :: Pair Double
+sSmall = Pair 100 100
+
 main :: IO ()
 main = do
   scaleExample
-  fileSvg (coreDir <> "text_Example.svg") (#size .~ Pair 400 100 $ def)
-    text_Example
-  fileSvg (coreDir <> "text_SvgExample.svg") (#size .~ Pair 400 100 $ def)
-    text_SvgExample
-  fileSvg (coreDir <> "text_PathExample.svg") (#size .~ Pair 400 100 $ def)
-    text_PathExample
-  fileSvg (coreDir <> "textChart_Example.svg") (#size .~ Pair 400 100 $ def)
-    textChart_Example
-  fileSvg (coreDir <> "labelledExample.svg") (#size .~ Pair 100 100 $ def)
-    labelledExample
-  fileSvg (examplesDir <> "textHudExample.svg") def $
-    textHudExample <> textChart_Example
-  fileSvg (coreDir <> "glyph_Example.svg") (#size .~ Pair 400 100 $ def)
-    glyph_Example
-  fileSvg (coreDir <> "glyphsExample.svg") (#size .~ Pair 400 100 $ def)
-    glyphsExample
-  fileSvg (coreDir <> "glyphChart_Example.svg") (#size .~ Pair 450 150 $ def)
-    glyphChart_Example
-  fileSvg (coreDir <> "lglyphsExample.svg") (#size .~ Pair 400 100 $ def)
-    lglyphsExample
-  fileSvg
-    (coreDir <> "lglyphChart_Example.svg")
-    (#size .~ Pair 600 200 $ def)
-    (lglyphChart_Example widescreen)
-  fileSvg (examplesDir <> "glyphHudExample.svg") def $
-    glyphHudExample <> glyphChart_Example
-  fileSvg (examplesDir <> "lglyphHudExample.svg") def $
-    lglyphHudExample <> lglyphChart_Example widescreen
-  fileSvg (coreDir <> "linesExample.svg") (#size .~ Pair 400 100 $ def)
-    (linesExample 100)
-  fileSvg (coreDir <> "lineChart_Example.svg") (#size .~ Pair 300 200 $ def)
-    lineChart_Example
-  fileSvg (coreDir <> "glineChart_Example.svg") (#size .~ Pair 300 200 $ def)
-    glineChart_Example
-  fileSvg (examplesDir <> "lineHudExample.svg") def $
-    lineHudExample <> lineChart_Example
-  fileSvg (examplesDir <> "glineHudExample.svg") def glineHudExample
-  fileSvg (coreDir <> "rect_Example.svg") (#size .~ Pair 300 200 $ def) $
-    rect_Example 2
-  fileSvg (coreDir <> "rectsExample.svg") (#size .~ Pair 300 200 $ def) rectsExample
-  fileSvg (coreDir <> "rectChart_Example.svg") (#size .~ Pair 300 100 $ def)
-    rectChart_Example
-  fileSvg (coreDir <> "pixel_Example.svg") (#size .~ Pair 100 100 $ def)
-    pixel_Example
-  fileSvg (coreDir <> "pixelsExample.svg") (#size .~ Pair 300 100 $ def)
-    pixelsExample
-  fileSvg (coreDir <> "pixelChart_Example.svg") (#size .~ Pair 300 300 $ def)
-    pixelChart_Example
-  fileSvg (examplesDir <> "rectHudExample.svg") def $
-    rectHudExample <> rectChart_Example
-  fileSvg (examplesDir <> "pixelHudExample.svg") def $
-    pixelHudExample <> pixelateChartExample
-  fileSvg (coreDir <> "arrowsExample.svg") (#size .~ Pair 100 300 $ def)
-    arrowsExample
-  fileSvg (coreDir <> "arrowChart_Example.svg") (#size .~ Pair 300 300 $ def)
-    arrowChart_Example
-  fileSvg (examplesDir <> "arrowHudExample.svg") def $
-    arrowHudExample <> arrowChart_Example
-  fileSvg (coreDir <> "hudExample.svg") (#size .~ Pair 300 300 $ def) hudExample
-  fileSvg (coreDir <> "withHudExample.svg") (#size .~ Pair 300 200 $ def)
-    withHudExample
-  fileSvg (coreDir <> "axisExample.svg") (#size .~ Pair 400 100 $ def) axisExample
-  fileSvg (coreDir <> "legendExample.svg") (#size .~ Pair 300 300 $ def)
-    legendExample
-  fileSvg (examplesDir <> "smallHudExample.svg") (#size .~ Pair 100 100 $ def)
-    (D.showOrigin $ hud def one one)
-  fileSvg (coreDir <> "barExample.svg") def barExample
-  fileSvg (examplesDir <> "testTextDiffs.svg") (#size .~ Pair 400 600 $ def) $
-    testTextDiffs 1 0.77 "abcdefghij012345" (0.25,-0.1,0.25) (Just "san-serif")
+  coreSvg "text_Example.svg" sThin text_Example
+  coreSvg "text_SvgExample.svg" sThin text_SvgExample
+  coreSvg "text_PathExample.svg" sThin text_PathExample
+  coreSvg "textChart_Example.svg" sThin textChart_Example
+  coreSvg "labelledExample.svg" sSmall labelledExample
+  exampleSvg "textHudExample.svg" sStandard
+    (textHudExample <> textChart_Example)
+  coreSvg"glyph_Example.svg" sThin glyph_Example
+  coreSvg "glyphsExample.svg" sThin glyphsExample
+  coreSvg "glyphChart_Example.svg" (Pair 450 150) glyphChart_Example
+  coreSvg "lglyphsExample.svg" sThin lglyphsExample
+  coreSvg "lglyphChart_Example.svg" (Pair 600 200) (lglyphChart_Example widescreen)
+  exampleSvg "glyphHudExample.svg" sStandard
+    (glyphHudExample <> glyphChart_Example)
+  exampleSvg "lglyphHudExample.svg" sStandard
+    (lglyphHudExample <> lglyphChart_Example widescreen)
+  coreSvg "linesExample.svg" sThin (linesExample 100)
+  coreSvg "lineChart_Example.svg" sStandard lineChart_Example
+  coreSvg "glineChart_Example.svg" sStandard glineChart_Example
+  exampleSvg "lineHudExample.svg" sStandard
+    (lineHudExample <> lineChart_Example)
+  exampleSvg "glineHudExample.svg" sStandard glineHudExample
+  coreSvg "rect_Example.svg" sStandard (rect_Example 2)
+  coreSvg "rectsExample.svg" sStandard rectsExample
+  coreSvg "rectChart_Example.svg" (Pair 300 100) rectChart_Example
+  coreSvg "pixel_Example.svg" sSmall pixel_Example
+  coreSvg "pixelsExample.svg" (Pair 300 100) pixelsExample
+  coreSvg "pixelChart_Example.svg" (Pair 300 300) pixelChart_Example
+  exampleSvg "rectHudExample.svg" sStandard
+    (rectHudExample <> rectChart_Example)
+  exampleSvg "pixelHudExample.svg" sStandard
+    (pixelHudExample <> pixelateChartExample)
+  coreSvg "arrowsExample.svg" (Pair 100 300) arrowsExample
+  coreSvg "arrowChart_Example.svg" (Pair 300 300) arrowChart_Example
+  exampleSvg "arrowHudExample.svg" sStandard
+    (arrowHudExample <> arrowChart_Example)
+  coreSvg "hudExample.svg" (Pair 300 300) hudExample
+  coreSvg "withHudExample.svg" sStandard withHudExample
+  coreSvg "axisExample.svg" sThin axisExample
+  coreSvg "legendExample.svg" (Pair 300 300) legendExample
+  exampleSvg "smallHudExample.svg" sSmall
+    (D.showOrigin $ hud defaultHudOptions one one)
+  coreSvg "barExample.svg" sStandard barExample
+  exampleSvg "testTextDiffs.svg" (Pair 400 600)
+    (testTextDiffs 1 0.77 "abcdefghij012345" (0.25,-0.1,0.25) (Just "san-serif"))

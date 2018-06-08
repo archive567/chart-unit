@@ -1,213 +1,213 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
     "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
-<svg xmlns="http://www.w3.org/2000/svg" height="400.0000" stroke-opacity="1" viewBox="0 0 600 400" font-size="1" width="600.0000" xmlns:xlink="http://www.w3.org/1999/xlink" stroke="rgb(0,0,0)" version="1.1">
+<svg xmlns="http://www.w3.org/2000/svg" height="200.0000" stroke-opacity="1" viewBox="0 0 300 200" font-size="1" width="300.0000" xmlns:xlink="http://www.w3.org/1999/xlink" stroke="rgb(0,0,0)" version="1.1">
   <defs>
   </defs>
   <g stroke-linejoin="miter" stroke-opacity="0.0" fill-opacity="0.0" stroke="rgb(0,0,0)" fill-rule="evenodd" stroke-width="0.0" fill="rgb(0,0,0)" stroke-linecap="butt" stroke-miterlimit="10.0">
-    <path d="M 554.7378,27.5392 l -0.0000,-27.5392 h -509.4757 l -0.0000,27.5392 Z"/>
+    <path d="M 277.3689,13.7696 l -0.0000,-13.7696 h -254.7378 l -0.0000,13.7696 Z"/>
   </g>
-  <g stroke-linejoin="miter" stroke-opacity="1.0" fill-opacity="0.6" font-size="25.03565856075178px" stroke="rgb(0,0,0)" fill-rule="evenodd" stroke-width="0.0" fill="rgb(0,0,0)" stroke-linecap="butt" stroke-miterlimit="10.0">
-    <text dominant-baseline="middle" transform="matrix(1.0000,-0.0000,0.0000,1.0000,300.0000,13.7696)" stroke="none" text-anchor="middle">Which editors do you use for Haskell?
+  <g stroke-linejoin="miter" stroke-opacity="1.0" fill-opacity="0.6" font-size="12.51782928037589px" stroke="rgb(0,0,0)" fill-rule="evenodd" stroke-width="0.0" fill="rgb(0,0,0)" stroke-linecap="butt" stroke-miterlimit="10.0">
+    <text dominant-baseline="middle" transform="matrix(1.0000,-0.0000,0.0000,1.0000,150.0000,6.8848)" stroke="none" text-anchor="middle">Which editors do you use for Haskell?
     </text>
   </g>
   <g stroke-linejoin="miter" stroke-opacity="0.0" fill-opacity="0.1" stroke="rgb(0,0,0)" stroke-width="0.0" fill="rgb(0,0,0)" stroke-linecap="butt" stroke-miterlimit="10.0">
-    <path d="M 500.6062,321.9115 l -0.0000,-5.3495 h -401.2125 l -0.0000,5.3495 Z"/>
+    <path d="M 250.3031,160.9557 l -0.0000,-2.6747 h -200.6062 l -0.0000,2.6747 Z"/>
   </g>
   <g stroke-linejoin="miter" stroke-opacity="0.0" fill-opacity="0.0" stroke="rgb(0,0,0)" fill-rule="evenodd" stroke-width="0.0" fill="rgb(0,0,0)" stroke-linecap="butt" stroke-miterlimit="10.0">
-    <path d="M 500.3145,374.0358 l 12.9821,-12.9821 l -32.4553,-32.4553 l -12.9821,12.9821 Z"/>
+    <path d="M 250.1572,187.0179 l 6.4911,-6.4911 l -16.2276,-16.2276 l -6.4911,6.4911 Z"/>
   </g>
-  <g stroke-linejoin="miter" stroke-opacity="1.0" fill-opacity="0.6" font-size="16.690439040501186px" stroke="rgb(0,0,0)" fill-rule="evenodd" stroke-width="0.0" fill="rgb(0,0,0)" stroke-linecap="butt" stroke-miterlimit="10.0">
-    <text dominant-baseline="middle" transform="matrix(0.7071,0.7071,-0.7071,0.7071,474.3503,335.0894)" stroke="none" text-anchor="start">Other
+  <g stroke-linejoin="miter" stroke-opacity="1.0" fill-opacity="0.6" font-size="8.345219520250593px" stroke="rgb(0,0,0)" fill-rule="evenodd" stroke-width="0.0" fill="rgb(0,0,0)" stroke-linecap="butt" stroke-miterlimit="10.0">
+    <text dominant-baseline="middle" transform="matrix(0.7071,0.7071,-0.7071,0.7071,237.1751,167.5447)" stroke="none" text-anchor="start">Other
     </text>
   </g>
-  <g stroke-linejoin="miter" stroke-opacity="0.6" fill-opacity="0.0" stroke="rgb(0,0,0)" stroke-width="2.257156732952541" fill="rgb(0,0,0)" stroke-linecap="butt" stroke-miterlimit="10.0">
-    <path d="M 475.5305,316.5620 v 8.0242 "/>
+  <g stroke-linejoin="miter" stroke-opacity="0.6" fill-opacity="0.0" stroke="rgb(0,0,0)" stroke-width="1.1285783664762705" fill="rgb(0,0,0)" stroke-linecap="butt" stroke-miterlimit="10.0">
+    <path d="M 237.7652,158.2810 v 4.0121 "/>
   </g>
   <g stroke-linejoin="miter" stroke-opacity="0.0" fill-opacity="0.0" stroke="rgb(0,0,0)" fill-rule="evenodd" stroke-width="0.0" fill="rgb(0,0,0)" stroke-linecap="butt" stroke-miterlimit="10.0">
-    <path d="M 430.6898,354.5626 l 12.9821,-12.9821 l -12.9821,-12.9821 l -12.9821,12.9821 Z"/>
+    <path d="M 215.3449,177.2813 l 6.4911,-6.4911 l -6.4911,-6.4911 l -6.4911,6.4911 Z"/>
   </g>
-  <g stroke-linejoin="miter" stroke-opacity="1.0" fill-opacity="0.6" font-size="16.690439040501186px" stroke="rgb(0,0,0)" fill-rule="evenodd" stroke-width="0.0" fill="rgb(0,0,0)" stroke-linecap="butt" stroke-miterlimit="10.0">
-    <text dominant-baseline="middle" transform="matrix(0.7071,0.7071,-0.7071,0.7071,424.1987,335.0894)" stroke="none" text-anchor="start">VS
+  <g stroke-linejoin="miter" stroke-opacity="1.0" fill-opacity="0.6" font-size="8.345219520250593px" stroke="rgb(0,0,0)" fill-rule="evenodd" stroke-width="0.0" fill="rgb(0,0,0)" stroke-linecap="butt" stroke-miterlimit="10.0">
+    <text dominant-baseline="middle" transform="matrix(0.7071,0.7071,-0.7071,0.7071,212.0994,167.5447)" stroke="none" text-anchor="start">VS
     </text>
   </g>
-  <g stroke-linejoin="miter" stroke-opacity="0.6" fill-opacity="0.0" stroke="rgb(0,0,0)" stroke-width="2.257156732952541" fill="rgb(0,0,0)" stroke-linecap="butt" stroke-miterlimit="10.0">
-    <path d="M 425.3789,316.5620 v 8.0242 "/>
+  <g stroke-linejoin="miter" stroke-opacity="0.6" fill-opacity="0.0" stroke="rgb(0,0,0)" stroke-width="1.1285783664762705" fill="rgb(0,0,0)" stroke-linecap="butt" stroke-miterlimit="10.0">
+    <path d="M 212.6894,158.2810 v 4.0121 "/>
   </g>
   <g stroke-linejoin="miter" stroke-opacity="0.0" fill-opacity="0.0" stroke="rgb(0,0,0)" fill-rule="evenodd" stroke-width="0.0" fill="rgb(0,0,0)" stroke-linecap="butt" stroke-miterlimit="10.0">
-    <path d="M 425.9756,400.0000 l 12.9821,-12.9821 l -58.4195,-58.4195 l -12.9821,12.9821 Z"/>
+    <path d="M 212.9878,200.0000 l 6.4911,-6.4911 l -29.2098,-29.2098 l -6.4911,6.4911 Z"/>
   </g>
-  <g stroke-linejoin="miter" stroke-opacity="1.0" fill-opacity="0.6" font-size="16.690439040501186px" stroke="rgb(0,0,0)" fill-rule="evenodd" stroke-width="0.0" fill="rgb(0,0,0)" stroke-linecap="butt" stroke-miterlimit="10.0">
-    <text dominant-baseline="middle" transform="matrix(0.7071,0.7071,-0.7071,0.7071,374.0471,335.0894)" stroke="none" text-anchor="start">Notepad++
+  <g stroke-linejoin="miter" stroke-opacity="1.0" fill-opacity="0.6" font-size="8.345219520250593px" stroke="rgb(0,0,0)" fill-rule="evenodd" stroke-width="0.0" fill="rgb(0,0,0)" stroke-linecap="butt" stroke-miterlimit="10.0">
+    <text dominant-baseline="middle" transform="matrix(0.7071,0.7071,-0.7071,0.7071,187.0236,167.5447)" stroke="none" text-anchor="start">Notepad++
     </text>
   </g>
-  <g stroke-linejoin="miter" stroke-opacity="0.6" fill-opacity="0.0" stroke="rgb(0,0,0)" stroke-width="2.257156732952541" fill="rgb(0,0,0)" stroke-linecap="butt" stroke-miterlimit="10.0">
-    <path d="M 375.2273,316.5620 v 8.0242 "/>
+  <g stroke-linejoin="miter" stroke-opacity="0.6" fill-opacity="0.0" stroke="rgb(0,0,0)" stroke-width="1.1285783664762705" fill="rgb(0,0,0)" stroke-linecap="butt" stroke-miterlimit="10.0">
+    <path d="M 187.6137,158.2810 v 4.0121 "/>
   </g>
   <g stroke-linejoin="miter" stroke-opacity="0.0" fill-opacity="0.0" stroke="rgb(0,0,0)" fill-rule="evenodd" stroke-width="0.0" fill="rgb(0,0,0)" stroke-linecap="butt" stroke-miterlimit="10.0">
-    <path d="M 362.8419,387.0179 l 12.9821,-12.9821 l -45.4374,-45.4374 l -12.9821,12.9821 Z"/>
+    <path d="M 181.4210,193.5089 l 6.4911,-6.4911 l -22.7187,-22.7187 l -6.4911,6.4911 Z"/>
   </g>
-  <g stroke-linejoin="miter" stroke-opacity="1.0" fill-opacity="0.6" font-size="16.690439040501186px" stroke="rgb(0,0,0)" fill-rule="evenodd" stroke-width="0.0" fill="rgb(0,0,0)" stroke-linecap="butt" stroke-miterlimit="10.0">
-    <text dominant-baseline="middle" transform="matrix(0.7071,0.7071,-0.7071,0.7071,323.8956,335.0894)" stroke="none" text-anchor="start">Sublime
+  <g stroke-linejoin="miter" stroke-opacity="1.0" fill-opacity="0.6" font-size="8.345219520250593px" stroke="rgb(0,0,0)" fill-rule="evenodd" stroke-width="0.0" fill="rgb(0,0,0)" stroke-linecap="butt" stroke-miterlimit="10.0">
+    <text dominant-baseline="middle" transform="matrix(0.7071,0.7071,-0.7071,0.7071,161.9478,167.5447)" stroke="none" text-anchor="start">Sublime
     </text>
   </g>
-  <g stroke-linejoin="miter" stroke-opacity="0.6" fill-opacity="0.0" stroke="rgb(0,0,0)" stroke-width="2.257156732952541" fill="rgb(0,0,0)" stroke-linecap="butt" stroke-miterlimit="10.0">
-    <path d="M 325.0758,316.5620 v 8.0242 "/>
+  <g stroke-linejoin="miter" stroke-opacity="0.6" fill-opacity="0.0" stroke="rgb(0,0,0)" stroke-width="1.1285783664762705" fill="rgb(0,0,0)" stroke-linecap="butt" stroke-miterlimit="10.0">
+    <path d="M 162.5379,158.2810 v 4.0121 "/>
   </g>
   <g stroke-linejoin="miter" stroke-opacity="0.0" fill-opacity="0.0" stroke="rgb(0,0,0)" fill-rule="evenodd" stroke-width="0.0" fill="rgb(0,0,0)" stroke-linecap="butt" stroke-miterlimit="10.0">
-    <path d="M 293.2172,367.5447 l 12.9821,-12.9821 l -25.9642,-25.9642 l -12.9821,12.9821 Z"/>
+    <path d="M 146.6086,183.7724 l 6.4911,-6.4911 l -12.9821,-12.9821 l -6.4911,6.4911 Z"/>
   </g>
-  <g stroke-linejoin="miter" stroke-opacity="1.0" fill-opacity="0.6" font-size="16.690439040501186px" stroke="rgb(0,0,0)" fill-rule="evenodd" stroke-width="0.0" fill="rgb(0,0,0)" stroke-linecap="butt" stroke-miterlimit="10.0">
-    <text dominant-baseline="middle" transform="matrix(0.7071,0.7071,-0.7071,0.7071,273.7440,335.0894)" stroke="none" text-anchor="start">Atom
+  <g stroke-linejoin="miter" stroke-opacity="1.0" fill-opacity="0.6" font-size="8.345219520250593px" stroke="rgb(0,0,0)" fill-rule="evenodd" stroke-width="0.0" fill="rgb(0,0,0)" stroke-linecap="butt" stroke-miterlimit="10.0">
+    <text dominant-baseline="middle" transform="matrix(0.7071,0.7071,-0.7071,0.7071,136.8720,167.5447)" stroke="none" text-anchor="start">Atom
     </text>
   </g>
-  <g stroke-linejoin="miter" stroke-opacity="0.6" fill-opacity="0.0" stroke="rgb(0,0,0)" stroke-width="2.257156732952541" fill="rgb(0,0,0)" stroke-linecap="butt" stroke-miterlimit="10.0">
-    <path d="M 274.9242,316.5620 v 8.0242 "/>
+  <g stroke-linejoin="miter" stroke-opacity="0.6" fill-opacity="0.0" stroke="rgb(0,0,0)" stroke-width="1.1285783664762705" fill="rgb(0,0,0)" stroke-linecap="butt" stroke-miterlimit="10.0">
+    <path d="M 137.4621,158.2810 v 4.0121 "/>
   </g>
   <g stroke-linejoin="miter" stroke-opacity="0.0" fill-opacity="0.0" stroke="rgb(0,0,0)" fill-rule="evenodd" stroke-width="0.0" fill="rgb(0,0,0)" stroke-linecap="butt" stroke-miterlimit="10.0">
-    <path d="M 262.5388,387.0179 l 12.9821,-12.9821 l -45.4374,-45.4374 l -12.9821,12.9821 Z"/>
+    <path d="M 131.2694,193.5089 l 6.4911,-6.4911 l -22.7187,-22.7187 l -6.4911,6.4911 Z"/>
   </g>
-  <g stroke-linejoin="miter" stroke-opacity="1.0" fill-opacity="0.6" font-size="16.690439040501186px" stroke="rgb(0,0,0)" fill-rule="evenodd" stroke-width="0.0" fill="rgb(0,0,0)" stroke-linecap="butt" stroke-miterlimit="10.0">
-    <text dominant-baseline="middle" transform="matrix(0.7071,0.7071,-0.7071,0.7071,223.5925,335.0894)" stroke="none" text-anchor="start">VS Code
+  <g stroke-linejoin="miter" stroke-opacity="1.0" fill-opacity="0.6" font-size="8.345219520250593px" stroke="rgb(0,0,0)" fill-rule="evenodd" stroke-width="0.0" fill="rgb(0,0,0)" stroke-linecap="butt" stroke-miterlimit="10.0">
+    <text dominant-baseline="middle" transform="matrix(0.7071,0.7071,-0.7071,0.7071,111.7962,167.5447)" stroke="none" text-anchor="start">VS Code
     </text>
   </g>
-  <g stroke-linejoin="miter" stroke-opacity="0.6" fill-opacity="0.0" stroke="rgb(0,0,0)" stroke-width="2.257156732952541" fill="rgb(0,0,0)" stroke-linecap="butt" stroke-miterlimit="10.0">
-    <path d="M 224.7727,316.5620 v 8.0242 "/>
+  <g stroke-linejoin="miter" stroke-opacity="0.6" fill-opacity="0.0" stroke="rgb(0,0,0)" stroke-width="1.1285783664762705" fill="rgb(0,0,0)" stroke-linecap="butt" stroke-miterlimit="10.0">
+    <path d="M 112.3863,158.2810 v 4.0121 "/>
   </g>
   <g stroke-linejoin="miter" stroke-opacity="0.0" fill-opacity="0.0" stroke="rgb(0,0,0)" fill-rule="evenodd" stroke-width="0.0" fill="rgb(0,0,0)" stroke-linecap="butt" stroke-miterlimit="10.0">
-    <path d="M 199.4051,374.0358 l 12.9821,-12.9821 l -32.4553,-32.4553 l -12.9821,12.9821 Z"/>
+    <path d="M 99.7026,187.0179 l 6.4911,-6.4911 l -16.2276,-16.2276 l -6.4911,6.4911 Z"/>
   </g>
-  <g stroke-linejoin="miter" stroke-opacity="1.0" fill-opacity="0.6" font-size="16.690439040501186px" stroke="rgb(0,0,0)" fill-rule="evenodd" stroke-width="0.0" fill="rgb(0,0,0)" stroke-linecap="butt" stroke-miterlimit="10.0">
-    <text dominant-baseline="middle" transform="matrix(0.7071,0.7071,-0.7071,0.7071,173.4409,335.0894)" stroke="none" text-anchor="start">Emacs
+  <g stroke-linejoin="miter" stroke-opacity="1.0" fill-opacity="0.6" font-size="8.345219520250593px" stroke="rgb(0,0,0)" fill-rule="evenodd" stroke-width="0.0" fill="rgb(0,0,0)" stroke-linecap="butt" stroke-miterlimit="10.0">
+    <text dominant-baseline="middle" transform="matrix(0.7071,0.7071,-0.7071,0.7071,86.7205,167.5447)" stroke="none" text-anchor="start">Emacs
     </text>
   </g>
-  <g stroke-linejoin="miter" stroke-opacity="0.6" fill-opacity="0.0" stroke="rgb(0,0,0)" stroke-width="2.257156732952541" fill="rgb(0,0,0)" stroke-linecap="butt" stroke-miterlimit="10.0">
-    <path d="M 174.6211,316.5620 v 8.0242 "/>
+  <g stroke-linejoin="miter" stroke-opacity="0.6" fill-opacity="0.0" stroke="rgb(0,0,0)" stroke-width="1.1285783664762705" fill="rgb(0,0,0)" stroke-linecap="butt" stroke-miterlimit="10.0">
+    <path d="M 87.3106,158.2810 v 4.0121 "/>
   </g>
   <g stroke-linejoin="miter" stroke-opacity="0.0" fill-opacity="0.0" stroke="rgb(0,0,0)" fill-rule="evenodd" stroke-width="0.0" fill="rgb(0,0,0)" stroke-linecap="butt" stroke-miterlimit="10.0">
-    <path d="M 136.2715,361.0537 l 12.9821,-12.9821 l -19.4732,-19.4732 l -12.9821,12.9821 Z"/>
+    <path d="M 68.1357,180.5268 l 6.4911,-6.4911 l -9.7366,-9.7366 l -6.4911,6.4911 Z"/>
   </g>
-  <g stroke-linejoin="miter" stroke-opacity="1.0" fill-opacity="0.6" font-size="16.690439040501186px" stroke="rgb(0,0,0)" fill-rule="evenodd" stroke-width="0.0" fill="rgb(0,0,0)" stroke-linecap="butt" stroke-miterlimit="10.0">
-    <text dominant-baseline="middle" transform="matrix(0.7071,0.7071,-0.7071,0.7071,123.2893,335.0894)" stroke="none" text-anchor="start">Vim
+  <g stroke-linejoin="miter" stroke-opacity="1.0" fill-opacity="0.6" font-size="8.345219520250593px" stroke="rgb(0,0,0)" fill-rule="evenodd" stroke-width="0.0" fill="rgb(0,0,0)" stroke-linecap="butt" stroke-miterlimit="10.0">
+    <text dominant-baseline="middle" transform="matrix(0.7071,0.7071,-0.7071,0.7071,61.6447,167.5447)" stroke="none" text-anchor="start">Vim
     </text>
   </g>
-  <g stroke-linejoin="miter" stroke-opacity="0.6" fill-opacity="0.0" stroke="rgb(0,0,0)" stroke-width="2.257156732952541" fill="rgb(0,0,0)" stroke-linecap="butt" stroke-miterlimit="10.0">
-    <path d="M 124.4695,316.5620 v 8.0242 "/>
+  <g stroke-linejoin="miter" stroke-opacity="0.6" fill-opacity="0.0" stroke="rgb(0,0,0)" stroke-width="1.1285783664762705" fill="rgb(0,0,0)" stroke-linecap="butt" stroke-miterlimit="10.0">
+    <path d="M 62.2348,158.2810 v 4.0121 "/>
   </g>
   <g stroke-linejoin="miter" stroke-opacity="0.0" fill-opacity="0.1" stroke="rgb(0,0,0)" stroke-width="0.0" fill="rgb(0,0,0)" stroke-linecap="butt" stroke-miterlimit="10.0">
-    <path d="M 88.6948,305.7132 l -0.0000,-267.4750 h -5.3495 l -0.0000,267.4750 Z"/>
+    <path d="M 44.3474,152.8566 l -0.0000,-133.7375 h -2.6747 l -0.0000,133.7375 Z"/>
   </g>
   <g stroke-linejoin="miter" stroke-opacity="0.0" fill-opacity="0.0" stroke="rgb(0,0,0)" fill-rule="evenodd" stroke-width="0.0" fill="rgb(0,0,0)" stroke-linecap="butt" stroke-miterlimit="10.0">
-    <path d="M 76.6584,116.2062 l -0.0000,-18.3595 h -27.5392 l -0.0000,18.3595 Z"/>
+    <path d="M 38.3292,58.1031 l -0.0000,-9.1797 h -13.7696 l -0.0000,9.1797 Z"/>
   </g>
-  <g stroke-linejoin="miter" stroke-opacity="1.0" fill-opacity="0.6" font-size="16.690439040501186px" stroke="rgb(0,0,0)" fill-rule="evenodd" stroke-width="0.0" fill="rgb(0,0,0)" stroke-linecap="butt" stroke-miterlimit="10.0">
-    <text dominant-baseline="middle" transform="matrix(1.0000,-0.0000,0.0000,1.0000,62.8888,107.0265)" stroke="none" text-anchor="middle">400
+  <g stroke-linejoin="miter" stroke-opacity="1.0" fill-opacity="0.6" font-size="8.345219520250593px" stroke="rgb(0,0,0)" fill-rule="evenodd" stroke-width="0.0" fill="rgb(0,0,0)" stroke-linecap="butt" stroke-miterlimit="10.0">
+    <text dominant-baseline="middle" transform="matrix(1.0000,-0.0000,0.0000,1.0000,31.4444,53.5132)" stroke="none" text-anchor="middle">400
     </text>
   </g>
-  <g stroke-linejoin="miter" stroke-opacity="0.6" fill-opacity="0.0" stroke="rgb(0,0,0)" stroke-width="2.257156732952541" fill="rgb(0,0,0)" stroke-linecap="butt" stroke-miterlimit="10.0">
-    <path d="M 80.6705,105.3574 h 8.0242 "/>
+  <g stroke-linejoin="miter" stroke-opacity="0.6" fill-opacity="0.0" stroke="rgb(0,0,0)" stroke-width="1.1285783664762705" fill="rgb(0,0,0)" stroke-linecap="butt" stroke-miterlimit="10.0">
+    <path d="M 40.3353,52.6787 h 4.0121 "/>
   </g>
   <g stroke-linejoin="miter" stroke-opacity="0.0" fill-opacity="0.0" stroke="rgb(0,0,0)" fill-rule="evenodd" stroke-width="0.0" fill="rgb(0,0,0)" stroke-linecap="butt" stroke-miterlimit="10.0">
-    <path d="M 76.6584,216.3841 l -0.0000,-18.3595 h -27.5392 l -0.0000,18.3595 Z"/>
+    <path d="M 38.3292,108.1920 l -0.0000,-9.1797 h -13.7696 l -0.0000,9.1797 Z"/>
   </g>
-  <g stroke-linejoin="miter" stroke-opacity="1.0" fill-opacity="0.6" font-size="16.690439040501186px" stroke="rgb(0,0,0)" fill-rule="evenodd" stroke-width="0.0" fill="rgb(0,0,0)" stroke-linecap="butt" stroke-miterlimit="10.0">
-    <text dominant-baseline="middle" transform="matrix(1.0000,-0.0000,0.0000,1.0000,62.8888,207.2044)" stroke="none" text-anchor="middle">200
+  <g stroke-linejoin="miter" stroke-opacity="1.0" fill-opacity="0.6" font-size="8.345219520250593px" stroke="rgb(0,0,0)" fill-rule="evenodd" stroke-width="0.0" fill="rgb(0,0,0)" stroke-linecap="butt" stroke-miterlimit="10.0">
+    <text dominant-baseline="middle" transform="matrix(1.0000,-0.0000,0.0000,1.0000,31.4444,103.6022)" stroke="none" text-anchor="middle">200
     </text>
   </g>
-  <g stroke-linejoin="miter" stroke-opacity="0.6" fill-opacity="0.0" stroke="rgb(0,0,0)" stroke-width="2.257156732952541" fill="rgb(0,0,0)" stroke-linecap="butt" stroke-miterlimit="10.0">
-    <path d="M 80.6705,205.5353 h 8.0242 "/>
+  <g stroke-linejoin="miter" stroke-opacity="0.6" fill-opacity="0.0" stroke="rgb(0,0,0)" stroke-width="1.1285783664762705" fill="rgb(0,0,0)" stroke-linecap="butt" stroke-miterlimit="10.0">
+    <path d="M 40.3353,102.7677 h 4.0121 "/>
   </g>
   <g stroke-linejoin="miter" stroke-opacity="0.0" fill-opacity="0.0" stroke="rgb(0,0,0)" fill-rule="evenodd" stroke-width="0.0" fill="rgb(0,0,0)" stroke-linecap="butt" stroke-miterlimit="10.0">
-    <path d="M 76.6584,316.5620 l -0.0000,-18.3595 h -9.1797 l -0.0000,18.3595 Z"/>
+    <path d="M 38.3292,158.2810 l -0.0000,-9.1797 h -4.5899 l -0.0000,9.1797 Z"/>
   </g>
-  <g stroke-linejoin="miter" stroke-opacity="1.0" fill-opacity="0.6" font-size="16.690439040501186px" stroke="rgb(0,0,0)" fill-rule="evenodd" stroke-width="0.0" fill="rgb(0,0,0)" stroke-linecap="butt" stroke-miterlimit="10.0">
-    <text dominant-baseline="middle" transform="matrix(1.0000,-0.0000,0.0000,1.0000,72.0685,307.3823)" stroke="none" text-anchor="middle">0
+  <g stroke-linejoin="miter" stroke-opacity="1.0" fill-opacity="0.6" font-size="8.345219520250593px" stroke="rgb(0,0,0)" fill-rule="evenodd" stroke-width="0.0" fill="rgb(0,0,0)" stroke-linecap="butt" stroke-miterlimit="10.0">
+    <text dominant-baseline="middle" transform="matrix(1.0000,-0.0000,0.0000,1.0000,36.0343,153.6911)" stroke="none" text-anchor="middle">0
     </text>
   </g>
-  <g stroke-linejoin="miter" stroke-opacity="0.6" fill-opacity="0.0" stroke="rgb(0,0,0)" stroke-width="2.257156732952541" fill="rgb(0,0,0)" stroke-linecap="butt" stroke-miterlimit="10.0">
-    <path d="M 80.6705,305.7132 h 8.0242 "/>
+  <g stroke-linejoin="miter" stroke-opacity="0.6" fill-opacity="0.0" stroke="rgb(0,0,0)" stroke-width="1.1285783664762705" fill="rgb(0,0,0)" stroke-linecap="butt" stroke-miterlimit="10.0">
+    <path d="M 40.3353,152.8566 h 4.0121 "/>
   </g>
   <g stroke-linejoin="miter" stroke-opacity="0.0" fill-opacity="0.0" stroke="rgb(0,0,0)" stroke-width="0.0" fill="rgb(0,0,0)" stroke-linecap="butt" stroke-miterlimit="10.0">
-    <path d="M 500.6062,305.7132 l -0.0000,-267.4750 h -401.2125 l -0.0000,267.4750 Z"/>
+    <path d="M 250.3031,152.8566 l -0.0000,-133.7375 h -200.6062 l -0.0000,133.7375 Z"/>
   </g>
   <g stroke-linejoin="miter" stroke-opacity="1.0" fill-opacity="1.0" stroke="rgb(102,102,102)" stroke-width="0.0" fill="rgb(87,57,99)" stroke-linecap="butt" stroke-miterlimit="10.0">
-    <path d="M 490.5759,305.7132 l -0.0000,-67.1192 h -30.0909 l -0.0000,67.1192 Z"/>
+    <path d="M 245.2880,152.8566 l -0.0000,-33.5596 h -15.0455 l -0.0000,33.5596 Z"/>
   </g>
   <g stroke-linejoin="miter" stroke-opacity="1.0" fill-opacity="1.0" stroke="rgb(102,102,102)" stroke-width="0.0" fill="rgb(87,57,99)" stroke-linecap="butt" stroke-miterlimit="10.0">
-    <path d="M 440.4244,305.7132 l -0.0000,-1.5027 h -30.0909 l -0.0000,1.5027 Z"/>
+    <path d="M 220.2122,152.8566 l -0.0000,-0.7513 h -15.0455 l -0.0000,0.7513 Z"/>
   </g>
   <g stroke-linejoin="miter" stroke-opacity="1.0" fill-opacity="1.0" stroke="rgb(102,102,102)" stroke-width="0.0" fill="rgb(87,57,99)" stroke-linecap="butt" stroke-miterlimit="10.0">
-    <path d="M 390.2728,305.7132 l -0.0000,-14.0249 h -30.0909 l -0.0000,14.0249 Z"/>
+    <path d="M 195.1364,152.8566 l -0.0000,-7.0125 h -15.0455 l -0.0000,7.0125 Z"/>
   </g>
   <g stroke-linejoin="miter" stroke-opacity="1.0" fill-opacity="1.0" stroke="rgb(102,102,102)" stroke-width="0.0" fill="rgb(87,57,99)" stroke-linecap="butt" stroke-miterlimit="10.0">
-    <path d="M 340.1212,305.7132 l -0.0000,-46.0818 h -30.0909 l -0.0000,46.0818 Z"/>
+    <path d="M 170.0606,152.8566 l -0.0000,-23.0409 h -15.0455 l -0.0000,23.0409 Z"/>
   </g>
   <g stroke-linejoin="miter" stroke-opacity="1.0" fill-opacity="1.0" stroke="rgb(102,102,102)" stroke-width="0.0" fill="rgb(87,57,99)" stroke-linecap="butt" stroke-miterlimit="10.0">
-    <path d="M 289.9697,305.7132 l -0.0000,-84.6503 h -30.0909 l -0.0000,84.6503 Z"/>
+    <path d="M 144.9848,152.8566 l -0.0000,-42.3252 h -15.0455 l -0.0000,42.3252 Z"/>
   </g>
   <g stroke-linejoin="miter" stroke-opacity="1.0" fill-opacity="1.0" stroke="rgb(102,102,102)" stroke-width="0.0" fill="rgb(87,57,99)" stroke-linecap="butt" stroke-miterlimit="10.0">
-    <path d="M 239.8181,305.7132 l -0.0000,-101.1797 h -30.0909 l -0.0000,101.1797 Z"/>
+    <path d="M 119.9091,152.8566 l -0.0000,-50.5898 h -15.0455 l -0.0000,50.5898 Z"/>
   </g>
   <g stroke-linejoin="miter" stroke-opacity="1.0" fill-opacity="1.0" stroke="rgb(102,102,102)" stroke-width="0.0" fill="rgb(87,57,99)" stroke-linecap="butt" stroke-miterlimit="10.0">
-    <path d="M 189.6666,305.7132 l -0.0000,-250.9456 h -30.0909 l -0.0000,250.9456 Z"/>
+    <path d="M 94.8333,152.8566 l -0.0000,-125.4728 h -15.0455 l -0.0000,125.4728 Z"/>
   </g>
   <g stroke-linejoin="miter" stroke-opacity="1.0" fill-opacity="1.0" stroke="rgb(102,102,102)" stroke-width="0.0" fill="rgb(87,57,99)" stroke-linecap="butt" stroke-miterlimit="10.0">
-    <path d="M 139.5150,305.7132 l -0.0000,-267.4750 h -30.0909 l -0.0000,267.4750 Z"/>
+    <path d="M 69.7575,152.8566 l -0.0000,-133.7375 h -15.0455 l -0.0000,133.7375 Z"/>
   </g>
   <g stroke-linejoin="miter" stroke-opacity="0.0" fill-opacity="0.0" stroke="rgb(0,0,0)" fill-rule="evenodd" stroke-width="0.0" fill="rgb(0,0,0)" stroke-linecap="butt" stroke-miterlimit="10.0">
-    <path d="M 489.3001,241.4186 l -0.0000,-18.3595 h -27.5392 l -0.0000,18.3595 Z"/>
+    <path d="M 244.6500,120.7093 l -0.0000,-9.1797 h -13.7696 l -0.0000,9.1797 Z"/>
   </g>
-  <g stroke-linejoin="miter" stroke-opacity="1.0" fill-opacity="1.0" font-size="16.690439040501186px" stroke="rgb(0,0,0)" fill-rule="evenodd" stroke-width="0.0" fill="rgb(84,84,84)" stroke-linecap="butt" stroke-miterlimit="10.0">
-    <text dominant-baseline="middle" transform="matrix(1.0000,-0.0000,0.0000,1.0000,475.5305,232.2388)" stroke="none" text-anchor="middle">134
+  <g stroke-linejoin="miter" stroke-opacity="1.0" fill-opacity="1.0" font-size="8.345219520250593px" stroke="rgb(0,0,0)" fill-rule="evenodd" stroke-width="0.0" fill="rgb(84,84,84)" stroke-linecap="butt" stroke-miterlimit="10.0">
+    <text dominant-baseline="middle" transform="matrix(1.0000,-0.0000,0.0000,1.0000,237.7652,116.1194)" stroke="none" text-anchor="middle">134
     </text>
   </g>
   <g stroke-linejoin="miter" stroke-opacity="0.0" fill-opacity="0.0" stroke="rgb(0,0,0)" fill-rule="evenodd" stroke-width="0.0" fill="rgb(0,0,0)" stroke-linecap="butt" stroke-miterlimit="10.0">
-    <path d="M 429.9688,307.0351 l -0.0000,-18.3595 h -9.1797 l -0.0000,18.3595 Z"/>
+    <path d="M 214.9844,153.5175 l -0.0000,-9.1797 h -4.5899 l -0.0000,9.1797 Z"/>
   </g>
-  <g stroke-linejoin="miter" stroke-opacity="1.0" fill-opacity="1.0" font-size="16.690439040501186px" stroke="rgb(0,0,0)" fill-rule="evenodd" stroke-width="0.0" fill="rgb(84,84,84)" stroke-linecap="butt" stroke-miterlimit="10.0">
-    <text dominant-baseline="middle" transform="matrix(1.0000,-0.0000,0.0000,1.0000,425.3789,297.8553)" stroke="none" text-anchor="middle">3
+  <g stroke-linejoin="miter" stroke-opacity="1.0" fill-opacity="1.0" font-size="8.345219520250593px" stroke="rgb(0,0,0)" fill-rule="evenodd" stroke-width="0.0" fill="rgb(84,84,84)" stroke-linecap="butt" stroke-miterlimit="10.0">
+    <text dominant-baseline="middle" transform="matrix(1.0000,-0.0000,0.0000,1.0000,212.6894,148.9277)" stroke="none" text-anchor="middle">3
     </text>
   </g>
   <g stroke-linejoin="miter" stroke-opacity="0.0" fill-opacity="0.0" stroke="rgb(0,0,0)" fill-rule="evenodd" stroke-width="0.0" fill="rgb(0,0,0)" stroke-linecap="butt" stroke-miterlimit="10.0">
-    <path d="M 384.4071,294.5128 l -0.0000,-18.3595 h -18.3595 l -0.0000,18.3595 Z"/>
+    <path d="M 192.2035,147.2564 l -0.0000,-9.1797 h -9.1797 l -0.0000,9.1797 Z"/>
   </g>
-  <g stroke-linejoin="miter" stroke-opacity="1.0" fill-opacity="1.0" font-size="16.690439040501186px" stroke="rgb(0,0,0)" fill-rule="evenodd" stroke-width="0.0" fill="rgb(84,84,84)" stroke-linecap="butt" stroke-miterlimit="10.0">
-    <text dominant-baseline="middle" transform="matrix(1.0000,-0.0000,0.0000,1.0000,375.2273,285.3331)" stroke="none" text-anchor="middle">28
+  <g stroke-linejoin="miter" stroke-opacity="1.0" fill-opacity="1.0" font-size="8.345219520250593px" stroke="rgb(0,0,0)" fill-rule="evenodd" stroke-width="0.0" fill="rgb(84,84,84)" stroke-linecap="butt" stroke-miterlimit="10.0">
+    <text dominant-baseline="middle" transform="matrix(1.0000,-0.0000,0.0000,1.0000,187.6137,142.6665)" stroke="none" text-anchor="middle">28
     </text>
   </g>
   <g stroke-linejoin="miter" stroke-opacity="0.0" fill-opacity="0.0" stroke="rgb(0,0,0)" fill-rule="evenodd" stroke-width="0.0" fill="rgb(0,0,0)" stroke-linecap="butt" stroke-miterlimit="10.0">
-    <path d="M 334.2555,262.4559 l -0.0000,-18.3595 h -18.3595 l -0.0000,18.3595 Z"/>
+    <path d="M 167.1278,131.2280 l -0.0000,-9.1797 h -9.1797 l -0.0000,9.1797 Z"/>
   </g>
-  <g stroke-linejoin="miter" stroke-opacity="1.0" fill-opacity="1.0" font-size="16.690439040501186px" stroke="rgb(0,0,0)" fill-rule="evenodd" stroke-width="0.0" fill="rgb(84,84,84)" stroke-linecap="butt" stroke-miterlimit="10.0">
-    <text dominant-baseline="middle" transform="matrix(1.0000,-0.0000,0.0000,1.0000,325.0758,253.2762)" stroke="none" text-anchor="middle">92
+  <g stroke-linejoin="miter" stroke-opacity="1.0" fill-opacity="1.0" font-size="8.345219520250593px" stroke="rgb(0,0,0)" fill-rule="evenodd" stroke-width="0.0" fill="rgb(84,84,84)" stroke-linecap="butt" stroke-miterlimit="10.0">
+    <text dominant-baseline="middle" transform="matrix(1.0000,-0.0000,0.0000,1.0000,162.5379,126.6381)" stroke="none" text-anchor="middle">92
     </text>
   </g>
   <g stroke-linejoin="miter" stroke-opacity="0.0" fill-opacity="0.0" stroke="rgb(0,0,0)" fill-rule="evenodd" stroke-width="0.0" fill="rgb(0,0,0)" stroke-linecap="butt" stroke-miterlimit="10.0">
-    <path d="M 288.6938,223.8874 l -0.0000,-18.3595 h -27.5392 l -0.0000,18.3595 Z"/>
+    <path d="M 144.3469,111.9437 l -0.0000,-9.1797 h -13.7696 l -0.0000,9.1797 Z"/>
   </g>
-  <g stroke-linejoin="miter" stroke-opacity="1.0" fill-opacity="1.0" font-size="16.690439040501186px" stroke="rgb(0,0,0)" fill-rule="evenodd" stroke-width="0.0" fill="rgb(84,84,84)" stroke-linecap="butt" stroke-miterlimit="10.0">
-    <text dominant-baseline="middle" transform="matrix(1.0000,-0.0000,0.0000,1.0000,274.9242,214.7077)" stroke="none" text-anchor="middle">169
+  <g stroke-linejoin="miter" stroke-opacity="1.0" fill-opacity="1.0" font-size="8.345219520250593px" stroke="rgb(0,0,0)" fill-rule="evenodd" stroke-width="0.0" fill="rgb(84,84,84)" stroke-linecap="butt" stroke-miterlimit="10.0">
+    <text dominant-baseline="middle" transform="matrix(1.0000,-0.0000,0.0000,1.0000,137.4621,107.3538)" stroke="none" text-anchor="middle">169
     </text>
   </g>
   <g stroke-linejoin="miter" stroke-opacity="0.0" fill-opacity="0.0" stroke="rgb(0,0,0)" fill-rule="evenodd" stroke-width="0.0" fill="rgb(0,0,0)" stroke-linecap="butt" stroke-miterlimit="10.0">
-    <path d="M 238.5423,207.3581 l -0.0000,-18.3595 h -27.5392 l -0.0000,18.3595 Z"/>
+    <path d="M 119.2711,103.6790 l -0.0000,-9.1797 h -13.7696 l -0.0000,9.1797 Z"/>
   </g>
-  <g stroke-linejoin="miter" stroke-opacity="1.0" fill-opacity="1.0" font-size="16.690439040501186px" stroke="rgb(0,0,0)" fill-rule="evenodd" stroke-width="0.0" fill="rgb(84,84,84)" stroke-linecap="butt" stroke-miterlimit="10.0">
-    <text dominant-baseline="middle" transform="matrix(1.0000,-0.0000,0.0000,1.0000,224.7727,198.1783)" stroke="none" text-anchor="middle">202
+  <g stroke-linejoin="miter" stroke-opacity="1.0" fill-opacity="1.0" font-size="8.345219520250593px" stroke="rgb(0,0,0)" fill-rule="evenodd" stroke-width="0.0" fill="rgb(84,84,84)" stroke-linecap="butt" stroke-miterlimit="10.0">
+    <text dominant-baseline="middle" transform="matrix(1.0000,-0.0000,0.0000,1.0000,112.3863,99.0892)" stroke="none" text-anchor="middle">202
     </text>
   </g>
   <g stroke-linejoin="miter" stroke-opacity="0.0" fill-opacity="0.0" stroke="rgb(0,0,0)" fill-rule="evenodd" stroke-width="0.0" fill="rgb(0,0,0)" stroke-linecap="butt" stroke-miterlimit="10.0">
-    <path d="M 188.3907,57.5921 l -0.0000,-18.3595 h -27.5392 l -0.0000,18.3595 Z"/>
+    <path d="M 94.1954,28.7961 l -0.0000,-9.1797 h -13.7696 l -0.0000,9.1797 Z"/>
   </g>
-  <g stroke-linejoin="miter" stroke-opacity="1.0" fill-opacity="1.0" font-size="16.690439040501186px" stroke="rgb(0,0,0)" fill-rule="evenodd" stroke-width="0.0" fill="rgb(84,84,84)" stroke-linecap="butt" stroke-miterlimit="10.0">
-    <text dominant-baseline="middle" transform="matrix(1.0000,-0.0000,0.0000,1.0000,174.6211,48.4124)" stroke="none" text-anchor="middle">501
+  <g stroke-linejoin="miter" stroke-opacity="1.0" fill-opacity="1.0" font-size="8.345219520250593px" stroke="rgb(0,0,0)" fill-rule="evenodd" stroke-width="0.0" fill="rgb(84,84,84)" stroke-linecap="butt" stroke-miterlimit="10.0">
+    <text dominant-baseline="middle" transform="matrix(1.0000,-0.0000,0.0000,1.0000,87.3106,24.2062)" stroke="none" text-anchor="middle">501
     </text>
   </g>
   <g stroke-linejoin="miter" stroke-opacity="0.0" fill-opacity="0.0" stroke="rgb(0,0,0)" fill-rule="evenodd" stroke-width="0.0" fill="rgb(0,0,0)" stroke-linecap="butt" stroke-miterlimit="10.0">
-    <path d="M 138.2392,41.0628 l -0.0000,-18.3595 h -27.5392 l -0.0000,18.3595 Z"/>
+    <path d="M 69.1196,20.5314 l -0.0000,-9.1797 h -13.7696 l -0.0000,9.1797 Z"/>
   </g>
-  <g stroke-linejoin="miter" stroke-opacity="1.0" fill-opacity="1.0" font-size="16.690439040501186px" stroke="rgb(0,0,0)" fill-rule="evenodd" stroke-width="0.0" fill="rgb(84,84,84)" stroke-linecap="butt" stroke-miterlimit="10.0">
-    <text dominant-baseline="middle" transform="matrix(1.0000,-0.0000,0.0000,1.0000,124.4695,31.8830)" stroke="none" text-anchor="middle">534
+  <g stroke-linejoin="miter" stroke-opacity="1.0" fill-opacity="1.0" font-size="8.345219520250593px" stroke="rgb(0,0,0)" fill-rule="evenodd" stroke-width="0.0" fill="rgb(84,84,84)" stroke-linecap="butt" stroke-miterlimit="10.0">
+    <text dominant-baseline="middle" transform="matrix(1.0000,-0.0000,0.0000,1.0000,62.2348,15.9415)" stroke="none" text-anchor="middle">534
     </text>
   </g>
 </svg>

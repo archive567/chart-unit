@@ -11,6 +11,7 @@
 -- | bar charts
 module Chart.Bar
   ( BarOptions(..)
+  , defaultBarOptions
   , BarValueAcc(..)
   , BarData(..)
   , barDataLowerUpper
@@ -35,7 +36,7 @@ import NumHask.Space
 data BarValueAcc
   = BarValueSeparate
   | BarValueAccumulate
-  deriving (Show, Generic)
+  deriving (Show, Eq, Generic)
 
 -- | the usual bar chart eye-candy
 data BarOptions = BarOptions
@@ -46,10 +47,10 @@ data BarOptions = BarOptions
   , accumulateValues :: BarValueAcc
   , orientation :: Orientation
   , hudOptions :: HudOptions
-  } deriving (Show, Generic)
+  } deriving (Show, Eq, Generic)
 
-instance Default BarOptions where
-  def =
+defaultBarOptions :: BarOptions
+defaultBarOptions =
     BarOptions
       ((\x -> RectOptions 0.002 ugrey (ucolor $ d3Colors1 x `withOpacity` 0.5)) <$>
        [0 .. 10])
@@ -58,14 +59,14 @@ instance Default BarOptions where
       True
       BarValueSeparate
       Hori
-      def
+      defaultHudOptions
 
 -- | imagine a data frame ...
 data BarData = BarData
   { barData :: [[Double]]
   , barRowLabels :: Maybe [Text]
   , barColumnLabels :: Maybe [Text]
-  } deriving (Show, Generic)
+  } deriving (Show, Eq, Generic)
 
 -- | Convert BarData to rectangles
 barRects ::

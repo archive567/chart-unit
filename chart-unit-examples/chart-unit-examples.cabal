@@ -35,18 +35,49 @@ source-repository head
   type: git
   location: https://github.com/tonyday567/chart-unit
 
+executable chart-unit-main-example
+  main-is: mainExample.hs
+  hs-source-dirs:
+    examples
+  ghc-options:
+    -Wall
+    -Wcompat
+    -Wincomplete-record-updates
+    -Wincomplete-uni-patterns
+    -Wredundant-constraints
+  default-extensions:
+    NoImplicitPrelude
+    NegativeLiterals
+    OverloadedStrings
+    UnicodeSyntax
+  build-depends:
+      base >=4.7 && <5
+    , chart-unit
+    , protolude
+  default-language: Haskell2010
+
 executable chart-unit-gallery
   main-is: gallery.hs
   hs-source-dirs:
-      examples
-  ghc-options: -funbox-strict-fields -fforce-recomp -threaded -rtsopts -with-rtsopts=-N
+    examples
+  ghc-options:
+    -Wall
+    -Wcompat
+    -Wincomplete-record-updates
+    -Wincomplete-uni-patterns
+    -Wredundant-constraints
+  default-extensions:
+    NoImplicitPrelude
+    NegativeLiterals
+    OverloadedStrings
+    UnicodeSyntax
   build-depends:
       base >=4.7 && <5
     , chart-unit
     , diagrams-lib
     , formatting
-    , generic-lens-labels
-    , lens
+    , generic-lens
+    , microlens
     , mwc-probability >= 2.0.2
     , mwc-random
     , numhask
@@ -59,31 +90,26 @@ executable chart-unit-gallery
     , time
   default-language: Haskell2010
 
-executable chart-unit-main-example
-  main-is: mainExample.hs
-  hs-source-dirs:
-      examples
-  ghc-options: -funbox-strict-fields -fforce-recomp -threaded -rtsopts -with-rtsopts=-N
-  build-depends:
-      base >=4.7 && <5
-    , chart-unit
-    , generic-lens-labels
-    , lens
-    , numhask-prelude
-    , numhask-range
-  default-language: Haskell2010
-
 executable chart-unit-source-examples
   main-is: sourceExamples.hs
   hs-source-dirs:
-      examples
-  ghc-options: -funbox-strict-fields -fforce-recomp -threaded -rtsopts -with-rtsopts=-N
+    examples
+  ghc-options:
+    -Wall
+    -Wcompat
+    -Wincomplete-record-updates
+    -Wincomplete-uni-patterns
+  default-extensions:
+    NoImplicitPrelude
+    NegativeLiterals
+    OverloadedStrings
+    UnicodeSyntax
   build-depends:
       base >=4.7 && <5
     , chart-unit
     , diagrams-lib
-    , generic-lens-labels
-    , lens
+    , generic-lens
+    , microlens
     , numhask
     , numhask-prelude
     , numhask-range
