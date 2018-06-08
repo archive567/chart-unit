@@ -4,6 +4,7 @@
 -- | Glyphs are (typically) small shapes symbolically representing a data point.
 module Chart.Glyph
   ( GlyphOptions(..)
+  , defaultGlyphOptions
   , GlyphShape(..)
   , glyphShape
   , glyph_
@@ -31,8 +32,8 @@ data GlyphOptions = GlyphOptions
   , shape :: GlyphShape
   } deriving (Show, Eq, Generic)
 
-instance Default GlyphOptions where
-  def = GlyphOptions 0.03 ublue ugrey 0.015 Circle
+defaultGlyphOptions :: GlyphOptions
+defaultGlyphOptions = GlyphOptions 0.03 ublue ugrey 0.015 Circle
 
 -- | shape of the glyph expressed in diagrams terms
 data GlyphShape

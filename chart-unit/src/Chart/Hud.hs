@@ -12,6 +12,7 @@
 --
 module Chart.Hud
   ( HudOptions(..)
+  , defaultHudOptions
   , hud
   , withHud
   , withHud_
@@ -24,13 +25,16 @@ module Chart.Hud
   , defYAxis
   , axis
   , AutoOptions(..)
+  , defaultAutoOptions
   , adjustAxis
   , axisSane
   , computeTicks
   , TitleOptions(..)
+  , defaultTitleOptions
   , title
   , LegendType(..)
   , LegendOptions(..)
+  , defaultLegendOptions
   , legend
   , GridStyle(..)
   , GridOptions(..)
@@ -75,12 +79,12 @@ data HudOptions = HudOptions
   , canvas :: RectOptions
   } deriving (Show, Eq, Generic)
 
-instance Default HudOptions where
-  def = HudOptions 1.1 [defXAxis, defYAxis] [] [] [] clear
+defaultHudOptions :: HudOptions
+defaultHudOptions = HudOptions 1.1 [defXAxis, defYAxis] [] [] [] clear
 
 -- | Create a hud.
 --
--- > hud def sixbyfour one
+-- > hud defaultHudOptions sixbyfour one
 --
 -- ![hud example](other/hudExample.svg)
 --
@@ -207,7 +211,7 @@ defXAxis =
     0
     0.04
     (LabelOptions
-       (field @"color" .~ UColor 0 0 0 0.6 $ def)
+       (field @"color" .~ UColor 0 0 0 0.6 $ defaultTextOptions)
        (Pair 0 -1)
        0.015)
     (TickRound 8)
@@ -225,13 +229,10 @@ defYAxis =
     0
     0.04
     (LabelOptions
-       (field @"color" .~ (UColor 0 0 0 0.6) $ def)
+       (field @"color" .~ (UColor 0 0 0 0.6) $ defaultTextOptions)
        (Pair -1 0)
        0.015)
     (TickRound 8)
-
-instance Default AxisOptions where
-  def = defXAxis
 
 -- | create an axis, based on AxisOptions, a physical aspect, and a range
 --
@@ -293,8 +294,8 @@ data AutoOptions =
   , allowDiagonal :: Bool
   } deriving (Show, Eq, Generic)
 
-instance Default AutoOptions where
-  def = AutoOptions 0.08 0.06 0.12 True
+defaultAutoOptions :: AutoOptions
+defaultAutoOptions = AutoOptions 0.08 0.06 0.12 True
 
 -- | adjust an axis for sane font sizes etc
 adjustAxis :: AutoOptions -> Range Double -> Range Double ->
@@ -386,12 +387,12 @@ data TitleOptions = TitleOptions
   , gap :: Double
   } deriving (Show, Eq, Generic)
 
-instance Default TitleOptions where
-  def =
+defaultTitleOptions :: TitleOptions
+defaultTitleOptions =
     TitleOptions
        (field @"size" .~ 0.12 $
         field @"color" .~ UColor 0 0 0 0.6 $
-        def)
+        defaultTextOptions)
       AlignCenter
       PlaceTop
       0.04
@@ -442,8 +443,8 @@ data LegendOptions = LegendOptions
   , text :: TextOptions
   } deriving (Show, Eq, Generic)
 
-instance Default LegendOptions where
-  def =
+defaultLegendOptions :: LegendOptions
+defaultLegendOptions =
     LegendOptions
       []
       1.1
@@ -456,14 +457,14 @@ instance Default LegendOptions where
       (RectOptions 0.002 (UColor 0 0 0 0.2) utrans)
       (field @"size" .~ 0.07 $
        field @"color" .~ (UColor 0 0 0 0.63) $
-       def)
+       defaultTextOptions)
 
 -- | Create a legend based on a LegendOptions
 --
 -- > legends' :: [(LegendType, Text)]
 -- > legends' =
--- >   [(LegendText def, "legend")] <> [(LegendPixel (blob ublue) 0.05, "pixel")] <>
--- >     -- [ (LegendArrow (def & #minStaffWidth .~ 0.01 & #minHeadLength .~ 0.03) 0.05, "arrow")] <>
+-- >   [(LegendText defaultTextOptions, "legend")] <> [(LegendPixel (blob ublue) 0.05, "pixel")] <>
+-- >     -- [ (LegendArrow (defaultArrowOptions & #minStaffWidth .~ 0.01 & #minHeadLength .~ 0.03) 0.05, "arrow")] <>
 -- >   [(LegendRect def 0.05, "rect")] <>
 -- >   [(LegendGLine def def 0.10, "glyph+line")] <>
 -- >   [(LegendGlyph def, "just a glyph")] <>

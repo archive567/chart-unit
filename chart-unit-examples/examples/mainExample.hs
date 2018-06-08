@@ -38,28 +38,28 @@ as =
 
 titles' :: [(TitleOptions, Text)]
 titles' =
-  [ (def, "Example Chart")
+  [ (defaultTitleOptions, "Example Chart")
   , ( #align .~ AlignCenter $
       #text . #rotation .~ 90 $
       #text . #size .~ 0.12 $
       #place .~ PlaceLeft $
-      def
+      defaultTitleOptions
     , "left axis title")
   , ( #text . #color .~ ublue $
       #text . #size .~ 0.08 $
       #align .~ AlignRight $
       #place .~ PlaceBottom $
-      def
+      defaultTitleOptions
     , "bottom right, non-essential note")
   ]
 
 legends' :: [(LegendType, Text)]
 legends' =
-  [(LegendText def, "legend")] <>
+  [(LegendText defaultTextOptions, "legend")] <>
   [(LegendPixel (blob ublue) 0.05, "pixel")] <>
-  [(LegendRect def 0.05, "rect")] <>
-  [(LegendGLine def def 0.10, "glyph+line")] <>
-  [(LegendGlyph def, "just a glyph")] <>
+  [(LegendRect defaultRectOptions 0.05, "rect")] <>
+  [(LegendGLine defaultGlyphOptions defaultLineOptions 0.10, "glyph+line")] <>
+  [(LegendGlyph defaultGlyphOptions, "just a glyph")] <>
   zipWith
     (\x y -> (LegendLine x 0.05, y))
     lopts
@@ -76,8 +76,8 @@ mainExample =
      #titles .~ titles' $
      #axes .~ as $
      #axes %~ map (#outerPad .~ 1) $
-     #legends .~ [#chartType .~ legends' $ def] $
-     def])
+     #legends .~ [#chartType .~ legends' $ defaultLegendOptions] $
+     defaultHudOptions])
 
 main :: IO ()
-main = fileSvg "./chart-unit/other/mainExample.svg" def mainExample
+main = fileSvg "./chart-unit/other/mainExample.svg" defaultSvgOptions mainExample

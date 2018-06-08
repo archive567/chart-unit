@@ -9,6 +9,7 @@ module Chart.Arrow
   ( Arrow(..)
   , ArrowHTStyle(..)
   , ArrowOptions(..)
+  , defaultArrowOptions
   , normArrows
   , arrows
   , arrowChart
@@ -91,8 +92,8 @@ data ArrowOptions = ArrowOptions
   , hStyle :: ArrowHTStyle Double
   } deriving (Show, Eq, Generic)
 
-instance Default ArrowOptions where
-  def = ArrowOptions 0.02 0.2 0.01 0.1 0.002 0.005 ublue Dart
+defaultArrowOptions :: ArrowOptions
+defaultArrowOptions = ArrowOptions 0.02 0.2 0.01 0.1 0.002 0.005 ublue Dart
 
 -- | Equalize the arrow space width with the data space one.
 -- this creates the right arrow sizing in physical chart space

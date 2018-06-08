@@ -30,20 +30,21 @@ specChart :: SpecWith ()
 specChart =
   describe "withHud" $ do
     it "withHud + mempty ~ hud" $
-      toText def (withHud_ def sixbyfour (\_ _ _ -> mempty) [corners one])
+      toText defaultSvgOptions
+      (withHud_ defaultHudOptions sixbyfour (\_ _ _ -> mempty) [corners one])
         `shouldBe`
-        toText def (hud def sixbyfour one)
+        toText defaultSvgOptions (hud defaultHudOptions sixbyfour one)
     it "hudWith + lineChart ~ hud <> lineChart_" $
-      toText def (withHud_ def sixbyfour (lineChart lopts) ls)
+      toText defaultSvgOptions
+      (withHud_ defaultHudOptions sixbyfour (lineChart lopts) ls)
         `shouldBe`
-        toText def (hud def sixbyfour (range ls) <>
+        toText defaultSvgOptions (hud defaultHudOptions sixbyfour (range ls) <>
                     lineChart_ lopts sixbyfour ls)
     it "renderChart ChartOptions ~ hud <> chart" $
-      toText def (renderChart testOptions)
+      toText defaultSvgOptions (renderChart testOptions)
         `shouldBe`
-        toText def (hud def sixbyfour (range ls) <>
+        toText defaultSvgOptions (hud defaultHudOptions sixbyfour (range ls) <>
                     lineChart_ lopts sixbyfour ls)
-
     it "check ChartOptions binary round trip" $ do
       (decode . encode) testOptions
         `shouldBe`
@@ -54,7 +55,7 @@ testOptions =
   ChartOptions
    Nothing
    sixbyfour
-   [ HudChart def
+   [ HudChart defaultHudOptions
    , LineChart (zip lopts ls)
    ]
 

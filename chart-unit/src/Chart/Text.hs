@@ -5,8 +5,11 @@
 -- | textual chart elements
 module Chart.Text
   ( TextOptions(..)
+  , defaultTextOptions
   , TextPathOptions(..)
+  , defaultTextPathOptions
   , TextSvgOptions(..)
+  , defaultTextSvgOptions
   , TextType(..)
   , TextFont(..)
   , UFillRule(..)
@@ -16,6 +19,7 @@ module Chart.Text
   , textChart
   , textChart_
   , LabelOptions(..)
+  , defaultLabelOptions
   , labelled
   ) where
 
@@ -37,8 +41,8 @@ newtype TextPathOptions = TextPathOptions
   { font :: TextFont
   } deriving (Show, Eq, Generic)
 
-instance Default TextPathOptions where
-  def = TextPathOptions Lin2
+defaultTextPathOptions :: TextPathOptions
+defaultTextPathOptions = TextPathOptions Lin2
 
 -- | ADT of fonts
 data TextFont
@@ -63,8 +67,8 @@ data TextSvgOptions = TextSvgOptions
   , textBox :: RectOptions -- ^ bounding box 
   } deriving (Show, Eq, Generic)
 
-instance Default TextSvgOptions where
-  def = TextSvgOptions 0.78 0.25 -0.10 0.25 Nothing 1.1 0.55 clear
+defaultTextSvgOptions :: TextSvgOptions
+defaultTextSvgOptions = TextSvgOptions 0.78 0.25 -0.10 0.25 Nothing 1.1 0.55 clear
 
 -- | text as a path or as svg text
 data TextType
@@ -89,8 +93,8 @@ data TextOptions = TextOptions
   , textType :: TextType -- ^ default: 'TextPath' def
   } deriving (Show, Eq, Generic)
 
-instance Default TextOptions where
-  def =
+defaultTextOptions :: TextOptions
+defaultTextOptions =
     TextOptions
       0.08
       AlignCenter
@@ -98,7 +102,7 @@ instance Default TextOptions where
       (UColor 0 0 0 0.33)
       UEvenOdd
       0
-      (TextSvg def)
+      (TextSvg defaultTextSvgOptions)
 
 -- | Create a textual chart element
 --
@@ -211,8 +215,8 @@ data LabelOptions = LabelOptions
   , gap :: Double -- ^ distance to label
   } deriving (Show, Eq, Generic)
 
-instance Default LabelOptions where
-  def = LabelOptions def (Pair 0 1) 0.05
+defaultLabelOptions :: LabelOptions
+defaultLabelOptions = LabelOptions defaultTextOptions (Pair 0 1) 0.05
 
 -- | Label a chart element with some text
 --

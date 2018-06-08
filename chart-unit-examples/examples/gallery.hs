@@ -1,6 +1,7 @@
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE MonoLocalBinds #-}
 {-# LANGUAGE NegativeLiterals #-}
 {-# LANGUAGE NoImplicitPrelude #-}
 {-# LANGUAGE OverloadedLabels #-}
@@ -10,7 +11,7 @@
 {-# OPTIONS_GHC -Wno-type-defaults #-}
 {-# OPTIONS_GHC -fno-warn-name-shadowing #-}
 {-# OPTIONS_GHC -Wno-unused-top-binds #-}
- 
+
 import Chart
 import Control.Lens hiding (beside)
 import Control.Monad.Primitive (PrimState)
@@ -18,15 +19,14 @@ import Data.Generics.Labels ()
 import Data.List ((!!), head, zipWith3)
 import Data.Time
 import Data.Time.Calendar.WeekDate
-import qualified Diagrams.Prelude as D
-import qualified Diagrams.TwoD.Text
 import Formatting
 import NumHask.Histogram
 import NumHask.Prelude as P
 import System.Random.MWC
 import System.Random.MWC.Probability
-
 import qualified Data.Text as Text
+import qualified Diagrams.Prelude as D
+import qualified Diagrams.TwoD.Text
 
 -- * example data generation
 -- Standard normal random variates in one dimension.
@@ -45,7 +45,7 @@ rvsCorr gen n c = do
 gridExample :: Chart b
 gridExample =
   hud
-    (def & #grids .~
+    (defaultHudOptions & #grids .~
      [ GridOptions
          Vert
          (GridExact GridOuterPos 10)
@@ -82,16 +82,17 @@ timeData n = do
 -- * dealing with time
 timeExample :: [Day] -> Chart b
 timeExample dates =
-  hud (#axes .~ [adef, defYAxis] $ def) sixbyfour r <>
+  hud (#axes .~ [adef, defYAxis] $ defaultHudOptions) sixbyfour r <>
   glyphChart
-    [#color .~ ucolor (red `withOpacity` 1) $ #borderSize .~ 0 $ #size .~ 0.01 $ def]
+    [#color .~ ucolor (red `withOpacity` 1) $ #borderSize .~ 0 $ #size .~ 0.01 $
+     defaultGlyphOptions]
     sixbyfour
     r
     [xs'] <>
   lglyphChart
-    [def]
+    [defaultLabelOptions]
     [ #shape .~ Square $ #color .~ ucolor (blue `withOpacity` 1) $ #borderSize .~ 0 $
-      #size .~ 0.04 $ def
+      #size .~ 0.04 $ defaultGlyphOptions
     ]
     sixbyfour
     r
@@ -117,7 +118,8 @@ timeExample dates =
         ((`UTCTime` 0) <$> dates)
     ts' = (\(x, y) -> (fromIntegral x, y)) <$> ts
     (Ranges aspx _) = sixbyfour
-    adef = adjustAxis def aspx rx $ #tickStyle .~ TickPlaced ts' $ defXAxis
+    adef = adjustAxis defaultAutoOptions aspx rx $
+      #tickStyle .~ TickPlaced ts' $ defXAxis
 
 -- * scatter chart
 mkScatterData :: IO [[Pair Double]]
@@ -150,12 +152,14 @@ scatterHistExample xys =
     histy = rectChart_ defHist minorAspect hy
     hud1 =
       hud
-        (#axes .~ [#place .~ PlaceTop $ #label . #orientation .~ Pair 0 1 $ def] $
-         def)
+        (#axes .~ [#place .~ PlaceTop $ #label . #orientation .~ Pair 0 1 $
+                   defXAxis] $
+         defaultHudOptions)
         mainAspect
         (range xys)
     defHist =
-      (\x -> #borderSize .~ 0 $ #color .~ (ucolor $ d3Colors1 x `withOpacity` 0.5) $ def) <$>
+      (\x -> #borderSize .~ 0 $ #color .~ (ucolor $ d3Colors1 x `withOpacity` 0.5)
+        $ defaultRectOptions) <$>
       [6, 8]
     makeHist n = makeRects IgnoreOvers . regular n
     hx = makeHist 50 . fmap (view D._x) <$> xys
@@ -186,7 +190,7 @@ q7 =
     0.07
     (UColor 0.341 0.224 0.388 1)
     (UColor 1 1 0.33 1)
-    (#allowDiagonal .~ False $ #maxXRatio .~ 0.16 $ def)
+    (#allowDiagonal .~ False $ #maxXRatio .~ 0.16 $ defaultAutoOptions)
  
 q24 :: SurveyQ
 q24 =
@@ -205,7 +209,7 @@ q24 =
     (-0.03)
     (UColor 0.341 0.224 0.388 1)
     (UColor 0.33 0.33 0.33 1)
-    def
+    defaultAutoOptions
 
 surveyChart :: SurveyQ -> Chart b
 surveyChart (SurveyQ t d bgap ngap bc tc ao) =
@@ -215,7 +219,7 @@ surveyChart (SurveyQ t d bgap ngap bc tc ao) =
 surveyBars :: UColor Double -> Double -> [Int] -> Chart b
 surveyBars rc gap d =
   rectChart
-    [#borderSize .~ 0 $ #color .~ rc $ def]
+    [#borderSize .~ 0 $ #color .~ rc $ defaultRectOptions]
     sixbyfour
     (barRange [fromIntegral <$> d])
     [rectBars gap $ fromIntegral <$> d]
@@ -223,12 +227,12 @@ surveyBars rc gap d =
 surveyHud :: AutoOptions -> Text -> [(Text, Int)] -> Chart b
 surveyHud ao t d =
   hud
-    (#outerPad .~ 1 $ #titles .~ [(def, t)] $ #axes .~
+    (#outerPad .~ 1 $ #titles .~ [(defaultTitleOptions, t)] $ #axes .~
      [ #tickStyle .~ TickRound 4 $ defYAxis
      , adjustAxis ao aspx rx $ #gap .~ 0 $ #tickStyle .~ TickLabels (fst <$> d) $
        defXAxis
      ] $
-     def)
+     defaultHudOptions)
     sixbyfour
     r
   where
@@ -239,7 +243,7 @@ surveyHud ao t d =
 surveyText :: UColor Double -> Double -> [Int] -> Chart b
 surveyText tc gap ys =
   textChart
-    (repeat (#color .~ tc $ def))
+    (repeat (#color .~ tc $ defaultTextOptions))
     sixbyfour
     (barRange [fromIntegral <$> ys])
     [ zipWith
@@ -272,7 +276,7 @@ skinnyExample qs qs' = hud' <> ticks' <> labels'
       hud
       (HudOptions
         1.1
-        [#label . #text . #size .~ 0.25 $ def]
+        [#label . #text . #size .~ 0.25 $ defXAxis]
         []
         []
         []
@@ -281,7 +285,7 @@ skinnyExample qs qs' = hud' <> ticks' <> labels'
       r
     labels' =
       textChart
-      [#alignH .~ AlignLeft $ #rotation .~ 45 $ #size .~ 0.2 $ def]
+      [#alignH .~ AlignLeft $ #rotation .~ 45 $ #size .~ 0.2 $ defaultTextOptions]
       skinny
       r
       [ zipWith
@@ -289,7 +293,7 @@ skinnyExample qs qs' = hud' <> ticks' <> labels'
         ["min", "3rd Q", "median", "1st Q", "max"]
         qs'
       ]
-    ticks' = glyphChart [def] skinny r [(`Pair` 0.02) <$> qs]
+    ticks' = glyphChart [defaultGlyphOptions] skinny r [(`Pair` 0.02) <$> qs]
 
 -- * comparing histograms
 makeHistDiffExample :: IO ([Rect Double], [Rect Double])
@@ -316,10 +320,10 @@ histDiffExample (h1, h2) =
        (rectChart
           [ #borderColor .~ utrans $
             #color .~ UColor 0.365 0.647 0.855 0.2 $
-            def
+            defaultRectOptions
           , #borderColor .~ utrans $
             #color .~ UColor 0.88 0.53 0.23 0.8 $
-            def
+            defaultRectOptions
           ]
           mainAspect
           (Ranges rx ry)
@@ -327,12 +331,12 @@ histDiffExample (h1, h2) =
        (rectChart
           [ #borderColor .~ utrans $
             #color .~ UColor 0.88 0.53 0.23 0.8 $
-            def
+            defaultRectOptions
           ]
           botAspect
           (Ranges rx deltary)
           [deltah]) <>
-        hud def botAspect (Ranges rx deltary)
+        hud defaultHudOptions botAspect (Ranges rx deltary)
 
 -- * clipping
 clip :: Rect Double -> Chart b -> Chart b
@@ -378,7 +382,7 @@ schoolbookHud :: Chart b
 schoolbookHud =
   hud
     (#axes .~ [] $
-     #titles .~ [(def, "y = x² - 3")] $
+     #titles .~ [(defaultTitleOptions, "y = x² - 3")] $
      #grids .~
      [ GridOptions
          Vert
@@ -397,7 +401,7 @@ schoolbookHud =
          (GridExact GridOuterPos 50)
          (LineOptions 0.002 schoolBlue)
      ] $
-     def)
+     defaultHudOptions)
     asquare
     (Rect -5 5 -5 5)
   where
@@ -406,7 +410,7 @@ schoolbookHud =
 parabola :: Rect Double -> (Double -> Double) -> Int -> Range Double -> Chart b
 parabola r f grain xscope =
   lineChart
-    [#size .~ 0.01 $ #color .~ UColor 0.6 0.6 0.6 1 $ def]
+    [#size .~ 0.01 $ #color .~ UColor 0.6 0.6 0.6 1 $ defaultLineOptions]
     asquare
     r
     [dataXY f xscope grain]
@@ -418,7 +422,8 @@ ceptLines ::
   -> Double
   -> Chart b
 ceptLines asp r@(Ranges rx ry) f x =
-  mconcat $ lines (#color .~ UColor 0.2 0.2 0.2 1 $ #size .~ 0.005 $ def) .
+  mconcat $ lines (#color .~ UColor 0.2 0.2 0.2 1 $ #size .~ 0.005 $
+                   defaultLineOptions) .
   fmap (Chart.project r asp) <$>
   [[Pair (lower rx) (f x), Pair x (f x)], [Pair x (lower ry), Pair x (f x)]]
 
@@ -430,7 +435,8 @@ cepts ::
   -> Chart b
 cepts a r@(Ranges rx ry) f x =
   textChart
-    [def, #alignH .~ AlignCenter $ #rotation .~ 0 $ def]
+    [ defaultTextOptions
+    , #alignH .~ AlignCenter $ #rotation .~ 0 $ defaultTextOptions]
     a
     r
     [ [("x = " <> sformat (fixed 1) x, Pair x (lower ry - 1))]
@@ -439,10 +445,11 @@ cepts a r@(Ranges rx ry) f x =
 
 schoolbookExample :: Double -> Chart b
 schoolbookExample x =
-  bound (#color .~ UColor 0 0 0 0.1 $ def) 1.05 $ schoolbookHud <>
+  bound (#color .~ UColor 0 0 0 0.1 $ defaultRectOptions) 1.05 $ schoolbookHud <>
   parabola r f grain xscope <>
   ceptLines asquare r f x <>
-  glyphChart [#color .~ ucolor (red `withOpacity` 0.5) $ def] asquare r [[Pair x (f x)]] <>
+  glyphChart [#color .~ ucolor (red `withOpacity` 0.5) $
+              defaultGlyphOptions] asquare r [[Pair x (f x)]] <>
   cepts asquare r f x
   where
     f x = x * x - 3
@@ -450,38 +457,40 @@ schoolbookExample x =
     xscope = Range -3 3
     grain = 50
 
+exampleDir :: FilePath
+exampleDir = "./chart-unit-examples/other/"
+
+exampleSvg :: FilePath -> Pair Double -> Chart SVG -> IO ()
+exampleSvg t s c =
+  fileSvg
+  (exampleDir <> t)
+  (#size .~ s $ defaultSvgOptions)
+  c
+
+sStandard :: Pair Double
+sStandard = Pair 300 200
 
 main :: IO ()
 main = do
-  let examplesDir = "./chart-unit-examples/other/"
-
-  putStrLn ("gridExample" :: Text)
-  fileSvg (examplesDir <> "gridExample.svg") def gridExample
+  exampleSvg "gridExample.svg" sStandard gridExample
   ts <- timeData 200
-  putStrLn ("timeExample" :: Text)
-  fileSvg (examplesDir <> "timeExample.svg") def $ timeExample ts
+  exampleSvg "timeExample.svg" sStandard (timeExample ts)
   xys <- mkScatterData
-  putStrLn ("scatterHistExample" :: Text)
-  fileSvg (examplesDir <> "scatterHistExample.svg") def (scatterHistExample xys)
+  exampleSvg "scatterHistExample.svg"sStandard (scatterHistExample xys)
   putStrLn ("skinnyExample" :: Text)
   qs <- makeQuantiles 20
   qs' <- makeQuantiles 4
-  fileSvg (examplesDir <> "skinnyExample.svg") (#size .~ Pair 600 150 $ def) $
+  exampleSvg "skinnyExample.svg" (Pair 600 150) $
     skinnyExample qs qs'
-  putStrLn ("histDiffExample" :: Text)
   hs <- makeHistDiffExample
-  fileSvg (examplesDir <> "histDiffExample.svg") (#size .~ Pair 600 600 $ def) $
-    histDiffExample hs
-  putStrLn ("clippingExample" :: Text)
-  fileSvg (examplesDir <> "clippingExample.svg") (#size .~ Pair 600 600 $ def) $
+  exampleSvg "histDiffExample.svg" (Pair 600 600) (histDiffExample hs)
+  exampleSvg "clippingExample.svg" (Pair 600 600) $
     clippingExample
-      (#color .~ UColor 0.3 0.3 0.3 0.1 $ def)
+      (#color .~ UColor 0.3 0.3 0.3 0.1 $ defaultRectOptions)
       1.1
       5
       (schoolbookExample -1)
-  putStrLn ("schoolbookExample" :: Text)
-  fileSvg (examplesDir <> "schoolbookExample.svg") (#size .~ Pair 400 400 $ def)
+  exampleSvg "schoolbookExample.svg" (Pair 400 400)
     (schoolbookExample -1)
-  putStrLn ("haskell survey examples" :: Text)
-  fileSvg (examplesDir <> "q7Example.svg") def $ surveyChart q7
-  fileSvg (examplesDir <> "q24Example.svg") def $ surveyChart q24
+  exampleSvg "q7Example.svg" sStandard (surveyChart q7)
+  exampleSvg "q24Example.svg" sStandard (surveyChart q24)

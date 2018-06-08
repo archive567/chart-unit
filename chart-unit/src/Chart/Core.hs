@@ -26,7 +26,7 @@
 -- > scaleExample =
 -- >     fileSvg "other/scaleExample.svg" (#size .~ Pair 300 120 $ def) $
 -- >     withHud
--- >       def
+-- >       defaultHudOptions
 -- >       widescreen
 -- >       (Rect 0 12 0 0.2)
 -- >       (lineChart (repeat def))

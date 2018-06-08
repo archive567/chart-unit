@@ -6,7 +6,9 @@
 
 -- | Svg rendering
 module Chart.Svg
-  ( SvgOptions(..)
+  ( SVG
+  , SvgOptions(..)
+  , defaultSvgOptions
   , renderSvg
   , toText
   , toFile
@@ -16,7 +18,6 @@ module Chart.Svg
   ) where
 
 import Chart.Core
-import Data.Default
 import Diagrams.Backend.SVG
 import Graphics.Svg hiding (toText)
 import NumHask.Pair
@@ -39,8 +40,8 @@ data SvgOptions = SvgOptions
   , includeDocType :: Bool
   } deriving (Show, Eq, Generic)
 
-instance Default SvgOptions where
-  def = SvgOptions (Pair 600 400) "" [] True
+defaultSvgOptions :: SvgOptions
+defaultSvgOptions = SvgOptions (Pair 600 400) "" [] True
 
 renderSvg :: SvgOptions -> Chart SVG -> Element
 renderSvg (SvgOptions (Pair x y) svgid atts dt) ch =
@@ -64,4 +65,4 @@ fileSvg f opts ch = toFile f $ renderSvg opts ch
 
 -- | a scratch pad
 scratch :: Chart SVG -> IO ()
-scratch = fileSvg "other/scratch.svg" def
+scratch = fileSvg "other/scratch.svg" defaultSvgOptions

@@ -168,8 +168,6 @@ module Chart
   , module Data.Colour.Palette.ColorSet
     -- * fonts
   , module Graphics.SVGFonts
-    -- * Default
-  , Default(..)
   ) where
 
 import Chart.ADT
@@ -188,7 +186,6 @@ import Data.Colour
 import Data.Colour.Names
 import Data.Colour.Palette.ColorSet
 import Data.Colour.Palette.Harmony
-import Data.Default (Default(..))
 import Graphics.SVGFonts hiding (textFont)
 import NumHask.Pair
 import NumHask.Range

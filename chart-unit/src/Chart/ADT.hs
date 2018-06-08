@@ -9,6 +9,7 @@
 --
 module Chart.ADT
   ( ChartOptions(..)
+  , defaultChartOptions
   , ChartSpec(..)
   , renderSpec
   , renderChart
@@ -26,7 +27,6 @@ import Chart.Rect
 import Chart.Text
 import Control.Lens
 import Data.Binary
-import Data.Default
 import Data.Functor.Compose
 import Data.Generics.Product (field)
 import NumHask.Pair 
@@ -56,8 +56,8 @@ data ChartOptions = ChartOptions
   , charts :: [ChartSpec]
   } deriving (Show, Eq, Generic)
 
-instance Default ChartOptions where
-  def = ChartOptions Nothing sixbyfour []
+defaultChartOptions :: ChartOptions
+defaultChartOptions = ChartOptions Nothing sixbyfour []
 
 -- | render a Chart specified using ChartOptions
 renderChart :: ChartOptions -> Chart b

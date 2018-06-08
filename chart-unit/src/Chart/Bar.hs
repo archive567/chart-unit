@@ -11,6 +11,7 @@
 -- | bar charts
 module Chart.Bar
   ( BarOptions(..)
+  , defaultBarOptions
   , BarValueAcc(..)
   , BarData(..)
   , barDataLowerUpper
@@ -48,8 +49,8 @@ data BarOptions = BarOptions
   , hudOptions :: HudOptions
   } deriving (Show, Eq, Generic)
 
-instance Default BarOptions where
-  def =
+defaultBarOptions :: BarOptions
+defaultBarOptions =
     BarOptions
       ((\x -> RectOptions 0.002 ugrey (ucolor $ d3Colors1 x `withOpacity` 0.5)) <$>
        [0 .. 10])
@@ -58,7 +59,7 @@ instance Default BarOptions where
       True
       BarValueSeparate
       Hori
-      def
+      defaultHudOptions
 
 -- | imagine a data frame ...
 data BarData = BarData

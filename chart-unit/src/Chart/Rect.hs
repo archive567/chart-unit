@@ -8,6 +8,7 @@
 -- | rectangular chart elements
 module Chart.Rect
   ( RectOptions(..)
+  , defaultRectOptions
   , blob
   , box
   , clear
@@ -22,6 +23,7 @@ module Chart.Rect
   , pixelChart
   , pixelChart_
   , PixelationOptions(..)
+  , defaultPixelationOptions
   , pixelate
   , pixelateChart
   ) where
@@ -41,8 +43,8 @@ data RectOptions = RectOptions
   , color :: UColor Double
   } deriving (Show, Eq, Generic)
 
-instance Default RectOptions where
-  def = RectOptions 0.005 ugrey ublue
+defaultRectOptions :: RectOptions
+defaultRectOptions = RectOptions 0.005 ugrey ublue
 
 -- | solid rectangle, no border
 blob :: UColor Double -> RectOptions
@@ -238,8 +240,8 @@ data PixelationOptions = PixelationOptions
   , pixelationGrain :: Pair Int
   }
 
-instance Default PixelationOptions where
-  def =
+defaultPixelationOptions :: PixelationOptions
+defaultPixelationOptions =
     PixelationOptions
       (Range (acolor $ UColor 0.47 0.73 0.86 1) (acolor $ UColor 0.01 0.06 0.22 1))
       (Pair 40 40)
