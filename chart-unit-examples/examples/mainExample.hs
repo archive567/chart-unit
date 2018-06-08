@@ -7,7 +7,7 @@
 {-# OPTIONS_GHC -Wall #-}
 
 import Chart
-import Control.Lens
+import Lens.Micro
 import NumHask.Prelude
 import Data.Generics.Product
 

@@ -46,7 +46,7 @@ executable chart-unit-gallery
     , diagrams-lib
     , formatting
     , generic-lens
-    , lens
+    , microlens
     , mwc-probability >= 2.0.2
     , mwc-random
     , numhask
@@ -68,7 +68,7 @@ executable chart-unit-main-example
       base >=4.7 && <5
     , chart-unit
     , generic-lens
-    , lens
+    , microlens
     , numhask-prelude
     , numhask-range
   default-language: Haskell2010
@@ -83,7 +83,7 @@ executable chart-unit-source-examples
     , chart-unit
     , diagrams-lib
     , generic-lens
-    , lens
+    , microlens
     , numhask
     , numhask-prelude
     , numhask-range

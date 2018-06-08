@@ -25,11 +25,9 @@ import Chart.Hud
 import Chart.Line
 import Chart.Rect
 import Chart.Text
-import Control.Lens
 import Data.Binary
 import Data.Functor.Compose
-import Data.Generics.Product (field)
-import NumHask.Pair 
+import NumHask.Pair
 import NumHask.Prelude
 import NumHask.Range
 import NumHask.Rect
@@ -63,7 +61,7 @@ defaultChartOptions = ChartOptions Nothing sixbyfour []
 renderChart :: ChartOptions -> Chart b
 renderChart ch@(ChartOptions _ a cs) =
   mconcat (renderSpec a (rangeChart ch) <$> cs)
-
+ 
 -- | render a ChartSpec
 renderSpec :: Rect Double -> Rect Double -> ChartSpec -> Chart b
 renderSpec a r (GlyphChart xs) = glyphChart (fst <$> xs) a r (snd <$> xs)
@@ -100,7 +98,7 @@ rangeSpec (TextChart xs) = Just $ range $ (\x -> fmap snd . toList <$> x) (snd <
 rangeSpec (RectChart xs) = Just $ (\rs -> fold $ fold <$> rs) (snd <$> xs)
 rangeSpec (PixelChart xs) = Just $ fold $ fold . map pixelRect <$> xs
 rangeSpec (ArrowChart xs) = Just $ (\xss -> fold (space . map arrowPos <$> xss)) (snd <$> xs)
-rangeSpec (BarChart _ d) = Just $ barRange (d ^. field @"barData")
+rangeSpec (BarChart _ d) = Just $ barRange (barData d)
 rangeSpec (HudChart _) = Nothing
 
 -- | calculate the range of a ChartOptions

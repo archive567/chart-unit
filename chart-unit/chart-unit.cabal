@@ -50,7 +50,6 @@ library
     , foldl
     , formatting
     , generic-lens
-    , lens
     , linear
     , numhask
     , numhask-prelude

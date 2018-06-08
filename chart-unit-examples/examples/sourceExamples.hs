@@ -13,7 +13,7 @@
 
 -- | examples used in haddock docs
 import Chart
-import Control.Lens
+import Lens.Micro
 import NumHask.Prelude
 import qualified Data.Text as Text
 import qualified Diagrams.Prelude as D

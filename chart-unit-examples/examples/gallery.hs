@@ -14,7 +14,7 @@
 {-# OPTIONS_GHC -Wno-unused-top-binds #-}
 
 import Chart
-import Control.Lens hiding (beside)
+import Lens.Micro
 import Control.Monad.Primitive (PrimState)
 import Data.List ((!!), head, zipWith3)
 import Data.Time
@@ -163,8 +163,8 @@ scatterHistExample xys =
         $ defaultRectOptions) <$>
       [6, 8]
     makeHist n = makeRects IgnoreOvers . regular n
-    hx = makeHist 50 . fmap (view D._x) <$> xys
-    hy = makeHist 50 . fmap (view D._y) <$> xys
+    hx = makeHist 50 . fmap (^. D._x) <$> xys
+    hy = makeHist 50 . fmap (^. D._y) <$> xys
 
 -- * haskell survey example
 data SurveyQ = SurveyQ
