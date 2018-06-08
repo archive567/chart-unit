@@ -1,17 +1,9 @@
 {-# LANGUAGE DataKinds #-}
-{-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE MonoLocalBinds #-}
-{-# LANGUAGE NegativeLiterals #-}
-{-# LANGUAGE NoImplicitPrelude #-}
-{-# LANGUAGE OverloadedLabels #-}
-{-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE TypeApplications #-}
 {-# OPTIONS_GHC -Wall #-}
-{-# OPTIONS_GHC -Wno-type-defaults #-}
-{-# OPTIONS_GHC -fno-warn-name-shadowing #-}
-{-# OPTIONS_GHC -Wno-unused-top-binds #-}
 
 import Chart
 import Lens.Micro
@@ -27,7 +19,6 @@ import System.Random.MWC.Probability
 import qualified Data.Text as Text
 import qualified Diagrams.Prelude as D
 import qualified Diagrams.TwoD.Text
-import Data.Generics.Product
 
 -- * example data generation
 -- Standard normal random variates in one dimension.
@@ -72,8 +63,8 @@ gridExample =
 
 timeData :: Int -> IO [Day]
 timeData n = do
-  now <- getCurrentTime
-  let (UTCTime today _) = now
+  now' <- getCurrentTime
+  let (UTCTime today _) = now'
   let toWeekDay x =
         let (_, _, d) = toWeekDate x
         in d
@@ -175,7 +166,7 @@ data SurveyQ = SurveyQ
   , surveyBarColor :: UColor Double
   , surveyNumberColor :: UColor Double
   , surveyAutoOptions :: AutoOptions
-  } deriving (Show, Generic)
+  } deriving (Show)
 
 q7 :: SurveyQ
 q7 =
@@ -218,12 +209,12 @@ surveyChart (SurveyQ t d bgap ngap bc tc ao) =
   surveyHud ao t d
 
 surveyBars :: UColor Double -> Double -> [Int] -> Chart b
-surveyBars rc gap d =
+surveyBars rc gap' d =
   rectChart
     [field @"borderSize" .~ 0 $ field @"color" .~ rc $ defaultRectOptions]
     sixbyfour
     (barRange [fromIntegral <$> d])
-    [rectBars gap $ fromIntegral <$> d]
+    [rectBars gap' $ fromIntegral <$> d]
 
 surveyHud :: AutoOptions -> Text -> [(Text, Int)] -> Chart b
 surveyHud ao t d =
@@ -242,7 +233,7 @@ surveyHud ao t d =
     (Ranges aspx _) = sixbyfour
 
 surveyText :: UColor Double -> Double -> [Int] -> Chart b
-surveyText tc gap ys =
+surveyText tc gap' ys =
   textChart
     (repeat (field @"color" .~ tc $ defaultTextOptions))
     sixbyfour
@@ -260,7 +251,7 @@ surveyText tc gap ys =
         ys
     ]
   where
-    ngap = gap * fromIntegral (maximum ys) :: Double
+    ngap = gap' * fromIntegral (maximum ys) :: Double
 
 -- * one-dim chart example
 makeQuantiles :: Double -> IO [Double]
@@ -302,10 +293,10 @@ makeHistDiffExample = do
   g <- create
   xys <- rvs g 1000
   xys1 <- rvs g 1000
-  let cuts = grid OuterPos (Range -5.0 5.0) 50
+  let cuts' = grid OuterPos (Range -5.0 5.0) 50
   pure
-    ( makeRects IgnoreOvers (fill cuts xys)
-    , makeRects IgnoreOvers (fill cuts ((1.5 *) <$> xys1)))
+    ( makeRects IgnoreOvers (fill cuts' xys)
+    , makeRects IgnoreOvers (fill cuts' ((1.5 *) <$> xys1)))
 
 histDiffExample :: ([Rect Double], [Rect Double]) -> Chart b
 histDiffExample (h1, h2) =
@@ -445,13 +436,13 @@ cepts a r@(Ranges rx ry) f x =
     ]
 
 schoolbookExample :: Double -> Chart b
-schoolbookExample x =
+schoolbookExample x' =
   bound (field @"color" .~ UColor 0 0 0 0.1 $ defaultRectOptions) 1.05 $ schoolbookHud <>
   parabola r f grain xscope <>
-  ceptLines asquare r f x <>
+  ceptLines asquare r f x' <>
   glyphChart [field @"color" .~ ucolor (red `withOpacity` 0.5) $
-              defaultGlyphOptions] asquare r [[Pair x (f x)]] <>
-  cepts asquare r f x
+              defaultGlyphOptions] asquare r [[Pair x' (f x')]] <>
+  cepts asquare r f x'
   where
     f x = x * x - 3
     r = Rect -5 5 -5 5

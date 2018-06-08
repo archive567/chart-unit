@@ -8,8 +8,6 @@
 {-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE TypeApplications #-}
 {-# OPTIONS_GHC -Wall #-}
-{-# OPTIONS_GHC -fno-warn-name-shadowing #-}
-{-# OPTIONS_GHC -fno-warn-type-defaults #-}
 
 -- | examples used in haddock docs
 import Chart
@@ -17,7 +15,6 @@ import Lens.Micro
 import NumHask.Prelude
 import qualified Data.Text as Text
 import qualified Diagrams.Prelude as D
-import Data.Generics.Product
 
 -- * Chart.Core examples 
 scaleExample :: IO ()
@@ -33,7 +30,7 @@ scaleExample =
 
 -- * example charts look n feel
 hudbits :: Text -> Maybe Text -> [Text] -> [LegendType] -> HudOptions -> HudOptions
-hudbits t subt ts ls x =
+hudbits t subt ts' ls' x =
   field @"titles" .~
   [(field @"place" .~ PlaceLeft $
     field @"align" .~ AlignLeft $
@@ -51,7 +48,7 @@ hudbits t subt ts ls x =
          field @"text" . field @"color" .~ ucolor (d3Colors1 0 `withOpacity` 1) $
          defaultTitleOptions, subt')]) $ 
   field @"legends" .~
-  [field @"chartType" .~ zip ls ts $
+  [field @"chartType" .~ zip ls' ts' $
    field @"align" .~ AlignRight $
    field @"text" . field @"size" .~ 0.2 $
    defaultLegendOptions ] $
@@ -140,7 +137,7 @@ glyphChart_Example = glyphChart_ gopts widescreen gdata
 lglyphsExample :: Chart b
 lglyphsExample =
   lglyphs defaultLabelOptions defaultGlyphOptions $
-  zip (show <$> [0 ..]) [Pair (x / 10) (sin x / 10) | x <- [0 .. 10]]
+  zip (show <$> [0::Int ..]) [Pair (x / 10) (sin x / 10) | x <- [0 .. 10]]
 
 lgdata :: [(Text, Pair Double)]
 lgdata =
@@ -455,21 +452,21 @@ barExample  =
 testTextDiffs :: Double -> Double -> Text -> (Double, Double, Double) -> Maybe Text -> Chart b
 testTextDiffs s ns txt (nb, nm, nt) fnt =
   D.pad 1.1 $ vert identity $ D.centerXY .
-  (\(ah,av,txt) ->
+  (\(ah,av,txt') ->
      D.showOrigin' (D.OriginOpts red 0.001 0.001)
       (text_
       (field @"alignH" .~ ah $
        field @"alignV" .~ av $
        field @"size" .~ s $
        field @"color" .~ ucolor (red `withOpacity` 1) $
-       defaultTextOptions) txt) <>
+       defaultTextOptions) txt') <>
      D.showOrigin' (D.OriginOpts blue 0.003 0.003)
       (text_
       (field @"alignV" .~ av $
        field @"alignH" .~ ah $
        field @"size" .~ s $
        field @"textType" .~ TextSvg (TextSvgOptions ns nb nm nt fnt 1.1 0.55 clear) $
-       defaultTextOptions) txt)) <$>
+       defaultTextOptions) txt')) <$>
   ((\x y -> (x,y,txt)) <$>
    [AlignLeft, AlignCenter, AlignRight] <*>
    [AlignBottom, AlignMid, AlignTop])
