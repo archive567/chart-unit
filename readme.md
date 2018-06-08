@@ -3,14 +3,14 @@
 
 [![Build Status](https://travis-ci.org/tonyday567/chart-unit.svg)](https://travis-ci.org/tonyday567/chart-unit) [![Hackage](https://img.shields.io/hackage/v/chart-unit.svg)](https://hackage.haskell.org/package/chart-unit) [![lts](https://www.stackage.org/package/chart-unit/badge/lts)](http://stackage.org/lts/package/chart-unit) [![nightly](https://www.stackage.org/package/chart-unit/badge/nightly)](http://stackage.org/nightly/package/chart-unit)
 
-`chart-unit` is a haskell chart library focusing on a small set of high-quality charts using native haskell. Here's a recent example, chock-a-block full of titles and legends (that needed testing):
+`chart-unit` is a chart library providing a chart ADT, combinators and a small set of high-quality charts using native haskell.
 
 ![](chart-unit/other/mainExample.svg)
 
 Chart Types
 ===
 
-So far, there are 9 major chart types:
+The chart types include:
 
 ![](chart-unit-examples/other/textHudExample.svg)
 
@@ -28,22 +28,12 @@ So far, there are 9 major chart types:
 
 ![](chart-unit-examples/other/arrowHudExample.svg)
 
-![](chart-unit-examples/other/barExample.svg)
-
-
+![](chart-unit/other/barExample.svg)
 
 Why the name chart-unit?
 ===
 
 Most of the behind-the-scenes grunt work is scaling data, projecting points from one range to another, and computing position.  A key to making these computations neat was `one = Range -0.5 0.5` and `one = Rect -0.5 0.5 -0.5 0.5` as the (multiplicative) units of a chart range.  See [numhask-range](https://github.com/tonyday567/numhask-range) for a monologue.
-
-generic-lens rocks
-===
-
-generic lens is the future of api in haskell:
-
-https://www.reddit.com/r/haskell/comments/7e8bom/slides_joy_frustration_of_putting_34000_lines_of/
-
 
 What's with the funny names?
 ===

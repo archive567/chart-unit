@@ -87,9 +87,7 @@ test-suite test
     , binary
     , chart-unit
     , doctest
-    , numhask
     , numhask-prelude
-    , numhask-range
     , tasty
     , tasty-hspec
   default-language: Haskell2010

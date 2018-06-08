@@ -57,4 +57,4 @@ mainExample =
      defaultHudOptions])
 
 main :: IO ()
-main = fileSvg "other/mainExample.svg" defaultSvgOptions mainExample
+main = fileSvg "./chart-unit/other/mainExample.svg" defaultSvgOptions mainExample

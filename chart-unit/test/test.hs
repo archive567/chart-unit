@@ -45,7 +45,7 @@ specChart =
         `shouldBe`
         toText defaultSvgOptions (hud defaultHudOptions sixbyfour (range ls) <>
                     lineChart_ lopts sixbyfour ls)
-    it "check ChartOptions binary round trip" $ do
+    it "check ChartOptions binary round trip" $
       (decode . encode) testOptions
         `shouldBe`
         testOptions

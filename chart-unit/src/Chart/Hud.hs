@@ -229,7 +229,7 @@ defYAxis =
     0
     0.04
     (LabelOptions
-       (field @"color" .~ (UColor 0 0 0 0.6) $ defaultTextOptions)
+       (field @"color" .~ UColor 0 0 0 0.6 $ defaultTextOptions)
        (Pair -1 0)
        0.015)
     (TickRound 8)
@@ -456,7 +456,7 @@ defaultLegendOptions =
       0.02
       (RectOptions 0.002 (UColor 0 0 0 0.2) utrans)
       (field @"size" .~ 0.07 $
-       field @"color" .~ (UColor 0 0 0 0.63) $
+       field @"color" .~ UColor 0 0 0 0.63 $
        defaultTextOptions)
 
 -- | Create a legend based on a LegendOptions

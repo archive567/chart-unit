@@ -1,38 +1,38 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
     "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
-<svg xmlns="http://www.w3.org/2000/svg" height="200.0000" stroke-opacity="1" viewBox="0 0 300 200" font-size="1" width="300.0000" xmlns:xlink="http://www.w3.org/1999/xlink" stroke="rgb(0,0,0)" version="1.1">
+<svg xmlns="http://www.w3.org/2000/svg" height="400.0000" stroke-opacity="1" viewBox="0 0 600 400" font-size="1" width="600.0000" xmlns:xlink="http://www.w3.org/1999/xlink" stroke="rgb(0,0,0)" version="1.1">
   <defs>
   </defs>
   <g stroke-linejoin="miter" stroke-opacity="0.0" fill-opacity="0.0" stroke="rgb(0,0,0)" fill-rule="evenodd" stroke-width="0.0" fill="rgb(0,0,0)" stroke-linecap="butt" stroke-miterlimit="10.0">
-    <path d="M 300.0000,47.8635 l -0.0000,-25.5978 h -38.3968 l -0.0000,25.5978 Z"/>
+    <path d="M 600.0000,95.7271 l -0.0000,-51.1957 h -76.7935 l -0.0000,51.1957 Z"/>
   </g>
-  <g stroke-linejoin="miter" stroke-opacity="1.0" fill-opacity="0.8" font-size="23.270769659159466px" stroke="rgb(0,0,0)" fill-rule="evenodd" stroke-width="0.0" fill="rgb(0,0,0)" stroke-linecap="butt" stroke-miterlimit="10.0">
-    <text dominant-baseline="middle" transform="matrix(1.0000,-0.0000,0.0000,1.0000,280.8016,35.0646)" stroke="none" text-anchor="middle">z,w
+  <g stroke-linejoin="miter" stroke-opacity="1.0" fill-opacity="0.8" font-size="46.54153931831893px" stroke="rgb(0,0,0)" fill-rule="evenodd" stroke-width="0.0" fill="rgb(0,0,0)" stroke-linecap="butt" stroke-miterlimit="10.0">
+    <text dominant-baseline="middle" transform="matrix(1.0000,-0.0000,0.0000,1.0000,561.6032,70.1292)" stroke="none" text-anchor="middle">z,w
     </text>
   </g>
   <g stroke-linejoin="miter" stroke-opacity="0.0" fill-opacity="0.0" stroke="rgb(0,0,0)" fill-rule="evenodd" stroke-width="0.0" fill="rgb(0,0,0)" stroke-linecap="butt" stroke-miterlimit="10.0">
-    <path d="M 298.1383,177.7343 l -0.0000,-25.5978 h -38.3968 l -0.0000,25.5978 Z"/>
+    <path d="M 596.2767,355.4686 l -0.0000,-51.1957 h -76.7935 l -0.0000,51.1957 Z"/>
   </g>
-  <g stroke-linejoin="miter" stroke-opacity="1.0" fill-opacity="0.8" font-size="23.270769659159466px" stroke="rgb(0,0,0)" fill-rule="evenodd" stroke-width="0.0" fill="rgb(0,0,0)" stroke-linecap="butt" stroke-miterlimit="10.0">
-    <text dominant-baseline="middle" transform="matrix(1.0000,-0.0000,0.0000,1.0000,278.9400,164.9354)" stroke="none" text-anchor="middle">z,y
+  <g stroke-linejoin="miter" stroke-opacity="1.0" fill-opacity="0.8" font-size="46.54153931831893px" stroke="rgb(0,0,0)" fill-rule="evenodd" stroke-width="0.0" fill="rgb(0,0,0)" stroke-linecap="butt" stroke-miterlimit="10.0">
+    <text dominant-baseline="middle" transform="matrix(1.0000,-0.0000,0.0000,1.0000,557.8799,329.8708)" stroke="none" text-anchor="middle">z,y
     </text>
   </g>
   <g stroke-linejoin="miter" stroke-opacity="0.0" fill-opacity="0.0" stroke="rgb(0,0,0)" fill-rule="evenodd" stroke-width="0.0" fill="rgb(0,0,0)" stroke-linecap="butt" stroke-miterlimit="10.0">
-    <path d="M 38.3968,47.8635 l -0.0000,-25.5978 h -38.3968 l -0.0000,25.5978 Z"/>
+    <path d="M 76.7935,95.7271 l -0.0000,-51.1957 h -76.7935 l -0.0000,51.1957 Z"/>
   </g>
-  <g stroke-linejoin="miter" stroke-opacity="1.0" fill-opacity="0.8" font-size="23.270769659159466px" stroke="rgb(0,0,0)" fill-rule="evenodd" stroke-width="0.0" fill="rgb(0,0,0)" stroke-linecap="butt" stroke-miterlimit="10.0">
-    <text dominant-baseline="middle" transform="matrix(1.0000,-0.0000,0.0000,1.0000,19.1984,35.0646)" stroke="none" text-anchor="middle">x,w
+  <g stroke-linejoin="miter" stroke-opacity="1.0" fill-opacity="0.8" font-size="46.54153931831893px" stroke="rgb(0,0,0)" fill-rule="evenodd" stroke-width="0.0" fill="rgb(0,0,0)" stroke-linecap="butt" stroke-miterlimit="10.0">
+    <text dominant-baseline="middle" transform="matrix(1.0000,-0.0000,0.0000,1.0000,38.3968,70.1292)" stroke="none" text-anchor="middle">x,w
     </text>
   </g>
   <g stroke-linejoin="miter" stroke-opacity="0.0" fill-opacity="0.0" stroke="rgb(0,0,0)" fill-rule="evenodd" stroke-width="0.0" fill="rgb(0,0,0)" stroke-linecap="butt" stroke-miterlimit="10.0">
-    <path d="M 40.2584,177.7343 l -0.0000,-25.5978 h -38.3968 l -0.0000,25.5978 Z"/>
+    <path d="M 80.5169,355.4686 l -0.0000,-51.1957 h -76.7935 l -0.0000,51.1957 Z"/>
   </g>
-  <g stroke-linejoin="miter" stroke-opacity="1.0" fill-opacity="0.8" font-size="23.270769659159466px" stroke="rgb(0,0,0)" fill-rule="evenodd" stroke-width="0.0" fill="rgb(0,0,0)" stroke-linecap="butt" stroke-miterlimit="10.0">
-    <text dominant-baseline="middle" transform="matrix(1.0000,-0.0000,0.0000,1.0000,21.0600,164.9354)" stroke="none" text-anchor="middle">x,y
+  <g stroke-linejoin="miter" stroke-opacity="1.0" fill-opacity="0.8" font-size="46.54153931831893px" stroke="rgb(0,0,0)" fill-rule="evenodd" stroke-width="0.0" fill="rgb(0,0,0)" stroke-linecap="butt" stroke-miterlimit="10.0">
+    <text dominant-baseline="middle" transform="matrix(1.0000,-0.0000,0.0000,1.0000,42.1201,329.8708)" stroke="none" text-anchor="middle">x,y
     </text>
   </g>
-  <g stroke-linejoin="miter" stroke-opacity="1.0" fill-opacity="0.5" stroke="rgb(102,102,102)" stroke-width="1.0798216202337627" fill="rgb(93,165,218)" stroke-linecap="butt" stroke-miterlimit="10.0">
-    <path d="M 249.4477,147.8622 l -0.0000,-99.4477 h -198.8955 l -0.0000,99.4477 Z"/>
+  <g stroke-linejoin="miter" stroke-opacity="1.0" fill-opacity="0.5" stroke="rgb(102,102,102)" stroke-width="2.1596432404675254" fill="rgb(93,165,218)" stroke-linecap="butt" stroke-miterlimit="10.0">
+    <path d="M 498.8955,295.7244 l -0.0000,-198.8955 h -397.7909 l -0.0000,198.8955 Z"/>
   </g>
 </svg>

@@ -149,12 +149,12 @@ floorGrain (Years n) (UTCTime d _) = UTCTime (addDays (-1) $ fromGregorian y' 1 
 floorGrain (Months n) (UTCTime d _) = UTCTime (addDays (-1) $ fromGregorian y m' 1) 0
   where
     (y,m,_) = toGregorian (addDays 1 d)
-    m' = fromIntegral $ (1 + fromIntegral n * floor (fromIntegral (m - 1) / fromIntegral n :: Double) :: Integer)
+    m' = fromIntegral (1 + fromIntegral n * floor (fromIntegral (m - 1) / fromIntegral n :: Double) :: Integer)
 floorGrain (Days _) (UTCTime d _) = UTCTime d 0
 floorGrain (Hours h) u@(UTCTime _ t) = addUTCTime x u
   where
     s = toDouble' t
-    x = fromDouble $ fromIntegral ((h * 3600 * fromIntegral ((floor (s / (fromIntegral h*3600)) :: Integer)))) - s
+    x = fromDouble $ fromIntegral (h * 3600 * fromIntegral (floor (s / (fromIntegral h*3600)) :: Integer)) - s
 floorGrain (Minutes m) u@(UTCTime _ t) = addUTCTime x u
   where
     s = toDouble' t
@@ -338,10 +338,10 @@ stepSensible3 tp span n =
 stepSensibleTime :: Pos -> NominalDiffTime -> Int -> TimeGrain
 stepSensibleTime tp span n
   | yearsstep >= 1 = Years (floor yearsstep)
-  | monthsstep >= 1 = Months (fromIntegral $ (floor monthsstep :: Integer))
-  | daysstep >= 1 = Days (fromIntegral $ (floor daysstep :: Integer))
-  | hoursstep >= 1 = Hours (fromIntegral $ (floor hoursstep :: Integer))
-  | minutesstep >= 1 = Minutes (fromIntegral $ (floor minutesstep :: Integer))
+  | monthsstep >= 1 = Months (fromIntegral (floor monthsstep :: Integer))
+  | daysstep >= 1 = Days (fromIntegral (floor daysstep :: Integer))
+  | hoursstep >= 1 = Hours (fromIntegral (floor hoursstep :: Integer))
+  | minutesstep >= 1 = Minutes (fromIntegral (floor minutesstep :: Integer))
   | secondsstep >= 1 = Seconds secondsstep3
   | otherwise = Seconds secondsstep
   where

@@ -1,7 +1,6 @@
-{-# LANGUAGE OverloadedLabels #-}
-{-# LANGUAGE DuplicateRecordFields #-}
-{-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE DataKinds #-}
+{-# LANGUAGE DuplicateRecordFields #-}
+{-# LANGUAGE OverloadedLabels #-}
 {-# OPTIONS_GHC -Wall #-}
 {-# OPTIONS_GHC -fno-warn-orphans #-}
  

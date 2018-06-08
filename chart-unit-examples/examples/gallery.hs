@@ -150,7 +150,7 @@ scatterHistExample xys =
         mainAspect
         (range xys)
     defHist =
-      (\x -> field @"borderSize" .~ 0 $ field @"color" .~ (ucolor $ d3Colors1 x `withOpacity` 0.5)
+      (\x -> field @"borderSize" .~ 0 $ field @"color" .~ ucolor (d3Colors1 x `withOpacity` 0.5)
         $ defaultRectOptions) <$>
       [6, 8]
     makeHist n = makeRects IgnoreOvers . regular n
@@ -469,7 +469,6 @@ main = do
   exampleSvg "timeExample.svg" sStandard (timeExample ts)
   xys <- mkScatterData
   exampleSvg "scatterHistExample.svg"sStandard (scatterHistExample xys)
-  putStrLn ("skinnyExample" :: Text)
   qs <- makeQuantiles 20
   qs' <- makeQuantiles 4
   exampleSvg "skinnyExample.svg" (Pair 600 150) $

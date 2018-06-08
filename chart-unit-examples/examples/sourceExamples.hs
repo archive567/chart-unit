@@ -50,7 +50,7 @@ hudbits t subt ts' ls' x =
   field @"legends" .~
   [field @"chartType" .~ zip ls' ts' $
    field @"align" .~ AlignRight $
-   field @"text" . field @"size" .~ 0.2 $
+   field @"text" . field @"size" .~ 0.1 $
    defaultLegendOptions ] $
   field @"axes" . each . field @"gap" .~ 0.1 $
   x
@@ -76,7 +76,7 @@ text_PathExample :: Chart b
 text_PathExample = text_
   (field @"textType" .~
    TextPath
-   (field @"font" .~ FromFontFile ("./chart-unit/other/Hasklig-Regular.svg") $
+   (field @"font" .~ FromFontFile "./chart-unit/other/Hasklig-Regular.svg" $
     defaultTextPathOptions) $
    field @"size" .~ 0.2 $
    defaultTextOptions)
@@ -101,7 +101,7 @@ labelledExample = D.pad 1.1 $
 textHudExample :: Chart b
 textHudExample =
   hud
-  (hudbits "Text Chart" (Just "text and glyphs have a similar feel") [] []
+  (hudbits "Text Chart" (Just "text can be treated as a glyph") [] []
    defaultHudOptions)
   widescreen
   (range ts)
@@ -160,7 +160,7 @@ glyphHudExample :: Chart b
 glyphHudExample = 
   hud
   (field @"legends" . each . field @"align" .~ AlignLeft $
-   hudbits "Glyph Chart" (Just "text elements are paths not svg text")
+   hudbits "Glyph Chart" (Just "text elements cab be svg paths or svg text")
    ["sin", "cos"]
    (LegendGlyph <$> gopts) $
    field @"axes" .~
@@ -184,7 +184,7 @@ glyphHudExample =
 lglyphHudExample :: Chart b
 lglyphHudExample = hud
   (field @"titles" . each . _1 . field @"gap" .~ 0.2 $
-   hudbits "LGlyph Chart" (Just "Glyphs with text labels are very useful") [] [] $
+   hudbits "LGlyph Chart" (Just "A LGlyph is a labelled glyph") [] [] $
    field @"axes" .~ [] $
    defaultHudOptions)
   widescreen
@@ -207,10 +207,12 @@ ls =
 
 lopts :: [LineOptions]
 lopts =
-  zipWith
-  (\x y -> LineOptions x (ucolor $ withOpacity (d3Colors1 y) 0.6))
-  [0.01, 0.02, 0.005]
-  [0,1,2]
+  zipWith LineOptions
+  [0.015, 0.03, 0.01]
+  [ UColor 0.773 0.510 0.294 0.6
+  , UColor 0.235 0.498 0.169 0.6
+  , UColor 0.204 0.161 0.537 1.0
+  ]
 
 lineChart_Example :: Chart b
 lineChart_Example = lineChart_ lopts sixbyfour ls
@@ -251,7 +253,8 @@ glineHudExample = renderChart
   , HudChart
     (field @"legends" . each . field @"gap" .~ 0.2 $
      field @"titles" . each . _1 . field @"gap" .~ 0.2 $
-     hudbits "Gline Chart" Nothing ["triangle", "square", "circle"]
+     hudbits "Gline Chart" (Just "A GLine is a glyph-line combination")
+     ["triangle", "square", "circle"]
      (zipWith (\x y -> LegendGLine x y 0.1) gopts3 lopts) $
      field @"axes" .~ [] $
      defaultHudOptions)
@@ -348,7 +351,7 @@ rectHudExample =
 pixelHudExample :: Chart b
 pixelHudExample =
   hud
-  (hudbits "Pixel Chart" Nothing ["red", "blue"]
+  (hudbits "Pixel Chart" Nothing ["blue", "grey"]
    ((`LegendPixel` 0.05) <$> ropts) defaultHudOptions)
   asquare
   one
@@ -495,7 +498,7 @@ sThin :: Pair Double
 sThin = Pair 400 100
 
 sStandard :: Pair Double
-sStandard = Pair 300 200
+sStandard = Pair 600 400
 
 sSmall :: Pair Double
 sSmall = Pair 100 100
@@ -508,7 +511,7 @@ main = do
   coreSvg "text_PathExample.svg" sThin text_PathExample
   coreSvg "textChart_Example.svg" sThin textChart_Example
   coreSvg "labelledExample.svg" sSmall labelledExample
-  exampleSvg "textHudExample.svg" sThin
+  exampleSvg "textHudExample.svg" sStandard
     (textHudExample <> textChart_Example)
   coreSvg"glyph_Example.svg" sThin glyph_Example
   coreSvg "glyphsExample.svg" sThin glyphsExample
