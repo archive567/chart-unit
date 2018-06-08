@@ -39,7 +39,7 @@ data RectOptions = RectOptions
   { borderSize :: Double
   , borderColor :: UColor Double
   , color :: UColor Double
-  } deriving (Show, Generic)
+  } deriving (Show, Eq, Generic)
 
 instance Default RectOptions where
   def = RectOptions 0.005 ugrey ublue
@@ -167,7 +167,7 @@ rectChart_ optss asp rs = rectChart optss asp (fold $ fold <$> rs) rs
 data Pixel = Pixel
   { pixelRect :: Rect Double
   , pixelColor :: UColor Double
-  } deriving (Show, Generic)
+  } deriving (Show, Eq, Generic)
 
 -- | A pixel is a rectangle with a color.
 --

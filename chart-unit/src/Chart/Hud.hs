@@ -73,7 +73,7 @@ data HudOptions = HudOptions
   , titles :: [(TitleOptions, Text)]
   , legends :: [LegendOptions]
   , canvas :: RectOptions
-  } deriving (Show, Generic)
+  } deriving (Show, Eq, Generic)
 
 instance Default HudOptions where
   def = HudOptions 1.1 [defXAxis, defYAxis] [] [] [] clear
@@ -192,7 +192,7 @@ data AxisOptions = AxisOptions
   , gap :: Double -- distance of axis from plane
   , label :: LabelOptions
   , tickStyle :: TickStyle
-  } deriving (Show, Generic)
+  } deriving (Show, Eq, Generic)
 
 -- | default X axis
 defXAxis :: AxisOptions
@@ -291,7 +291,7 @@ data AutoOptions =
   , maxYRatio :: Double
   , angledRatio :: Double
   , allowDiagonal :: Bool
-  } deriving (Show, Generic)
+  } deriving (Show, Eq, Generic)
 
 instance Default AutoOptions where
   def = AutoOptions 0.08 0.06 0.12 True
@@ -355,7 +355,7 @@ data TickStyle
   | TickRound Int -- ^ sensibly rounded ticks and a guide to how many
   | TickExact Int -- ^ exactly n equally spaced ticks
   | TickPlaced [(Double, Text)] -- ^ specific labels and placement
-  deriving (Show, Generic)
+  deriving (Show, Eq, Generic)
 
 -- | Provide formatted text for a list of numbers so that they are just distinguished.  'precision 2 ticks' means give the tick labels as much precision as is needed for them to be distinguished, but with at least 2 significant figues.
 precision :: Int -> [Double] -> [Text]
@@ -384,7 +384,7 @@ data TitleOptions = TitleOptions
   , align :: AlignH
   , place :: Place
   , gap :: Double
-  } deriving (Show, Generic)
+  } deriving (Show, Eq, Generic)
 
 instance Default TitleOptions where
   def =
@@ -426,7 +426,7 @@ data LegendType
                 Double
   | LegendPixel RectOptions
                 Double
-    deriving (Show, Generic)
+    deriving (Show, Eq, Generic)
 
 -- | Legend options. todo: allow for horizontal concatenation.
 data LegendOptions = LegendOptions
@@ -440,7 +440,7 @@ data LegendOptions = LegendOptions
   , sep :: Double
   , canvasRect :: RectOptions
   , text :: TextOptions
-  } deriving (Show, Generic)
+  } deriving (Show, Eq, Generic)
 
 instance Default LegendOptions where
   def =
@@ -549,14 +549,14 @@ data GridStyle
   | GridRound GridPos Int -- ^ sensibly rounded line placement and a guide to how many
   | GridExact GridPos Int -- ^ exactly n lines using Pos
   | GridPlaced [Double] -- ^ specific line placement
-  deriving (Show, Generic)
+  deriving (Show, Eq, Generic)
 
 -- | Options for gridlines.
 data GridOptions = GridOptions
   { gridOrientation :: Orientation
   , gridStyle :: GridStyle
   , gridLine :: LineOptions
-  } deriving (Show, Generic)
+  } deriving (Show, Eq, Generic)
 
 -- | default horizontal grid
 defXGrid :: GridOptions

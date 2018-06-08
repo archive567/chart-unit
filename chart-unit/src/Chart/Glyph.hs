@@ -29,7 +29,7 @@ data GlyphOptions = GlyphOptions
   , borderColor :: UColor Double
   , borderSize :: Double -- ^ normalized
   , shape :: GlyphShape
-  } deriving (Show, Generic)
+  } deriving (Show, Eq, Generic)
 
 instance Default GlyphOptions where
   def = GlyphOptions 0.03 ublue ugrey 0.015 Circle
@@ -49,7 +49,7 @@ data GlyphShape
                 Double
   | VLine Double
   | HLine Double
-  deriving (Show, Generic)
+  deriving (Show, Eq, Generic)
 
 -- | convert from chart-unit to diagrams shapes
 glyphShape :: GlyphShape -> (Double -> Chart b)

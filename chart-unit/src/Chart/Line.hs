@@ -35,7 +35,7 @@ import NumHask.Rect
 data LineOptions = LineOptions
   { size :: Double -- ^ normalized
   , color :: UColor Double
-  } deriving (Show, Generic)
+  } deriving (Show, Eq, Generic)
 
 instance Default LineOptions where
   def = LineOptions 0.02 ublue

@@ -47,7 +47,7 @@ data TimeGrain
   | Hours Int
   | Minutes Int
   | Seconds Double
-  deriving (Show, Generic)
+  deriving (Show, Eq, Generic)
 
 grainSecs :: TimeGrain -> Double
 grainSecs (Years n) = fromIntegral n * 365.0 * toDouble nominalDay

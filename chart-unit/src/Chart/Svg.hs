@@ -37,7 +37,7 @@ data SvgOptions = SvgOptions
   , svgId :: Text
   , attributes :: [Attribute]
   , includeDocType :: Bool
-  } deriving (Show, Generic)
+  } deriving (Show, Eq, Generic)
 
 instance Default SvgOptions where
   def = SvgOptions (Pair 600 400) "" [] True

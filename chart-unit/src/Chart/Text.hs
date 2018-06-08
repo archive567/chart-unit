@@ -35,7 +35,7 @@ import qualified Diagrams.TwoD.Text as D
 -- | options specific to text as an SVG path
 newtype TextPathOptions = TextPathOptions
   { font :: TextFont
-  } deriving (Show, Generic)
+  } deriving (Show, Eq, Generic)
 
 instance Default TextPathOptions where
   def = TextPathOptions Lin2
@@ -44,7 +44,7 @@ instance Default TextPathOptions where
 data TextFont
   = Lin2
   | FromFontFile Text
-  deriving (Show, Generic)
+  deriving (Show, Eq, Generic)
 
 -- | transform from chart-unit to SVGFonts rep of font
 textFont :: TextFont -> PreparedFont Double
@@ -61,7 +61,7 @@ data TextSvgOptions = TextSvgOptions
   , sizeVert :: Double -- ^ approximate divisor of vertical size
   , sizeHori :: Double -- ^ approximate divisor of horizontal size per character
   , textBox :: RectOptions -- ^ bounding box 
-  } deriving (Show, Generic)
+  } deriving (Show, Eq, Generic)
 
 instance Default TextSvgOptions where
   def = TextSvgOptions 0.78 0.25 -0.10 0.25 Nothing 1.1 0.55 clear
@@ -70,7 +70,7 @@ instance Default TextSvgOptions where
 data TextType
   = TextPath TextPathOptions
   | TextSvg TextSvgOptions
-  deriving (Show, Generic)
+  deriving (Show, Eq, Generic)
 
 data UFillRule = UWinding | UEvenOdd deriving (Show, Eq, Generic)
 
@@ -87,7 +87,7 @@ data TextOptions = TextOptions
   , textFillRule :: UFillRule -- ^ default: 'EvenOdd'
   , rotation :: Double -- ^ in degrees from the horozontal (default: 0 degrees)
   , textType :: TextType -- ^ default: 'TextPath' def
-  } deriving (Show, Generic)
+  } deriving (Show, Eq, Generic)
 
 instance Default TextOptions where
   def =
@@ -209,7 +209,7 @@ data LabelOptions = LabelOptions
   { text :: TextOptions
   , orientation :: Pair Double -- ^ direction of label
   , gap :: Double -- ^ distance to label
-  } deriving (Show, Generic)
+  } deriving (Show, Eq, Generic)
 
 instance Default LabelOptions where
   def = LabelOptions def (Pair 0 1) 0.05

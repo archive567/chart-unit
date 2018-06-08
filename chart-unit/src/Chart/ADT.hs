@@ -3,6 +3,7 @@
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE DataKinds #-}
 {-# OPTIONS_GHC -Wall #-}
+{-# OPTIONS_GHC -fno-warn-orphans #-}
  
 -- | Experimental Chart ADT
 --
@@ -24,10 +25,13 @@ import Chart.Line
 import Chart.Rect
 import Chart.Text
 import Control.Lens
+import Data.Binary
 import Data.Default
+import Data.Functor.Compose
 import Data.Generics.Product (field)
-import NumHask.Pair
+import NumHask.Pair 
 import NumHask.Prelude
+import NumHask.Range
 import NumHask.Rect
 import NumHask.Space
 
@@ -43,14 +47,14 @@ data ChartSpec
   | ArrowChart [(ArrowOptions, [Arrow])]
   | BarChart BarOptions BarData
   | HudChart HudOptions
-  deriving (Show, Generic)
+  deriving (Show, Eq, Generic)
 
 -- | (compound) Chart options
 data ChartOptions = ChartOptions
   { chartRange :: Maybe (Rect Double)
   , chartAspect :: Rect Double
   , charts :: [ChartSpec]
-  } deriving (Show, Generic)
+  } deriving (Show, Eq, Generic)
 
 instance Default ChartOptions where
   def = ChartOptions Nothing sixbyfour []
@@ -102,3 +106,46 @@ rangeSpec (HudChart _) = Nothing
 -- | calculate the range of a ChartOptions
 rangeChart :: ChartOptions -> Rect Double
 rangeChart (ChartOptions mr _ cs) = fromMaybe (mconcat $ catMaybes (rangeSpec <$> cs)) mr
+
+
+-- |  necessary Binary instances, including orphans from elsewhere
+
+instance Binary ChartOptions
+instance Binary ChartSpec
+ 
+instance Binary LabelOptions
+instance Binary GlyphOptions
+instance Binary GlyphShape
+instance Binary LineOptions
+instance Binary TextOptions
+instance Binary TextType
+instance Binary TextSvgOptions
+instance Binary TextPathOptions
+instance Binary TextFont
+instance Binary UFillRule
+instance Binary AlignH
+instance Binary AlignV
+instance Binary RectOptions
+instance Binary ArrowOptions
+instance (Binary a) => Binary (ArrowHTStyle a)
+instance Binary Pixel
+instance Binary Arrow
+instance Binary BarOptions
+instance Binary BarData
+instance Binary BarValueAcc
+instance Binary HudOptions
+instance Binary LegendOptions
+instance Binary LegendType
+instance Binary TitleOptions
+instance Binary AxisOptions
+instance Binary TickStyle
+instance Binary Place
+instance Binary Orientation
+instance Binary GridOptions
+instance Binary GridStyle
+instance Binary GridPos
+instance (Binary a) => Binary (UColor a)
+instance (Binary a) => Binary (Pair a)
+instance (Binary a) => Binary (Rect a)
+instance (Binary a) => Binary (Compose Pair Range a)
+instance (Binary a) => Binary (Range a)

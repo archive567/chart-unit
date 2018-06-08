@@ -50,7 +50,7 @@ data ArrowHTStyle a
   | Block
   | Quill2 a
   | Block2 a
-  deriving (Show, Generic)
+  deriving (Show, Eq, Generic)
 
 -- | conversion between unit and diagrams
 -- ToDo: abstract ArrowHT usage
@@ -89,7 +89,7 @@ data ArrowOptions = ArrowOptions
   , maxStaffWidth :: Double
   , color :: UColor Double
   , hStyle :: ArrowHTStyle Double
-  } deriving (Show, Generic)
+  } deriving (Show, Eq, Generic)
 
 instance Default ArrowOptions where
   def = ArrowOptions 0.02 0.2 0.01 0.1 0.002 0.005 ublue Dart
@@ -113,7 +113,7 @@ normArrows xs = zipWith Arrow ps as'
 data Arrow = Arrow
   { arrowPos :: Pair Double -- position of arrow tail
   , arrowDir :: Pair Double -- direction and strength of arrow
-  } deriving (Eq, Show, Generic)
+  } deriving (Show, Eq, Generic)
 
 -- | Rescale data across position, and between position and arrow direction.
 --
