@@ -5,10 +5,10 @@ packages:
 
 extra-deps:
   - generic-lens-labels-0.1.0.2
-  - numhask-histogram-0.1.2.1
-  # - numhask-0.2.0.0
-  # - numhask-prelude-0.0.3.0
-  # - numhask-range-0.2.1.0
-  # - mwc-probability-2.0.2
+  - numhask-histogram-0.1.3.0
+  - numhask-prelude-0.1.0.1
+  - numhask-0.2.3.0
+  - numhask-test-0.1.0.0
+  - numhask-range-0.2.3.1
 
 allow-newer: true
