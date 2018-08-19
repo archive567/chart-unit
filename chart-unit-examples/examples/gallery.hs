@@ -3,6 +3,7 @@
 {-# LANGUAGE MonoLocalBinds #-}
 {-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE TypeApplications #-}
+{-# LANGUAGE RebindableSyntax #-}
 {-# OPTIONS_GHC -Wall #-}
 
 import Chart
@@ -19,6 +20,7 @@ import System.Random.MWC.Probability
 import qualified Data.Text as Text
 import qualified Diagrams.Prelude as D
 import qualified Diagrams.TwoD.Text
+import qualified Prelude
 
 -- * example data generation
 -- Standard normal random variates in one dimension.
@@ -107,7 +109,7 @@ timeExample dates =
         PosInnerOnly
         Nothing
         g
-        ((`UTCTime` 0) <$> dates)
+        ((`UTCTime` (secondsToDiffTime 0)) <$> dates)
     ts' = (\(x, y) -> (fromIntegral x, y)) <$> ts
     (Ranges aspx _) = sixbyfour
     adef = adjustAxis defaultAutoOptions aspx rx $
@@ -120,8 +122,8 @@ mkScatterData = do
   xys <- rvsCorr g 1000 0.7
   xys1 <- rvsCorr g 1000 -0.5
   pure
-    [ (\(Pair x y) -> Pair (x ^^ 2 + 3 * x - 1) (y + 1)) <$> xys
-    , (\(Pair x y) -> Pair (x ^^ 2 + 3 * x + 1) y) <$> xys1
+    [ (\(Pair x y) -> Pair (x ^^ (2 :: Int) + 3 * x - 1) (y + 1)) <$> xys
+    , (\(Pair x y) -> Pair (x ^^ (2 :: Int) + 3 * x + 1) y) <$> xys1
     ]
 
 scatterHistExample :: [[Pair Double]] -> Chart b

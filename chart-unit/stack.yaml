@@ -5,10 +5,16 @@ packages:
 
 extra-deps:
   - generic-lens-labels-0.1.0.2
-  - numhask-histogram-0.1.3.0
-  - numhask-prelude-0.1.0.1
-  - numhask-0.2.3.0
-  - numhask-test-0.1.0.0
-  - numhask-range-0.2.3.1
+  - github: tonyday567/numhask
+    commit: 06f4cb735871dc3d7efe54b8827340bcb9d1efa4
+    subdirs:
+      - numhask
+      - numhask-prelude
+      - numhask-hedgehog
+  - github: tonyday567/numhask-range
+    commit: 2e3c655c3e23a314f17115de0edb96a8421d7373
+    subdirs:
+      - numhask-range
+      - numhask-histogram
 
 

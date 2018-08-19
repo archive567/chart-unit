@@ -189,7 +189,7 @@ ceilingGrain (Years n) (UTCTime d _) = UTCTime (addDays (-1) $ fromGregorian y' 
 ceilingGrain (Months n) (UTCTime d _) = UTCTime (addDays (-1) $ fromGregorian y' m'' 1) 0
   where
     (y,m,_) = toGregorian (addDays 1 d)
-    m' = fromIntegral n * ceiling (fromIntegral m / fromIntegral n :: Double) :: Integer
+    m' = (m + n - 1) `div` n * n
     (y',m'') = fromIntegral <$> if m' == 12 then (y+1,1) else (y,m'+1)
 ceilingGrain (Days _) (UTCTime d t) = if t==0 then UTCTime d 0 else UTCTime (addDays 1 d) 0
 ceilingGrain (Hours h) u@(UTCTime _ t) = addUTCTime x u
@@ -269,7 +269,7 @@ laterTimes (x:xs) = L.fold (L.Fold step (x,[]) (\(x0,x1) -> reverse $ x0:x1)) xs
 --
 -- >>>  sensibleTimeGrid UpperPos 2 (UTCTime (fromGregorian 2017 1 1) 0, UTCTime (fromGregorian 2017 12 30) 0)
 -- (Months 6,[2017-06-30 00:00:00 UTC,2017-12-31 00:00:00 UTC])
---
+-- 
 -- >>>sensibleTimeGrid LowerPos 2 (UTCTime (fromGregorian 2017 1 1) 0, UTCTime (fromGregorian 2017 12 30) 0)
 -- (Months 6,[2016-12-31 00:00:00 UTC,2017-06-30 00:00:00 UTC])
 --
@@ -304,7 +304,7 @@ stepSensible tp span n =
     then step / (one + one)
     else zero
   where
-    step' = 10 ^^ floor (logBase 10 (span / fromIntegral n))
+    step' = 10 ^^ (floor (logBase 10 (span / fromIntegral n)) :: Integer)
     err = fromIntegral n / span * step'
     step
       | err <= 0.15 = 10 * step'
@@ -326,7 +326,7 @@ stepSensible3 tp span n =
     then step / (one + one)
     else zero
   where
-    step' = 10 ^^ floor (logBase 10 (span / fromIntegral n))
+    step' = 10 ^^ (floor (logBase 10 (span / fromIntegral n)) :: Integer)
     err = fromIntegral n / span * step'
     step
       | err <= 0.05 = 12 * step'

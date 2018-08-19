@@ -26,15 +26,15 @@ import NumHask.Range
 import NumHask.Space
 
 -- | Convert a one-dimensional data set to line data
-lineOneD :: (Enum a, AdditiveUnital a) => [a] -> [Pair a]
+lineOneD :: (Enum a, Additive a) => [a] -> [Pair a]
 lineOneD = zipWith Pair [zero..]
 
 -- | Convert a one-dimensional data set to verticle line data
-vlineOneD :: (Enum a, AdditiveUnital a) => [a] -> [[Pair a]]
+vlineOneD :: (Enum a, Additive a) => [a] -> [[Pair a]]
 vlineOneD = zipWith (\x y -> [Pair x zero, Pair x y]) [zero..]
 
 -- | Convert a one-dimensional data set to horizontal line data
-hlineOneD :: (Enum a, AdditiveUnital a) => [a] -> [[Pair a]]
+hlineOneD :: (Enum a, Additive a) => [a] -> [[Pair a]]
 hlineOneD = zipWith (\x y -> [Pair zero x, Pair y x]) [zero..]
 
 -- | Convert a one-dimensional data set to rectangular bars

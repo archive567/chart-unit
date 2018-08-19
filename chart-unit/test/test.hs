@@ -65,5 +65,6 @@ main = do
       [ "src/Chart/Data/Time.hs"
       , "src/Chart/Core.hs"
       ]
-  t1 <- testSpec "Chart" specChart
-  defaultMain t1
+  -- t1 <- testSpec "Chart" specChart
+  -- defaultMain t1
+  -- pure ()
