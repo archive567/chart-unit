@@ -39,31 +39,31 @@ hlineOneD = zipWith (\x y -> [Pair zero x, Pair y x]) [zero..]
 
 -- | Convert a one-dimensional data set to rectangular bars
 -- with a gap between
-rectBars :: (Enum a, FromInteger a, Ord a, BoundedField a) => a -> [a] -> [Rect a]
+rectBars :: (Enum a, CanRange a) => a -> [a] -> [Rect a]
 rectBars gap' = zipWith (\x y -> abs (Rect (x+gap') (x+one-gap') zero y)) [zero..]
 
 -- | Create line data for a formulae y = f(x)
-dataXY :: (BoundedField a, Ord a, FromInteger a) => (a -> a) -> Range a -> Int -> [Pair a]
+dataXY :: (CanRange a) => (a -> a) -> Range a -> Int -> [Pair a]
 dataXY f r g = (\x -> Pair x (f x)) <$> grid OuterPos r g
 
 -- | Create line data for a formulae x = f(y)
-dataYX :: (BoundedField a, Ord a, FromInteger a) => (a -> a) -> Range a -> Int -> [Pair a]
+dataYX :: (CanRange a) => (a -> a) -> Range a -> Int -> [Pair a]
 dataYX f r g = (\x -> Pair (f x) x) <$> grid OuterPos r g
 
 -- | Create rect data for a formulae y = f(x)
-rectXY :: (BoundedField a, Ord a, FromInteger a) => (a -> a) -> Range a -> Int -> [Rect a]
+rectXY :: (CanRange a) => (a -> a) -> Range a -> Int -> [Rect a]
 rectXY f r g = (\x -> Rect (x-tick/(one+one)) (x+tick/(one+one)) zero (f x)) <$> grid MidPos r g
   where
     tick = width r / fromIntegral g
 
 -- | Create rect data for a formulae x = f(y)
-rectYX :: (BoundedField a, Ord a, FromInteger a) => (a -> a) -> Range a -> Int -> [Rect a]
+rectYX :: (CanRange a) => (a -> a) -> Range a -> Int -> [Rect a]
 rectYX f r g = (\x -> Rect zero (f x) (x-tick/(one+one)) (x+tick/(one+one))) <$> grid MidPos r g
   where
     tick = width r / fromIntegral g
 
 -- | Create rect data for a formulae c = f(x,y)
-rectF :: (Signed a, BoundedField a, Ord a, FromInteger a) => (Pair a -> b) -> Rect a -> Pair Int -> [(Rect a, b)]
+rectF :: (Signed a, CanRange a) => (Pair a -> b) -> Rect a -> Pair Int -> [(Rect a, b)]
 rectF f r g = (\x -> (x, f (mid x))) <$> gridSpace r g
 
 -- | transpose the dimensions of a Rect

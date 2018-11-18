@@ -93,6 +93,7 @@ import qualified Diagrams.TwoD.Text
 import NumHask.Pair
 import NumHask.Prelude
 import NumHask.Rect
+import NumHask.Range
 import NumHask.Space
 import Data.Colour (over)
 
@@ -118,7 +119,7 @@ range :: (Foldable f, Foldable g) => g (f (Pair Double)) -> Rect Double
 range xyss = foldMap space xyss
 
 -- | the aspect of a chart expressed as a ratio of x-plane : y-plane.
-aspect :: (BoundedField a, Ord a, Multiplicative a, FromInteger a) => a -> Rect a
+aspect :: (CanRange a, Multiplicative a) => a -> Rect a
 aspect a = Ranges ((a *) <$> one) one
 
 -- | a 1:1 aspect

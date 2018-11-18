@@ -52,7 +52,7 @@ data TextFont
 
 -- | transform from chart-unit to SVGFonts rep of font
 textFont :: TextFont -> PreparedFont Double
-textFont Lin2 = unsafePerformIO lin2
+textFont Lin2 = lin2
 textFont (FromFontFile f) = unsafePerformIO (loadFont (Text.unpack f))
 
 -- | options specific to text as SVG text
